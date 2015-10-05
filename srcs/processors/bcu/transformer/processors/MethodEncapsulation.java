@@ -20,6 +20,7 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtFieldReference;
+import spoon.reflect.reference.CtGenericElementReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtFieldAccessImpl;
 import spoon.support.reflect.code.CtInvocationImpl;
@@ -58,6 +59,9 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 //		tmpref.setActualTypeArguments(null);
 		
 		CtTry coreTry = createTry(methodVar,tmpref);
+		if(coreTry == null) {
+			return;
+		}
 		coreTry.setBody(getFactory().Core().createBlock());
 		coreTry.getBody().setStatements(ctMethode.getBody().getStatements());
 		
@@ -91,6 +95,10 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 				arg = new CtFieldAccessImpl();
 				((CtFieldAccessImpl) arg).setVariable(ctfe);
 			}
+			if((tmp2 instanceof CtGenericElementReference)) {
+				return null;
+			}
+			
 			
 			CtExecutableReference execref = getFactory().Core().createExecutableReference();
 			execref.setDeclaringType(getFactory().Type().createReference("bcornu.resi.CallChecker"));

@@ -27,6 +27,15 @@ public class DefaultSpooner extends AbstractConfigurator implements ISpooner {
 	public void setProcessors(String... processorNames) {
 		processors=processorNames;
 	}
+	
+	@Override
+	public void setProcessors(Class... processor) {
+		List<String> processorNames = new ArrayList<>();
+		for (Class class1 : processor) {
+			processorNames.add(class1.getCanonicalName());
+		}
+		this.setProcessors(processorNames.toArray(new String[0]));
+	}
 
 	@Override
 	public void setSourceFolder(String... sources) {

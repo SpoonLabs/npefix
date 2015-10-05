@@ -50,6 +50,8 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 		
 		if(element.getTarget()==null)
 			return;
+		if(element instanceof CtFieldAccess<?> && ((CtFieldAccess) element).getVariable().isStatic())
+			return;
 		if(element.getTarget() instanceof CtThisAccess 
 				|| element.getTarget() instanceof CtSuperAccess
 				|| element.getTarget() instanceof CtTypeAccess)
@@ -57,7 +59,7 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 		CtElement line = element;
 		try{
 			i++;
-			CtElement parent;
+			CtElement parent = null;
 			boolean found = false;
 			boolean needElse = false;
 			try{
@@ -158,12 +160,11 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 				
 				((CtLocalVariable) line).insertBefore(previous);
 				
-				
 				thenBloc.addStatement(assign);
 				encaps.setThenStatement(thenBloc);
-				line.replace(encaps);
-			}else{
-				line.replace(encaps);
+				((CtLocalVariable) line).replace(encaps);
+			}else if(line instanceof CtStatement){
+				((CtStatement) line).replace(encaps);
 				encaps.setThenStatement(thenBloc);
 				thenBloc.addStatement((CtStatement)line);
 			}

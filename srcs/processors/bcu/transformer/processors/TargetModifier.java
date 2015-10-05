@@ -6,6 +6,7 @@ import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtConditional;
 import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtStatement;
@@ -17,6 +18,7 @@ import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtFieldReference;
+import spoon.reflect.reference.CtGenericElementReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtFieldAccessImpl;
 import spoon.support.reflect.code.CtInvocationImpl;
@@ -36,8 +38,9 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 	public void process(CtTargetedExpression element) {
 		if(element.getTarget()==null)
 			return;
-		if(element.getTarget() instanceof CtThisAccess 
-				|| element.getTarget() instanceof CtSuperAccess)
+		if(element instanceof CtFieldAccess<?> && ((CtFieldAccess) element).getVariable().isStatic())
+			return;
+		if(element.getTarget() instanceof CtThisAccess || element.getTarget() instanceof CtSuperAccess)
 			return;
 		
 		String sign = "";
@@ -57,6 +60,9 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 			CtExpression arg = null;
 			if(tmp instanceof CtArrayTypeReference){
 				tmp=((CtArrayTypeReference)tmp).getDeclaringType();
+			}
+			if((tmp instanceof CtGenericElementReference)) {
+				return;
 			}
 			if(tmp==null || tmp.isAnonymous() || tmp.getSimpleName()==null || (tmp.getPackage()==null && tmp.getSimpleName().length()==1)){
 				arg = getFactory().Core().createLiteral();
