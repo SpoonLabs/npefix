@@ -30,7 +30,6 @@
 	</dependencies>
 	
 	<build>
-		<sourceDirectory>srcs/main</sourceDirectory>
 		<outputDirectory>bin</outputDirectory>
 		<plugins>
 			 <plugin>
@@ -39,31 +38,7 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
-					<excludes>
-						<exclude>**/*.*</exclude>
-					</excludes>
 				</configuration>
-			 </plugin>
-			 <plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.1</version>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>srcs/framework</source>
-								<source>srcs/processors</source>
-								<source>srcs/utils</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
 			 </plugin>
 		</plugins>
 	</build>
