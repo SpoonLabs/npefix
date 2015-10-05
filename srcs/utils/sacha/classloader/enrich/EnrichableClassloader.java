@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
@@ -27,7 +28,7 @@ import org.xml.sax.SAXException;
 
 public class EnrichableClassloader extends URLClassLoader{
 	
-	List<String> addedUrls = new ArrayList<>();
+	Set<String> addedUrls = new HashSet<String>();
 	private String M2REPO = null;
 	private File metadataFolder = null;
 	
@@ -216,6 +217,17 @@ public class EnrichableClassloader extends URLClassLoader{
 													}
 												}
 											}
+										}
+									} else {
+										Node outputNode = node.getAttributes().getNamedItem("output");
+										if(outputNode != null) {
+											currentPathString = outputNode.getNodeValue();
+											if(!(currentPathString.startsWith("/") || currentPathString.startsWith("\\")))
+												currentPathString=currentPath.getAbsolutePath()+File.separator+currentPathString;
+											if(classpaths == null)
+												classpaths = currentPathString;
+											else
+												classpaths+= File.pathSeparator+currentPathString;
 										}
 									}
 								}
