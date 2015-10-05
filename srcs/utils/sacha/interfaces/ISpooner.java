@@ -7,6 +7,8 @@ public interface ISpooner extends IEclipseConfigurable {
 	void setOutputFolder(String folderPath);
 
 	void setProcessors(String... processorNames);
+	
+	void setProcessors(Class... processor);
 
 	/** must be set before spooning */
 	void setSourceFolder(String... sources);
