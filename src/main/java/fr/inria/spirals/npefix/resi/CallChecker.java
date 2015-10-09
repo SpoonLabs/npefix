@@ -2,9 +2,7 @@ package fr.inria.spirals.npefix.resi;
 
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 
 @SuppressWarnings("all")
@@ -12,7 +10,7 @@ public class CallChecker {
 		
 	public static Strategy strat;
 	
-	private static Stack<List<Object>> stack = new Stack<List<Object>>();
+	private static Stack<Map<String, Object>> stack = new Stack<>();
 
 	private static Strategy getStrat(){
 		return strat==null?new NoStrat():strat;
@@ -38,27 +36,33 @@ public class CallChecker {
 		return getStrat().returned(clazz);
 	}
 
-	public static <T> T varAssign(Object table) {
-		if(! stack.isEmpty() && ! stack.peek().contains(table))
-			stack.peek().add(table);
+	public static <T> T varAssign(String varName, Object table) {
+		if(! stack.isEmpty())
+			stack.peek().put(varName, table);
 		return (T) table;
 	}
-
-	public static <T> T varInit(Object table) {
+	
+	public static <T> T varInit(String varName, Object table) {
 		if(! stack.isEmpty())
-			stack.peek().add(table);
+			stack.peek().put(varName, table);
 		return (T) table;
 	}
 
 	public static void methodStart() {
-		stack.push(new ArrayList<Object>());
+		if(getStrat() instanceof NoStrat) {
+			return;
+		}
+		stack.push(new HashMap<String, Object>());
 	}
 
 	public static void methodEnd() {
+		if(getStrat() instanceof NoStrat) {
+			return;
+		}
 		stack.pop();
 	}
 	
-	public static List<Object> getCurrentVars(){
+	public static Map<String, Object> getCurrentVars(){
 		return stack.peek();
 	}
 

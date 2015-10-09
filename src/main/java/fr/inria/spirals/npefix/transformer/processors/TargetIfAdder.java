@@ -14,13 +14,16 @@ import spoon.support.reflect.code.CtInvocationImpl;
 import spoon.support.reflect.code.CtVariableAccessImpl;
 import spoon.support.reflect.reference.CtFieldReferenceImpl;
 
-import java.util.Arrays;
+import java.util.*;
 
 @SuppressWarnings("all")
 public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 
 	private int i=0;
 	private int j=0;
+
+	private Map<String, String> invocationVariables = new HashMap<>();
+
 	@Override
 	public void processingDone() {
 		System.out.println("if -->"+i +" (failed:"+j+")");
@@ -60,6 +63,9 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 						needElse = true;
 					}else if(parent instanceof CtBlock){
 						found=true;
+					}else if(parent instanceof CtCase){
+						needElse = true;
+						found=true;
 					}else if(parent instanceof CtStatementList){
 						found=true;
 					}else if(parent instanceof CtCatch){
@@ -67,6 +73,7 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 					}else if(parent instanceof CtIf){
 						line=parent;
 						needElse = true;
+						found=true;
 					}else if(parent instanceof CtAssignment 
 							&& ((CtAssignment) parent).getAssigned() instanceof CtFieldAccess){
 						return;
@@ -77,12 +84,32 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 					}
 				}
 			}catch(ParentNotInitializedException pni){
-				System.out.println(line);
+				System.err.println(line);
 				pni.printStackTrace();
 				j++;
 			}
 			if(line instanceof CtLocalVariable && ((CtLocalVariable) line).hasModifier(ModifierKind.FINAL))
 				return;
+
+			if(target instanceof CtInvocation) {
+				int id = invocationVariables.size();
+				String variableName = "npe_invocation_var" + id;
+				CtTypeReference type = target.getType();
+				List<CtTypeReference> typeCasts = target.getTypeCasts();
+				// use cast
+				if(typeCasts.size() > 0) {
+					type = typeCasts.get(typeCasts.size() - 1);
+				}
+				CtLocalVariable localVariable = getFactory().Code().createLocalVariable(type, variableName, target);
+				if(line instanceof CtStatement) {
+					((CtStatement)line).insertBefore(localVariable);
+					localVariable.setParent(line.getParent());
+				}
+				target = getFactory().Code().createVariableRead(localVariable.getReference(), false);
+				element.setTarget(target);
+				invocationVariables.put(target.toString(), variableName);
+			}
+
 			
 			CtExecutableReference execif = getFactory().Core().createExecutableReference();
 			execif.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
@@ -91,10 +118,25 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 
 			CtInvocationImpl ifInvoc = (CtInvocationImpl) getFactory().Core().createInvocation();
 			ifInvoc.setExecutable(execif);
-			ifInvoc.setArguments(Arrays.asList(new CtExpression[]{element.getTarget()}));
+			ifInvoc.setArguments(Arrays.asList(new CtExpression[]{target}));
 			
 			CtIf encaps = getFactory().Core().createIf();
-			encaps.setCondition(ifInvoc);
+			CtElement directParent = element.getParent();
+			if(directParent instanceof CtConditional) {
+				if(element.equals(((CtConditional)directParent).getElseExpression())) {
+					CtBinaryOperator binaryOperator = getFactory().Code().createBinaryOperator(((CtConditional) directParent).getCondition(), ifInvoc, BinaryOperatorKind.OR);
+					encaps.setCondition(binaryOperator);
+				} else {
+					CtUnaryOperator<Object> unaryOperator1 = getFactory().Core().createUnaryOperator();
+					unaryOperator1.setKind(UnaryOperatorKind.NOT);
+					unaryOperator1.setOperand(((CtConditional) directParent).getCondition());
+					CtBinaryOperator binaryOperator = getFactory().Code().createBinaryOperator(unaryOperator1, ifInvoc, BinaryOperatorKind.OR);
+					encaps.setCondition(binaryOperator);
+				}
+			} else {
+				encaps.setCondition(ifInvoc);
+			}
+
 
 			CtBlock thenBloc = getFactory().Core().createBlock();
 
@@ -148,12 +190,20 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 				thenBloc.addStatement(assign);
 				encaps.setThenStatement(thenBloc);
 				((CtLocalVariable) line).replace(encaps);
-			}else if(line instanceof CtStatement){
+			} else if(line instanceof CtStatement){
 				((CtStatement) line).replace(encaps);
 				encaps.setThenStatement(thenBloc);
 				thenBloc.addStatement((CtStatement)line);
 			}
-			
+
+			CtMethod methodParent = encaps.getParent(CtMethod.class);
+			if(methodParent != null) {
+				CtStatement lastStatement = methodParent.getBody().getLastStatement();
+				if (lastStatement.equals(encaps) && !methodParent.getType().toString().equals("void")) {
+					needElse = true;
+				}
+			}
+
 			if(needElse){
 				CtConstructorCall npe = getFactory().Core().createConstructorCall();
 				npe.setType(getFactory().Type().createReference(AbnormalExecutionError.class));

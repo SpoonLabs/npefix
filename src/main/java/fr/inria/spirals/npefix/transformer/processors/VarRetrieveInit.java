@@ -36,8 +36,21 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 		
 		CtInvocationImpl invoc = (CtInvocationImpl) getFactory().Core().createInvocation();
 		invoc.setExecutable(execref);
-		invoc.setArguments(Arrays.asList(new CtExpression[]{element.getDefaultExpression()}));
-		
+		CtLiteral<String> variableName = getFactory().Code().createLiteral(element.getSimpleName());
+		CtExpression defaultExpression = element.getDefaultExpression();
+		invoc.setArguments(Arrays.asList(new Object[]{variableName, defaultExpression}));
+		if(defaultExpression !=null &&
+				defaultExpression.getType() != null &&
+				defaultExpression.getType().isPrimitive() &&
+				!defaultExpression.toString().equals("null")) {
+			CtTypeReference destType = element.getType();
+			CtTypeReference expressionType = defaultExpression.getType();
+			List typeCasts = defaultExpression.getTypeCasts();
+			if(typeCasts.size() > 0) {
+				expressionType = ((CtTypeReference) typeCasts.get(typeCasts.size() - 1));
+			}
+			defaultExpression.addTypeCast(destType);
+		}
 		element.setDefaultExpression(invoc);
 	}
 

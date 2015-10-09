@@ -3,6 +3,7 @@ package fr.inria.spirals.npefix.transformer.processors;
 import fr.inria.spirals.npefix.transformer.utils.IConstants;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtVariableAccessImpl;
@@ -24,7 +25,7 @@ public class TryRegister extends AbstractProcessor<CtTry> {
 		for (CtCatch catchArg : element.getCatchers()) {
 			catchables.add(catchArg.getParameter().getReference().getType());
 		}
-		CtLocalVariable tryVar = getNewTrycontext(catchables);
+		CtLocalVariable tryVar = getNewTrycontext(element, catchables);
 
 		element.insertBefore(tryVar);
 		tryVar.setParent(element.getParent());
@@ -33,13 +34,17 @@ public class TryRegister extends AbstractProcessor<CtTry> {
 		mainContextVar.setVariable(tryVar.getReference());
 		
 		for (CtCatch catchArg : element.getCatchers()) {
-			catchArg.getBody().insertBegin(getCatchStart(tryVar));
+			CtInvocation catchStart = getCatchStart(tryVar);
+			catchArg.getBody().insertBegin(catchStart);
+			catchStart.setParent(catchArg.getBody());
 		}
 		
 		if(element.getFinalizer()==null){
 			element.setFinalizer(getFactory().Core().createBlock());
 		}
-		element.getFinalizer().insertBegin(getFinallyStart(tryVar));
+		CtStatement finallyStart = getFinallyStart(tryVar);
+		element.getFinalizer().insertBegin(finallyStart);
+		finallyStart.setParent(element.getFinalizer());
 
 	}
 
@@ -71,15 +76,21 @@ public class TryRegister extends AbstractProcessor<CtTry> {
 		return invoc;
 	}
 
-	private CtLocalVariable getNewTrycontext(List<CtTypeReference> catchables) {
+	private CtLocalVariable getNewTrycontext(CtTry element, List<CtTypeReference> catchables) {
 		CtConstructorCall ctx = getFactory().Core().createConstructorCall();
 		ctx.setType(getFactory().Type().createReference(IConstants.Class.TRY_CONTEXT));
 
-		List<CtLiteral> args = new ArrayList<>();
+		List<CtExpression<?>> args = new ArrayList<>();
 
 		CtLiteral tryNum = getFactory().Core().createLiteral();
 		tryNum.setValue(tryNumber);
 		args.add(tryNum);
+		
+		CtClass parent = element.getParent(CtClass.class);
+		while (parent.isAnonymous() || !parent.isTopLevel()) {
+			parent = parent.getParent(CtClass.class);
+		}
+		args.add(getFactory().Code().createCodeSnippetExpression(parent.getQualifiedName() + ".class"));
 
 		for (CtTypeReference type : catchables) {
 			CtLiteral literal = getFactory().Core().createLiteral();

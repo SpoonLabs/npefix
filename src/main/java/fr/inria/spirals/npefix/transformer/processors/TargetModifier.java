@@ -54,17 +54,21 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 			}
 			
 			CtExpression arg = null;
-			if(tmp instanceof CtArrayTypeReference){
-				tmp=((CtArrayTypeReference)tmp).getDeclaringType();
-			}
 			if((tmp instanceof CtTypeParameterReference)) {
 				return;
 			}
 			if(tmp==null || tmp.isAnonymous() || tmp.getSimpleName()==null || (tmp.getPackage()==null && tmp.getSimpleName().length()==1)){
 				arg = getFactory().Core().createLiteral();
 				arg.setType(getFactory().Type().nullType());
-			}else{
-				tmp = getFactory().Type().createReference(tmp.getQualifiedName());
+			} else {
+				if(tmp instanceof CtArrayTypeReference){
+					if(((CtArrayTypeReference) tmp).getComponentType() instanceof CtTypeParameterReference) {
+						return;
+					}
+					tmp = getFactory().Type().createReference(((CtArrayTypeReference) tmp).getComponentType().getQualifiedName() + "[]");
+				} else {
+					tmp = getFactory().Type().createReference(tmp.getQualifiedName());
+				}
 				CtFieldReference ctfe = new CtFieldReferenceImpl();
 				ctfe.setSimpleName("class");
 				ctfe.setDeclaringType(tmp.box());
@@ -72,6 +76,7 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 				arg = new CtFieldAccessImpl();
 				((CtFieldAccessImpl) arg).setVariable(ctfe);
 			}
+
 			
 			CtExecutableReference execref = getFactory().Core().createExecutableReference();
 			execref.setDeclaringType(getFactory().Type().createReference(CallChecker.class));

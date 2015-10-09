@@ -5,16 +5,20 @@ import fr.inria.spirals.npefix.resi.ExceptionStack;
 public class TryContext {
 
 	private int id = -1;
-	private Class[] types;
+	private Class<?>[] types;
+	private Class<?> context;
 
-	public TryContext(int id, String... types) {
+	public TryContext(int id, Class<?> context, String... types) {
 		this.id=id;
 		this.types = new Class[types.length];
+		this.context = context;
 		int i=0;
+		ClassLoader classLoader = context.getClassLoader();
 		for (String str : types) {
 			try {
-				this.types[i++]=Class.forName(str);
+				this.types[i++] = classLoader.loadClass(str);
 			} catch (ClassNotFoundException e) {
+				System.out.println(e);
 				//throw new RuntimeException(e);
 			}
 		}
