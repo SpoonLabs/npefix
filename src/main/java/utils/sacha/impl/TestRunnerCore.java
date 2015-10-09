@@ -7,6 +7,12 @@ import utils.sacha.interfaces.IRunner;
 import utils.sacha.interfaces.ITestResult;
 import utils.sacha.runner.main.TestRunner;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class TestRunnerCore extends AbstractConfigurator implements IRunner {
 
 	@Override
@@ -16,7 +22,15 @@ public class TestRunnerCore extends AbstractConfigurator implements IRunner {
 		Thread.currentThread().setContextClassLoader(eClassloader);
 
 		Class<?>[] tests = new TestClassFinder(eClassloader).findTestClasses();
-		return new TestRunner(tests).run();
+		Set<Class> testList = new HashSet();
+		for (int i = 0; i < tests.length; i++) {
+			String s = tests[i].getCanonicalName();
+			if(s.startsWith("fr.inria.spirals.npefix")) {
+				continue;
+			}
+			testList.add(tests[i]);
+		}
+		return new TestRunner(testList.toArray(new Class[]{})).run();
 	}
 
 	@Override
