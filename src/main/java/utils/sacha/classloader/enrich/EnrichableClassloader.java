@@ -13,14 +13,11 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.HashSet;
-import java.util.MissingResourceException;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 public class EnrichableClassloader extends URLClassLoader{
 	
-	Set<String> addedUrls = new HashSet<String>();
+	List<String> addedUrls = new ArrayList<String>();
 	private String M2REPO = null;
 	private File metadataFolder = null;
 	
@@ -50,11 +47,15 @@ public class EnrichableClassloader extends URLClassLoader{
 		 for (String classpathEntry : classpathEntries.split(File.pathSeparator)) {
 			 if(classpathEntry.endsWith(".jar") && !(classpathEntry.endsWith("/") || classpathEntry.endsWith("\\"))){
 				 addURL(classpathEntry);
-				 addedUrls.add(classpathEntry);
+				 if(!addedUrls.contains(classpathEntry)) {
+					 addedUrls.add(classpathEntry);
+				 }
 			 }
 			 else{
-				 addURL(classpathEntry+File.separator);
-				 addedUrls.add(classpathEntry+File.separator);
+				 addURL(classpathEntry + File.separator);
+				 if(!addedUrls.contains(classpathEntry)) {
+					 addedUrls.add(classpathEntry + File.separator);
+				 }
 			 }
 		 }
 	}
