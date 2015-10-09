@@ -7,4 +7,10 @@ public class FooClassTest {
         Foo foo = new Foo();
         foo.foo();
     }
+
+    @Test
+    public void foo1Test() {
+        Foo foo = new Foo();
+        foo.foo2();
+    }
 }
