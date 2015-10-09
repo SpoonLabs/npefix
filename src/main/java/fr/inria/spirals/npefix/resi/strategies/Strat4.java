@@ -16,7 +16,7 @@ public class Strat4 extends Strategy{
 		this.rt=rt;
 	}
 
-	public <T> T isCalled(T o, Class clazz) {
+	public <T> T isCalled(T o, Class<?> clazz) {
 		if(o==null)
 			throw new ForceReturn();
 		return o;
@@ -29,16 +29,16 @@ public class Strat4 extends Strategy{
 	}
 
 	@Override
-	public <T> T returned(Class clazz) {
+	public <T> T returned(Class<?> clazz) {
 		switch (rt) {
 		case NULL:
-			System.out.println("return null");
+			//System.out.println("return null");
 			return null;
 		case NEW:
-			System.out.println("return new");
+			//System.out.println("return new");
 			return initNotNull(clazz);
 		case VAR:
-			System.out.println("return var");
+			//System.out.println("return var");
 			return obtain(clazz);
 		default:
 			throw new AbnormalExecutionError();

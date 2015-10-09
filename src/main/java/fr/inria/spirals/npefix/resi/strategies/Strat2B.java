@@ -6,9 +6,9 @@ import fr.inria.spirals.npefix.resi.ForceReturn;
 import fr.inria.spirals.npefix.resi.Strategy;
 
 import java.lang.reflect.Constructor;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
+import java.lang.reflect.Modifier;
+import java.util.*;
+
 /**
  * a=new A
  * @author bcornu
@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public class Strat2B extends Strategy{
 
-	public <T> T isCalled(T o, Class clazz) {
+	public <T> T isCalled(T o, Class<?> clazz) {
 		if (o == null) {
 			if (ExceptionStack.isStoppable(NullPointerException.class)) {
 				return null;
@@ -25,23 +25,15 @@ public class Strat2B extends Strategy{
 				o = initPrimitive(clazz);
 				return o;
 			}
-			if(clazz.isInterface()){
-				if(clazz.isAssignableFrom(Set.class)){
-					o= (T) new HashSet();
-				}else
-				if(clazz.isAssignableFrom(Comparator.class)){
-					o= (T) new Comparator() {
-						public int compare(Object o1, Object o2) {
-							return 0;
-						}
-					};
+			if(clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()) ) {
+				clazz = getImplForInterface(clazz);
+				if(clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()) ) {
+					throw new AbnormalExecutionError("missing interface " + clazz);
 				}
-				else throw new AbnormalExecutionError("missing interface"+clazz);
 			}
 			try {
 				o = (T) clazz.newInstance();
 			} catch (InstantiationException | IllegalAccessException e) {
-				System.err.println("cannot new instance "+clazz);
 				try{
 					for (Constructor constructor : clazz.getConstructors()) {
 						try{
@@ -63,9 +55,10 @@ public class Strat2B extends Strategy{
 							t.printStackTrace();
 						}
 					}
-				}catch (Throwable t){
+				} catch (Throwable t){
 					t.printStackTrace();
 				}
+				System.err.println("cannot new instance "+clazz);
 			}
 		}
 		return (T) o;
@@ -77,7 +70,7 @@ public class Strat2B extends Strategy{
 
 
 	@Override
-	public <T> T returned(Class clazz) {
+	public <T> T returned(Class<?> clazz) {
 		throw new AbnormalExecutionError("should not call return");
 	}
 }

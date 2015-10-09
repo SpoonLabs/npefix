@@ -22,7 +22,7 @@ public class Strat1A extends Strategy{
 //		
 //	}
 
-	public <T> T isCalled(T o, Class clazz) {
+	public <T> T isCalled(T o, Class<?> clazz) {
 		if(o==null)
 			return obtain(clazz);
 		return (T) o;
@@ -34,7 +34,7 @@ public class Strat1A extends Strategy{
 
 
 	@Override
-	public <T> T returned(Class clazz) {
+	public <T> T returned(Class<?> clazz) {
 		throw new AbnormalExecutionError("should not call return");
 	}
 }

@@ -9,7 +9,7 @@ import fr.inria.spirals.npefix.resi.Strategy;
  */
 public class Strat3 extends Strategy{
 
-	public <T> T isCalled(T o, Class clazz) {
+	public <T> T isCalled(T o, Class<?> clazz) {
 		return o;
 	}
 
@@ -18,7 +18,7 @@ public class Strat3 extends Strategy{
 	}
 
 	@Override
-	public <T> T returned(Class clazz) {
+	public <T> T returned(Class<?> clazz) {
 		throw new AbnormalExecutionError("should not call return");
 	}
 }
