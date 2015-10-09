@@ -68,4 +68,8 @@ public class TestInfo extends HashMap<String, List<String>> implements ITestResu
 	public void setResult(Result result) {
 		this.result = result;
 	}
+
+	public Result getResult() {
+		return result;
+	}
 }
