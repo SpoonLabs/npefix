@@ -58,6 +58,7 @@ public class Launcher {
 
         ProcessingManager p = new QueueProcessingManager(spoon.getFactory());
 
+        p.addProcessor(IfSplitter.class.getCanonicalName());
         p.addProcessor(ForceNullInit.class.getCanonicalName());
         p.addProcessor(TargetIfAdder.class.getCanonicalName());
         p.addProcessor(TargetModifier.class.getCanonicalName());
@@ -65,6 +66,7 @@ public class Launcher {
         p.addProcessor(VarRetrieveAssign.class.getCanonicalName());
         p.addProcessor(VarRetrieveInit.class.getCanonicalName());
         p.addProcessor(MethodEncapsulation.class.getCanonicalName());
+        p.addProcessor(VariableFor.class.getCanonicalName());
 
         spoon.setSourceOutputDirectory(sourceOutput);
         spoon.setBinaryOutputDirectory(binOutput);
@@ -74,7 +76,7 @@ public class Launcher {
         ArrayList<CtType<?>> allWithoutTest = new ArrayList<>();
         for (int i = 0; i < all.size(); i++) {
             CtType<?> ctType = all.get(i);
-            List<CtElement> elements = ctType.getElements(new AnnotationFilter<CtElement>(Test.class));
+            List<CtElement> elements = ctType.getElements(new AnnotationFilter<>(Test.class));
             if(elements.size() > 0) {
                 continue;
             }

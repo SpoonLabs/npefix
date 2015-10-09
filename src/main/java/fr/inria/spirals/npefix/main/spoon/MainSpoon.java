@@ -52,11 +52,13 @@ public class MainSpoon {
 			//spoon config
 			spooner.setSourceFolder(srcs);
 			spooner.setProcessors(
+					IfSplitter.class,
 					ForceNullInit.class,
 					TargetIfAdder.class,
 					TargetModifier.class,
 					TryRegister.class,
 					MethodEncapsulation.class,
+					VariableFor.class,
 					VarRetrieveAssign.class,
 					VarRetrieveInit.class
 					);
