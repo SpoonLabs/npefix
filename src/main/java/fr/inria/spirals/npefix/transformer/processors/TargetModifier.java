@@ -25,9 +25,20 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 			return;
 		if(element instanceof CtFieldAccess<?> && ((CtFieldAccess) element).getVariable().isStatic())
 			return;
+		if(element instanceof CtInvocationImpl<?> && ((CtInvocationImpl) element).getExecutable().isStatic())
+			return;
 		if(element.getTarget() instanceof CtThisAccess || element.getTarget() instanceof CtSuperAccess)
 			return;
-		
+		if(element.toString().startsWith(CallChecker.class.getSimpleName())) {
+			return;
+		}
+		if(element.getType() instanceof CtTypeParameterReference) {
+			return;
+		}
+		if(element.getTarget().getType() instanceof CtTypeParameterReference) {
+			return;
+		}
+
 		String sign = "";
 		if (element.getTarget() instanceof CtVariableAccess) {
 			sign = ((CtVariableAccess)element.getTarget()).getVariable().getSimpleName();

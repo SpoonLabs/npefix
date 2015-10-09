@@ -4,10 +4,7 @@ import fr.inria.spirals.npefix.resi.AbnormalExecutionError;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.CtConstructor;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.ModifierKind;
-import spoon.reflect.declaration.ParentNotInitializedException;
+import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtFieldReference;
@@ -32,15 +29,18 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 
 	@Override
 	public void process(CtTargetedExpression element) {
-		
-		if(element.getTarget()==null)
+		CtExpression target = element.getTarget();
+		if(target == null)
 			return;
 		if(element instanceof CtFieldAccess<?> && ((CtFieldAccess) element).getVariable().isStatic())
 			return;
-		if(element.getTarget() instanceof CtThisAccess 
-				|| element.getTarget() instanceof CtSuperAccess
-				|| element.getTarget() instanceof CtTypeAccess)
+		if(element instanceof CtInvocationImpl<?> && ((CtInvocationImpl) element).getExecutable().isStatic())
 			return;
+		if(target instanceof CtThisAccess
+				|| target instanceof CtSuperAccess
+				|| target instanceof CtTypeAccess)
+			return;
+
 		CtElement line = element;
 		try{
 			i++;

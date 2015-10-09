@@ -35,6 +35,9 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		methodNumber++;
 		if(ctMethode.getBody()==null)
 			return;
+		if(ctMethode.getType() instanceof CtTypeParameterReference) {
+			return;
+		}
 		
 		CtLocalVariable methodVar = getNewMethodcontext();
 		
