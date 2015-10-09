@@ -58,6 +58,7 @@ public class DefaultSpooner extends AbstractConfigurator implements ISpooner {
 		args.add("-v");
 		if(graphical)
 			args.add("-g");
+		args.add("--with-imports");
 		args.add("--compliance");
 		args.add("7");
 		if(sources == null || sources.length==0)

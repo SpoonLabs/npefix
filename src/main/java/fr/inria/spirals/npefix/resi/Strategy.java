@@ -13,11 +13,18 @@ import java.util.Vector;
 
 public abstract class Strategy {
 
+
+
 	public abstract <T> T isCalled(T o, Class<?> clazz);
 
 	public abstract <T> T returned(Class<?> clazz);
 	
 	public abstract boolean beforeDeref(Object called);
+
+
+	public <T> T beforeCalled(T o, Class<?> clazz) {
+		return o;
+	}
 
 	protected <T> T obtain(Class<?> clazz) {
 		if(clazz==null)

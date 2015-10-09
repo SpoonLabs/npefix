@@ -16,14 +16,18 @@ import java.util.*;
  */
 public class Strat2B extends Strategy{
 
-	public <T> T isCalled(T o, Class<?> clazz) {
+	@Override
+	public <T> T beforeCalled(T o, Class<?> clazz) {
 		if (o == null) {
 			if (ExceptionStack.isStoppable(NullPointerException.class)) {
 				return null;
 			}
+			if(clazz.equals(Class.class)) {
+				return null;
+			}
+
 			if(clazz.isPrimitive()){
-				o = initPrimitive(clazz);
-				return o;
+				return initPrimitive(clazz);
 			}
 			if(clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()) ) {
 				clazz = getImplForInterface(clazz);
@@ -61,7 +65,11 @@ public class Strat2B extends Strategy{
 				System.err.println("cannot new instance "+clazz);
 			}
 		}
-		return (T) o;
+		return o;
+	}
+
+	public <T> T isCalled(T o, Class<?> clazz) {
+		return o;
 	}
 
 	public boolean beforeDeref(Object called) {

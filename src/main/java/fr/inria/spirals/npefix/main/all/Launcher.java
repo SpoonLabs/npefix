@@ -51,6 +51,7 @@ public class Launcher {
         compiler.setSourceClasspath(classpath.split(File.pathSeparator));
 
         spoon.getEnvironment().setCopyResources(true);
+        spoon.getEnvironment().setAutoImports(true);
         spoon.getEnvironment().setShouldCompile(true);
         spoon.getEnvironment().setGenerateJavadoc(false);
 

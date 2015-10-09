@@ -15,11 +15,17 @@ public class CallChecker {
 	private static Strategy getStrat(){
 		return strat==null?new NoStrat():strat;
 	}
-	
+
+	public static <T> T beforeCalled(T o, Class clazz) {
+		if (o == null && ExceptionStack.isStoppable(NullPointerException.class))
+			return null;
+		return (T) getStrat().beforeCalled(o, clazz);
+	}
+
 	public static <T> T isCalled(T o, Class clazz) {
 		if (o == null && ExceptionStack.isStoppable(NullPointerException.class))
 				return null;
-		return getStrat().isCalled(o, clazz);
+		return (T) getStrat().isCalled(o, clazz);
 	}
 
 	public static boolean beforeDeref(Object called) {
@@ -29,11 +35,11 @@ public class CallChecker {
 	}
 
 	public static <T> T init(Class clazz) {
-		return getStrat().init(clazz);
+		return (T) getStrat().init(clazz);
 	}
 
 	public static <T> T returned(Class clazz) {
-		return getStrat().returned(clazz);
+		return (T) getStrat().returned(clazz);
 	}
 
 	public static <T> T varAssign(String varName, Object table) {

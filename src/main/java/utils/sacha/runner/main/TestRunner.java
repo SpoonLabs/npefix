@@ -41,7 +41,7 @@ public class TestRunner {
 			@Override
 			public void testFailure(Failure failure) throws Exception {
 				super.testFailure(failure);
-				System.err.println(failure.getTestHeader());
+				//System.err.println(failure.getTestHeader());
 			}
 			
 			public void testRunFinished(Result result) {

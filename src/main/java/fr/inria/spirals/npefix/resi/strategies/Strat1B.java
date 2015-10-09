@@ -9,10 +9,15 @@ import fr.inria.spirals.npefix.resi.Strategy;
  */
 public class Strat1B extends Strategy{
 
-	public <T> T isCalled(T o, Class<?> clazz) {
-		if(o==null)
+	@Override
+	public <T> T beforeCalled(T o, Class<?> clazz) {
+		if(o == null)
 			o = obtain(clazz);
 		return (T) o;
+	}
+
+	public <T> T isCalled(T o, Class<?> clazz) {
+		return o;
 	}
 
 	public boolean beforeDeref(Object called) {

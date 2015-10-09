@@ -16,7 +16,6 @@ import java.util.*;
  */
 public class Strat2A extends Strategy{
 
-	@SuppressWarnings("rawtypes")
 	public <T> T isCalled(T o, Class<?> clazz) {
 		if (o == null) {
 			if (ExceptionStack.isStoppable(NullPointerException.class)) {
