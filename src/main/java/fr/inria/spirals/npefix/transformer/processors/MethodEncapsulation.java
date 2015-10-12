@@ -68,7 +68,8 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		methodAccess.setVariable(methodVar.getReference());
 		
 		CtReturn ret = getFactory().Core().createReturn();
-		if(tmpref.getActualClass()!=java.lang.Void.class){
+
+		if(!tmpref.equals(getFactory().Code().createCtTypeReference(Void.class))){
 			CtTypeReference tmp2 = tmpref;
 			CtExpression arg = null;
 			if(tmp2 instanceof CtArrayTypeReference){

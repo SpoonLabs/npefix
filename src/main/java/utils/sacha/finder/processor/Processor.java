@@ -42,7 +42,7 @@ public class Processor {
 			}
 			if(!className.contains("$"))
 			try {
-				Class<?> clazz = Class.forName(className);
+				Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
 				if (clazz.isLocalClass() || clazz.isAnonymousClass()) {
 					continue;
 				}

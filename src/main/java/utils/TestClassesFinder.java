@@ -68,8 +68,7 @@ public final class TestClassesFinder implements Callable<Collection<Class<?>>> {
                 });
         String[] testClasses;
         try {
-            testClasses = namesFrom(executor.submit(new TestClassesFinder())
-                    .get());
+            testClasses = namesFrom(executor.submit(new TestClassesFinder()).get());
         } catch (InterruptedException ie) {
             throw new RuntimeException(ie);
         } catch (ExecutionException ee) {

@@ -1,8 +1,11 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
+import spoon.SpoonException;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
+import spoon.reflect.declaration.CtConstructor;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.*;
 import spoon.support.reflect.code.CtFieldAccessImpl;
@@ -44,14 +47,17 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 		}
 
 		String sign = "";
+		CtVariableReference variable = null;
 		if (target instanceof CtVariableAccess) {
-			sign = ((CtVariableAccess) target).getVariable().getSimpleName();
+			variable = ((CtVariableAccess) target).getVariable();
+			sign = variable.getSimpleName();
 		}
 		try{
 			i++;
 			CtTypeReference tmp = target.getType();
 			if(sign.equals("class")){
 				tmp = getFactory().Type().createReference(Class.class);
+				return;
 			}
 			if(target.getTypeCasts()!=null && target.getTypeCasts().size()>0){
 				tmp = (CtTypeReference) target.getTypeCasts().get(0);
@@ -99,13 +105,35 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 			beforecallRef.setSimpleName("beforeCalled");
 			beforecallRef.setStatic(true);
 
-			if(target instanceof CtVariableAccess) {
-				Set<ModifierKind> modifiers = ((CtVariableAccess) target).getVariable().getModifiers();
-				if(!modifiers.contains(ModifierKind.FINAL)) {
 
+			if(target instanceof CtVariableAccess) {
+				Set<ModifierKind> modifiers = variable.getModifiers();
+				if(!modifiers.contains(ModifierKind.FINAL)) {
+					if(variable.getDeclaration() == null) {
+						System.out.println(variable);
+						return;
+					}
+					if(variable.getDeclaration().getParent() instanceof CtLoop) {
+						return;
+					}
 					CtInvocation beforeCall = getFactory().Code().createInvocation(null, beforecallRef, target, arg);
-					CtAssignment variableAssignment = getFactory().Code().createVariableAssignment(((CtVariableAccess) target).getVariable(), false, beforeCall);
-					element.getParent(CtStatement.class).insertBefore(variableAssignment);
+					boolean isStatic = false;
+					if(variable instanceof CtFieldReference) {
+						isStatic = ((CtFieldReference)variable).isStatic();
+					}
+					CtAssignment variableAssignment = getFactory().Code().createVariableAssignment(variable, isStatic, beforeCall);
+					CtElement parent = element;
+					if(parent.getParent(CtStatementList.class) == null) {
+						return;
+					}
+					while (!(parent.getParent() instanceof CtStatementList)) {
+						parent = parent.getParent();
+					}
+					// first contructor line
+					if(parent.getParent(CtConstructor.class) != null && parent instanceof CtInvocation && ((CtInvocation)parent).getExecutable().getSimpleName().startsWith("<init>")) {
+						return;
+					}
+					((CtStatement)parent).insertBefore(variableAssignment);
 				}
 			}
 

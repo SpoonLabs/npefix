@@ -35,7 +35,7 @@ public class Launcher {
 
     public Launcher(String[] sourcePath, String sourceOutput, String binOutput, String classpath) {
         this.sourcePath = sourcePath;
-        this.classpath = classpath;
+        this.classpath = classpath + System.getProperty("java.class.path");
         this.sourceOutput = sourceOutput;
         this.binOutput = binOutput;
     }
@@ -73,10 +73,13 @@ public class Launcher {
         spoon.setBinaryOutputDirectory(binOutput);
         logger.debug("Start code instrumentation");
 
-        List<CtType<?>> all = spoon.getFactory().Class().getAll();
         ArrayList<CtType<?>> allWithoutTest = new ArrayList<>();
-        for (int i = 0; i < all.size(); i++) {
-            CtType<?> ctType = all.get(i);
+        List<CtType<?>> allClasses = spoon.getFactory().Class().getAll();
+        for (int i = 0; i < allClasses.size(); i++) {
+            CtType<?> ctType = allClasses.get(i);
+            if(ctType.getSimpleName().endsWith("Test")) {
+                continue;
+            }
             List<CtElement> elements = ctType.getElements(new AnnotationFilter<>(Test.class));
             if(elements.size() > 0) {
                 continue;
@@ -94,6 +97,7 @@ public class Launcher {
 
         ArrayList<URL> uRLClassPath = new ArrayList<>();
         String[] sourceClasspath = spoon.getModelBuilder().getSourceClasspath();
+
         for (int i = 0; i < sourceClasspath.length; i++) {
             String s = sourceClasspath[i];
             try {
@@ -104,10 +108,11 @@ public class Launcher {
         }
         URLClassLoader urlClassLoader = new URLClassLoader(uRLClassPath.toArray(new URL[]{}));
         String[] testsString = new TestClassesFinder().findIn(urlClassLoader, false);
+        testsString = new String[]{"org.junit.tests.AllTests"};
         List<Class> tests = new ArrayList<>();
         for (int i = 0; i < testsString.length; i++) {
             String s = testsString[i];
-            if(s.startsWith("fr.inria.spirals.npefix")) {
+            if(!isValidTest(s)) {
                 continue;
             }
             try {
@@ -117,8 +122,10 @@ public class Launcher {
                 continue;
             }
         }
-
-
         return new TestRunner(tests.toArray(new Class[]{})).run();
+    }
+
+    private boolean isValidTest(String testName) {
+        return spoon.getFactory().Class().get(testName) != null;
     }
 }
