@@ -30,7 +30,7 @@ public class TryRegister extends AbstractProcessor<CtTry> {
 		element.insertBefore(tryVar);
 		tryVar.setParent(element.getParent());
 
-		mainContextVar = new CtVariableAccessImpl();
+		mainContextVar = new CtVariableAccessImpl(){};
 		mainContextVar.setVariable(tryVar.getReference());
 		
 		for (CtCatch catchArg : element.getCatchers()) {

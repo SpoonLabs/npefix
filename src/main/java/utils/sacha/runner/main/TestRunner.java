@@ -10,6 +10,8 @@ import utils.sacha.runner.utils.TestInfo;
 
 import java.io.PrintStream;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class TestRunner {
@@ -40,11 +42,21 @@ public class TestRunner {
 			}
 			@Override
 			public void testFailure(Failure failure) throws Exception {
+				if(failure.getDescription() != null && failure.getDescription().getDisplayName().startsWith("warning")) {
+					return;
+				}
 				super.testFailure(failure);
 				//System.err.println(failure.getTestHeader());
 			}
 			
 			public void testRunFinished(Result result) {
+				List<Failure> failures = new ArrayList<>(result.getFailures());
+				for (int i = 0; i < failures.size(); i++) {
+					Failure failure = failures.get(i);
+					if(failure.getDescription() != null && failure.getDescription().getDisplayName().startsWith("warning")) {
+						result.getFailures().remove(failure);
+					}
+				}
 				runnedTests.setResult(result);
 			}
 		});

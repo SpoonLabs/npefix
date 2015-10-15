@@ -25,6 +25,9 @@ public class ExceptionStack {
 
 	public static boolean isStoppable(Class<? extends Exception> c){
 		for (TryContext tryContext : tryContexts) {
+			if (tryContext == null) {
+				continue;
+			}
 			for (Class clazz : tryContext.getTypes()) {
 				if(clazz.isAssignableFrom(c)){
 					return true;

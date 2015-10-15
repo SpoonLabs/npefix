@@ -24,51 +24,10 @@ public class Strat2A extends Strategy{
 			if(clazz.equals(Class.class)) {
 				return null;
 			}
-			
-			if(clazz.isPrimitive()){
-				return initPrimitive(clazz);
-			}
-			if(clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()) ) {
-				clazz = getImplForInterface(clazz);
-				if(clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()) ) {
-					throw new AbnormalExecutionError("missing interface " + clazz);
-				}
-			}
-			Object res = null;
-			try {
-				res = (T) clazz.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
 
-				try{
-					Constructor[] consts = clazz.getConstructors();
-					for (Constructor constructor : consts) {
-						try{
-							Class[] types = constructor.getParameterTypes();
-							Object[] params = new Object[types.length];
-							for (int i = 0; i < types.length; i++) {
-								try{
-									if(types[i].equals(clazz))
-										throw new ForceReturn();
-									else
-										params[i] = init(types[i]);
-								}catch (Throwable t){
-									t.printStackTrace();
-								}
-							}
-							res = (T) constructor.newInstance(params);
-							return (T) res;
-						}catch (Throwable t){
-							t.printStackTrace();
-						}
-					}
-				}catch (Throwable t){
-					t.printStackTrace();
-				}
-				System.err.println("cannot new instance "+clazz);
-			}
-			return (T) res;
+			return initNotNull(clazz);
 		}
-		return (T) o;
+		return o;
 	}
 
 	public boolean beforeDeref(Object called) {

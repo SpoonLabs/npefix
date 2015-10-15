@@ -1,10 +1,8 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.BinaryOperatorKind;
-import spoon.reflect.code.CtBinaryOperator;
-import spoon.reflect.code.CtExpression;
-import spoon.reflect.code.CtIf;
+import spoon.reflect.code.*;
+import spoon.reflect.declaration.CtElement;
 
 /**
  * Split if condition into several if in order to add check not null before each section of the condition
@@ -33,16 +31,29 @@ public class IfSplitter extends AbstractProcessor<CtIf>{
         anIf.setCondition(leftHandOperand);
         ctIf.setCondition(rightHandOperand);
         if(kind.equals(BinaryOperatorKind.AND)) {
-            anIf.setThenStatement(ctIf);
-            anIf.setElseStatement(getFactory().Core().clone(ctIf.getElseStatement()));
+            anIf.setThenStatement(wrapBlock(ctIf));
+            anIf.setElseStatement(wrapBlock(getFactory().Core().clone(ctIf.getElseStatement())));
         } else {
-            anIf.setThenStatement(getFactory().Core().clone(ctIf.getThenStatement()));
-            anIf.setElseStatement(ctIf);
+            anIf.setThenStatement(wrapBlock(getFactory().Core().clone(ctIf.getThenStatement())));
+            anIf.setElseStatement(wrapBlock(ctIf));
         }
 
 
         if(isToBeProcessed(anIf)) {
             process(anIf);
         }
+    }
+
+    private CtStatement wrapBlock(CtStatement element) {
+        if(element == null) {
+            return null;
+        }
+        if(element instanceof CtBlock) {
+            return element;
+        }
+        CtBlock<?> ctBlock = getFactory().Code().createCtBlock(element);
+        ctBlock.setParent(element.getParent());
+        element.setParent(ctBlock);
+        return ctBlock;
     }
 }

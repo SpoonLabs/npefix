@@ -3,6 +3,7 @@ package fr.inria.spirals.npefix.transformer.processors;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtForEach;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.declaration.ModifierKind;
@@ -24,10 +25,15 @@ import java.util.Arrays;
 public class ForceNullInit extends AbstractProcessor<CtLocalVariable> {
 
 	@Override
-	public void process(CtLocalVariable element) {
-		if(element.getDefaultExpression()!=null 
+	public boolean isToBeProcessed(CtLocalVariable element) {
+		if(element.getDefaultExpression()!=null
 				|| element.getParent() instanceof CtForEach)
-			return;
+			return false;
+		return super.isToBeProcessed(element);
+	}
+
+	@Override
+	public void process(CtLocalVariable element) {
 		if(element.hasModifier(ModifierKind.FINAL)){
 			element.removeModifier(ModifierKind.FINAL);
 		}
@@ -42,12 +48,14 @@ public class ForceNullInit extends AbstractProcessor<CtLocalVariable> {
 			arg.setType(getFactory().Type().nullType());
 		}else{
 			tmp2 = getFactory().Type().createReference(tmp2.getQualifiedName());
-			CtFieldReference ctfe = new CtFieldReferenceImpl();
+			CtFieldReference<Object> ctfe = getFactory().Core().createFieldReference();
 			ctfe.setSimpleName("class");
 			ctfe.setDeclaringType(tmp2);
+			ctfe.setType(getFactory().Code().createCtTypeReference(Class.class));
 			
-			arg = new CtFieldAccessImpl();
-			((CtFieldAccessImpl) arg).setVariable(ctfe);
+			arg = getFactory().Core().createFieldRead();
+			((CtFieldAccess) arg).setVariable(ctfe);
+			arg.setType(getFactory().Code().createCtTypeReference(Class.class));
 		}
 		
 		CtExecutableReference execref = getFactory().Core().createExecutableReference();
@@ -56,10 +64,9 @@ public class ForceNullInit extends AbstractProcessor<CtLocalVariable> {
 		execref.setStatic(true);
 		
 		CtInvocationImpl invoc = (CtInvocationImpl) getFactory().Core().createInvocation();
+		element.setDefaultExpression(invoc);
 		invoc.setExecutable(execref);
 		invoc.setArguments(Arrays.asList(new CtExpression[]{arg}));
-		
-		element.setDefaultExpression(invoc);
 	}
 
 }

@@ -7,9 +7,7 @@ import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.*;
-import spoon.support.reflect.code.CtFieldAccessImpl;
-import spoon.support.reflect.code.CtInvocationImpl;
-import spoon.support.reflect.code.CtVariableAccessImpl;
+import spoon.support.reflect.code.*;
 import spoon.support.reflect.reference.CtFieldReferenceImpl;
 
 import java.util.ArrayList;
@@ -64,7 +62,7 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 	}
 	
 	private CtTry createTry(CtLocalVariable methodVar, CtTypeReference tmpref){
-		CtVariableAccessImpl methodAccess = new CtVariableAccessImpl();
+		CtVariableAccessImpl methodAccess = new CtVariableReadImpl();
 		methodAccess.setVariable(methodVar.getReference());
 		
 		CtReturn ret = getFactory().Core().createReturn();
@@ -84,7 +82,7 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 				ctfe.setSimpleName("class");
 				ctfe.setDeclaringType(tmp2);
 				
-				arg = new CtFieldAccessImpl();
+				arg = new CtFieldReadImpl();
 				((CtFieldAccessImpl) arg).setVariable(ctfe);
 			}
 

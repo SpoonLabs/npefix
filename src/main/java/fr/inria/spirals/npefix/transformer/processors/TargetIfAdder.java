@@ -5,15 +5,11 @@ import fr.inria.spirals.npefix.resi.CallChecker;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
-import spoon.reflect.reference.CtArrayTypeReference;
-import spoon.reflect.reference.CtExecutableReference;
-import spoon.reflect.reference.CtFieldReference;
-import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.code.CtFieldAccessImpl;
-import spoon.support.reflect.code.CtInvocationImpl;
-import spoon.support.reflect.code.CtVariableAccessImpl;
+import spoon.reflect.reference.*;
+import spoon.support.reflect.code.*;
 import spoon.support.reflect.reference.CtFieldReferenceImpl;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 @SuppressWarnings("all")
@@ -43,6 +39,10 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 				|| target instanceof CtSuperAccess
 				|| target instanceof CtTypeAccess)
 			return;
+
+		if(element.getParent() instanceof CtBinaryOperator && element.getParent(CtReturn.class) != null ) {
+			return;
+		}
 
 		CtElement line = element;
 		try{
@@ -94,13 +94,17 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 			if(target instanceof CtInvocation) {
 				int id = invocationVariables.size();
 				String variableName = "npe_invocation_var" + id;
-				CtTypeReference type = target.getType();
-				List<CtTypeReference> typeCasts = target.getTypeCasts();
+				CtExpression localTarget = getFactory().Core().clone(target);
+
+				CtTypeReference type = localTarget.getType();
+				List<CtTypeReference> typeCasts = localTarget.getTypeCasts();
 				// use cast
 				if(typeCasts.size() > 0) {
 					type = typeCasts.get(typeCasts.size() - 1);
 				}
-				CtLocalVariable localVariable = getFactory().Code().createLocalVariable(type, variableName, target);
+				//type.getActualTypeArguments().clear();
+				//localTarget.addTypeCast(type);
+				CtLocalVariable localVariable = getFactory().Code().createLocalVariable(type, variableName, localTarget);
 				if(line instanceof CtStatement) {
 					((CtStatement)line).insertBefore(localVariable);
 					localVariable.setParent(line.getParent());
@@ -122,6 +126,7 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 			
 			CtIf encaps = getFactory().Core().createIf();
 			CtElement directParent = element.getParent();
+			encaps.setParent(line.getParent());
 			if(directParent instanceof CtConditional) {
 				if(element.equals(((CtConditional)directParent).getElseExpression())) {
 					CtBinaryOperator binaryOperator = getFactory().Code().createBinaryOperator(((CtConditional) directParent).getCondition(), ifInvoc, BinaryOperatorKind.OR);
@@ -146,7 +151,7 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 				
 				CtAssignment assign = getFactory().Core().createAssignment();
 
-				CtVariableAccessImpl va = new CtVariableAccessImpl();
+				CtVariableAccess va = getFactory().Core().createVariableWrite();
 				va.setVariable(localVar.getReference());
 				
 				assign.setAssigned(va);
@@ -159,20 +164,27 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 				CtTypeReference tmp2 = localVar.getType();
 				
 				CtExpression arg = null;
-				if(tmp2 instanceof CtArrayTypeReference){
-					tmp2=((CtArrayTypeReference)tmp2).getDeclaringType();
-				}
+
 				if(tmp2==null || tmp2.isAnonymous() || tmp2.getSimpleName()==null || (tmp2.getPackage()==null && tmp2.getSimpleName().length()==1)){
 					arg = getFactory().Core().createLiteral();
 					arg.setType(getFactory().Type().nullType());
 				}else{
-					tmp2 = getFactory().Type().createReference(tmp2.getQualifiedName());
+					if(tmp2 instanceof CtArrayTypeReference){
+						if(((CtArrayTypeReference) tmp2).getComponentType() instanceof CtTypeParameterReference) {
+							tmp2 = getFactory().Code().createCtTypeReference(Array.class);
+						} else {
+							tmp2 = getFactory().Type().createReference(((CtArrayTypeReference) tmp2).getComponentType().getQualifiedName() + "[]");
+						}
+					} else {
+						tmp2 = getFactory().Type().createReference(tmp2.getQualifiedName());
+					}
 					CtFieldReference ctfe = new CtFieldReferenceImpl();
 					ctfe.setSimpleName("class");
 					ctfe.setDeclaringType(tmp2);
 					
-					arg = new CtFieldAccessImpl();
-					((CtFieldAccessImpl) arg).setVariable(ctfe);
+					arg = getFactory().Core().createFieldRead();
+					((CtFieldAccess) arg).setVariable(ctfe);
+					arg.setType(getFactory().Code().createCtTypeReference(Class.class));
 				}
 				CtExecutableReference execref = getFactory().Core().createExecutableReference();
 				execref.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
@@ -186,14 +198,17 @@ public class TargetIfAdder extends AbstractProcessor<CtTargetedExpression>{
 				previous.setDefaultExpression(invoc);
 				
 				((CtLocalVariable) line).insertBefore(previous);
+				previous.setParent(line.getParent());
 				
 				thenBloc.addStatement(assign);
+				assign.setParent(thenBloc);
 				encaps.setThenStatement(thenBloc);
 				((CtLocalVariable) line).replace(encaps);
 			} else if(line instanceof CtStatement){
 				((CtStatement) line).replace(encaps);
 				encaps.setThenStatement(thenBloc);
 				thenBloc.addStatement((CtStatement)line);
+				line.setParent(thenBloc);
 			}
 
 			CtMethod methodParent = encaps.getParent(CtMethod.class);

@@ -8,12 +8,17 @@ import fr.inria.spirals.npefix.resi.Strategy;
  * @author bcornu
  *
  */
-public class Strat4 extends Strategy{
+public class Strat4 extends Strategy {
 	
 	private ReturnType rt;
 	
 	public Strat4(ReturnType rt) {
 		this.rt=rt;
+	}
+
+	@Override
+	public boolean collectData() {
+		return rt.equals(ReturnType.VAR);
 	}
 
 	public <T> T isCalled(T o, Class<?> clazz) {
@@ -43,5 +48,10 @@ public class Strat4 extends Strategy{
 		default:
 			throw new AbnormalExecutionError();
 		}
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " " + rt.name();
 	}
 }

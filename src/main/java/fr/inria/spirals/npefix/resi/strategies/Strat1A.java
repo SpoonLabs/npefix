@@ -22,6 +22,11 @@ public class Strat1A extends Strategy{
 //		
 //	}
 
+	@Override
+	public boolean collectData() {
+		return true;
+	}
+
 	public <T> T isCalled(T o, Class<?> clazz) {
 		if(o==null)
 			return obtain(clazz);

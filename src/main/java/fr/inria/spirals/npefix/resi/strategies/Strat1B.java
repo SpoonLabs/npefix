@@ -16,6 +16,11 @@ public class Strat1B extends Strategy{
 		return (T) o;
 	}
 
+	@Override
+	public boolean collectData() {
+		return true;
+	}
+
 	public <T> T isCalled(T o, Class<?> clazz) {
 		return o;
 	}
