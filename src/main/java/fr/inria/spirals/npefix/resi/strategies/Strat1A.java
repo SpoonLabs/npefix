@@ -1,7 +1,7 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
-import fr.inria.spirals.npefix.resi.AbnormalExecutionError;
 import fr.inria.spirals.npefix.resi.Strategy;
+import fr.inria.spirals.npefix.resi.exception.AbnormalExecutionError;
 /**
  * b.foo
  * @author bcornu
@@ -28,7 +28,7 @@ public class Strat1A extends Strategy{
 	}
 
 	public <T> T isCalled(T o, Class<?> clazz) {
-		if(o==null)
+		if(o == null)
 			return obtain(clazz);
 		return (T) o;
 	}

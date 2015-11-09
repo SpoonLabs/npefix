@@ -7,10 +7,7 @@ import utils.sacha.interfaces.IRunner;
 import utils.sacha.interfaces.ITestResult;
 import utils.sacha.runner.main.TestRunner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class TestRunnerCore extends AbstractConfigurator implements IRunner {

@@ -1,13 +1,8 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
-import fr.inria.spirals.npefix.resi.AbnormalExecutionError;
 import fr.inria.spirals.npefix.resi.ExceptionStack;
-import fr.inria.spirals.npefix.resi.ForceReturn;
 import fr.inria.spirals.npefix.resi.Strategy;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-import java.util.*;
+import fr.inria.spirals.npefix.resi.exception.AbnormalExecutionError;
 
 /**
  * new A.foo
@@ -21,10 +16,6 @@ public class Strat2A extends Strategy{
 			if (ExceptionStack.isStoppable(NullPointerException.class)) {
 				return null;
 			}
-			if(clazz.equals(Class.class)) {
-				return null;
-			}
-
 			return initNotNull(clazz);
 		}
 		return o;

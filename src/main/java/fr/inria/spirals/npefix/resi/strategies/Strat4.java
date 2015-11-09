@@ -1,8 +1,8 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
-import fr.inria.spirals.npefix.resi.AbnormalExecutionError;
-import fr.inria.spirals.npefix.resi.ForceReturn;
 import fr.inria.spirals.npefix.resi.Strategy;
+import fr.inria.spirals.npefix.resi.exception.ForceReturn;
+import fr.inria.spirals.npefix.resi.exception.ReturnNotSupported;
 /**
  * return null
  * @author bcornu
@@ -46,8 +46,19 @@ public class Strat4 extends Strategy {
 			//System.out.println("return var");
 			return obtain(clazz);
 		default:
-			throw new AbnormalExecutionError();
+			throw new ReturnNotSupported(clazz.getCanonicalName());
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		return this.getClass().getSimpleName().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return this.getClass().getSimpleName().equals(
+				obj.getClass().getSimpleName()) && rt.equals(((Strat4)obj).rt);
 	}
 
 	@Override

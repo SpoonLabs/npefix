@@ -52,4 +52,13 @@ public class Foo {
         }
         return field;
     }
+
+
+    public void returnVoid() {
+        field = field.concat("expectedOutput");
+        if(field == null) {
+            return;
+        }
+        return;
+    }
 }

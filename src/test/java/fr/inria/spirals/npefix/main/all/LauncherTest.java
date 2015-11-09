@@ -1,6 +1,5 @@
 package fr.inria.spirals.npefix.main.all;
 
-import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.strategies.*;
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,16 +38,16 @@ public class LauncherTest {
                 classpath);
         launcher.instrument();
         ITestResult results = launcher.runStrategy(new NoStrat());
-        Assert.assertEquals("Nb test", 6, results.getNbRunTests());
+        Assert.assertEquals("Nb test", 7, results.getNbRunTests());
 
-        Assert.assertEquals("NoStrat failing", 6, results.getNbFailedTests());
+        Assert.assertEquals("NoStrat failing", 7, results.getNbFailedTests());
 
         results = launcher.runStrategy(new Strat1A());
-        Assert.assertEquals("Strat1A failing", 5,results.getNbFailedTests());
+        Assert.assertEquals("Strat1A failing", 6,results.getNbFailedTests());
 
 
         results = launcher.runStrategy(new Strat1B());
-        Assert.assertEquals("Strat1B failing", 5,results.getNbFailedTests());
+        Assert.assertEquals("Strat1B failing", 6,results.getNbFailedTests());
 
 
         results = launcher.runStrategy(new Strat2A());
@@ -60,7 +59,7 @@ public class LauncherTest {
 
 
         results = launcher.runStrategy(new Strat3());
-        Assert.assertEquals("Strat3 failing", 3,results.getNbFailedTests());
+        Assert.assertEquals("Strat3 failing", 2,results.getNbFailedTests());
 
 
         results = launcher.runStrategy(new Strat4(ReturnType.NULL));
@@ -72,6 +71,10 @@ public class LauncherTest {
 
         results = launcher.runStrategy(new Strat4(ReturnType.NEW));
         Assert.assertEquals("Strat4 new failing", 3,results.getNbFailedTests());
+
+
+        results = launcher.runStrategy(new Strat4(ReturnType.VOID));
+        Assert.assertEquals("Strat4 void failing", 5,results.getNbFailedTests());
 
     }
 }

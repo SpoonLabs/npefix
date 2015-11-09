@@ -10,31 +10,35 @@ import spoon.reflect.visitor.filter.AbstractFilter;
 import spoon.support.reflect.code.CtInvocationImpl;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 
 	int i=0;
 	int j=0;
-	
+
 	@Override
-	public void process(CtAssignment element) {
+	public boolean isToBeProcessed(CtAssignment element) {
 		try {
 			if(element.getParent(CtStatement.class) instanceof CtLoop) {
-				return;
+				return false;
 			}
 			if(element.getParent(CtReturn.class) instanceof CtLoop) {
-				return;
+				return false;
 			}
 			if(element.getAssignment() == null) {
-				return;
+				return false;
 			}
 		} catch (ParentNotInitializedException e) {
 			// ignore the error
 		}
-		if(element.getAssignment().toString().startsWith(CallChecker.class.getCanonicalName() + ".beforeCalled")) {
-			return;
+		if(element.getAssignment().toString().contains(CallChecker.class.getSimpleName() + ".beforeCalled")) {
+			return false;
 		}
+		return true;
+	}
+
+	@Override
+	public void process(CtAssignment element) {
 		try{
 			j++;
 			CtExecutableReference execref = getFactory().Core().createExecutableReference();
@@ -46,7 +50,10 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 			invoc.setExecutable(execref);
 
 			CtExpression assigned = element.getAssigned();
-			assigned = removeUnaryOperator(assigned);
+			/*if(element.getAssignment().getElements(new AbstractFilter<CtInvocation>(CtInvocation.class) {}).size() == 0) {
+				assigned = element.getAssignment();
+			}*/
+			assigned = ProcessorUtility.removeUnaryOperator(assigned, false);
 
 			invoc.setArguments(Arrays.asList(new Object[]{assigned}));
 
@@ -87,37 +94,6 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 			}
 		}
 		return target;
-	}
-
-	private CtExpression removeUnaryOperator(CtExpression assigned) {
-		assigned = getFactory().Core().clone(assigned);
-		List<CtUnaryOperator> elements = assigned.getElements(new AbstractFilter<CtUnaryOperator>(CtUnaryOperator.class) {
-			@Override
-			public boolean matches(CtUnaryOperator element) {
-				UnaryOperatorKind kind = element.getKind();
-				return kind.equals(UnaryOperatorKind.PREDEC) || kind.equals(UnaryOperatorKind.PREINC) ||
-						kind.equals(UnaryOperatorKind.POSTDEC) || kind.equals(UnaryOperatorKind.POSTINC);
-			}
-		});
-		if(elements.size() == 0) {
-			return assigned;
-		}
-
-		for (int k = 0; k < elements.size(); k++) {
-			CtUnaryOperator ctUnaryOperator = elements.get(k);
-			CtExpression operand = ctUnaryOperator.getOperand();
-			UnaryOperatorKind kind = ctUnaryOperator.getKind();
-
-			if (kind.equals(UnaryOperatorKind.POSTDEC)) {
-				operand = getFactory().Code().createBinaryOperator(operand, getFactory().Code().createLiteral(1), BinaryOperatorKind.PLUS);
-			} else if (kind.equals(UnaryOperatorKind.POSTINC)) {
-				operand = getFactory().Code().createBinaryOperator(operand, getFactory().Code().createLiteral(1), BinaryOperatorKind.MINUS);
-			}
-			operand.setParent(ctUnaryOperator.getParent());
-			ctUnaryOperator.replace(operand);
-		}
-
-		return assigned;
 	}
 
 	@Override

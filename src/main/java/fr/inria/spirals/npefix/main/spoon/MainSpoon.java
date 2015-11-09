@@ -54,7 +54,7 @@ public class MainSpoon {
 			spooner.setProcessors(
 					IfSplitter.class,
 					ForceNullInit.class,
-					TargetIfAdder.class,
+					BeforeDerefAdder.class,
 					TargetModifier.class,
 					TryRegister.class,
 					MethodEncapsulation.class,

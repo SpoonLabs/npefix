@@ -1,6 +1,6 @@
-package fr.inria.spirals.npefix.resi;
+package fr.inria.spirals.npefix.resi.exception;
 
-public class AbnormalExecutionError extends Error {
+public class AbnormalExecutionError extends NPEFixError {
 	
 	public AbnormalExecutionError(){
 		super();

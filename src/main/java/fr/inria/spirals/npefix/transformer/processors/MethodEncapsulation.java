@@ -1,7 +1,7 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
-import fr.inria.spirals.npefix.resi.ForceReturn;
+import fr.inria.spirals.npefix.resi.exception.ForceReturn;
 import fr.inria.spirals.npefix.transformer.utils.IConstants;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
@@ -28,15 +28,20 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		return methodNumber;
 	}
 
+
+	@Override
+	public boolean isToBeProcessed(CtMethod ctMethode) {
+		methodNumber++;
+		if(ctMethode.getBody() == null)
+			return false;
+		if(ctMethode.getType() instanceof CtTypeParameterReference) {
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public void process(CtMethod ctMethode) {
-		methodNumber++;
-		if(ctMethode.getBody()==null)
-			return;
-		if(ctMethode.getType() instanceof CtTypeParameterReference) {
-			return;
-		}
-		
 		CtLocalVariable methodVar = getNewMethodcontext();
 		
 		CtTypeReference tmpref = getFactory().Core().clone(ctMethode.getType());

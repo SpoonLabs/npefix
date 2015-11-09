@@ -2,7 +2,6 @@ package fr.inria.spirals.npefix.transformer.processors;
 
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.CtElement;
 
 /**
  * Split if condition into several if in order to add check not null before each section of the condition

@@ -1,13 +1,7 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
-import fr.inria.spirals.npefix.resi.AbnormalExecutionError;
 import fr.inria.spirals.npefix.resi.ExceptionStack;
-import fr.inria.spirals.npefix.resi.ForceReturn;
 import fr.inria.spirals.npefix.resi.Strategy;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-import java.util.*;
 
 /**
  * a=new A
@@ -22,13 +16,11 @@ public class Strat2B extends Strategy{
 			if (ExceptionStack.isStoppable(NullPointerException.class)) {
 				return null;
 			}
-			if(clazz.equals(Class.class)) {
-				return null;
-			}
-
 			T instance = initNotNull(clazz);
 			if(instance != null) {
 				o = instance;
+			} else {
+				throw new fr.inria.spirals.npefix.resi.exception.ErrorInitClass("cannot new instance "+clazz);
 			}
 		}
 		return o;
@@ -45,6 +37,6 @@ public class Strat2B extends Strategy{
 
 	@Override
 	public <T> T returned(Class<?> clazz) {
-		throw new AbnormalExecutionError("should not call return");
+		throw new fr.inria.spirals.npefix.resi.exception.AbnormalExecutionError("should not call return");
 	}
 }

@@ -2,16 +2,18 @@ package fr.inria.spirals.npefix.main.all;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.Strategy;
+import fr.inria.spirals.npefix.transformer.processors.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import fr.inria.spirals.npefix.transformer.processors.*;
 import spoon.SpoonException;
 import spoon.SpoonModelBuilder;
 import spoon.processing.ProcessingManager;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtType;
+import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.AnnotationFilter;
 import spoon.support.QueueProcessingManager;
 import utils.TestClassesFinder;
@@ -20,15 +22,10 @@ import utils.sacha.runner.main.TestRunner;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class Launcher {
 
@@ -43,6 +40,9 @@ public class Launcher {
 
     public Launcher(String[] sourcePath, String sourceOutput, String binOutput, String classpath) {
         this.sourcePath = sourcePath;
+        if(!File.pathSeparator.equals(classpath.charAt(classpath.length() - 1) + "")) {
+            classpath = classpath + File.pathSeparator;
+        }
         this.classpath = classpath + System.getProperty("java.class.path");
         this.sourceOutput = sourceOutput;
         this.binOutput = binOutput;
@@ -59,7 +59,7 @@ public class Launcher {
 
         p.addProcessor(IfSplitter.class.getCanonicalName());
         p.addProcessor(ForceNullInit.class.getCanonicalName());
-        p.addProcessor(TargetIfAdder.class.getCanonicalName());
+        p.addProcessor(BeforeDerefAdder.class.getCanonicalName());
         p.addProcessor(TargetModifier.class.getCanonicalName());
         p.addProcessor(TryRegister.class.getCanonicalName());
         p.addProcessor(VarRetrieveAssign.class.getCanonicalName());
@@ -69,7 +69,7 @@ public class Launcher {
 
         logger.debug("Start code instrumentation");
 
-        ArrayList<CtType<?>> allWithoutTest = getAllClasses();
+        Set<CtType<?>> allWithoutTest = getAllClasses();
         p.process(allWithoutTest);
 
         spoon.prettyprint();
@@ -82,12 +82,15 @@ public class Launcher {
      * Get all classes without tests
      * @return
      */
-    private ArrayList<CtType<?>> getAllClasses() {
-        ArrayList<CtType<?>> allWithoutTest = new ArrayList<>();
+    private Set<CtType<?>> getAllClasses() {
+        Set<CtType<?>> allWithoutTest = new HashSet<>();
         List<CtType<?>> allClasses = spoon.getFactory().Class().getAll();
         for (int i = 0; i < allClasses.size(); i++) {
             CtType<?> ctType = allClasses.get(i);
             if(ctType.getSimpleName().endsWith("Test")) {
+                continue;
+            }
+            if(ctType.getPosition().getFile().getAbsolutePath().contains("/test/")) {
                 continue;
             }
             // junit 4
@@ -96,8 +99,7 @@ public class Launcher {
                 continue;
             }
             // junit 3
-            if(ctType.getSuperclass() != null &&
-                    ctType.getSuperclass().getQualifiedName().contains("junit")) {
+            if(containsJunit(ctType.getSuperclass())) {
                continue;
             }
             allWithoutTest.add(ctType);
@@ -105,14 +107,28 @@ public class Launcher {
         return allWithoutTest;
     }
 
+    private boolean containsJunit(CtTypeReference<?> ctType) {
+        if(ctType == null) {
+            return false;
+        }
+        if(ctType.getQualifiedName().contains("junit")) {
+            return true;
+        }
+        return containsJunit(ctType.getSuperclass());
+    }
+
     private void copyResources() {
-        Collection resources = FileUtils.listFiles(new File(sourceOutput), spoon.RESOURCES_FILE_FILTER, spoon.ALL_DIR_FILTER);
+        File directory = new File(sourceOutput);
+        if(!directory.exists()) {
+            directory.mkdirs();
+        }
+        Collection resources = FileUtils.listFiles(directory, spoon.RESOURCES_FILE_FILTER, spoon.ALL_DIR_FILTER);
         Iterator var6 = resources.iterator();
 
         while(var6.hasNext()) {
             Object resource = var6.next();
             String resourceParentPath = ((File)resource).getParent();
-            String packageDir = resourceParentPath.substring(new File(sourceOutput).getPath().length());
+            String packageDir = resourceParentPath.substring(directory.getPath().length());
             packageDir = packageDir.replace("/java", "").replace("/resources", "");
             String targetDirectory = this.binOutput + packageDir;
 
@@ -137,7 +153,7 @@ public class Launcher {
         compiler.setSourceClasspath(classpath.split(File.pathSeparator));
 
         spoon.getEnvironment().setCopyResources(true);
-        //spoon.getEnvironment().setAutoImports(true);
+        spoon.getEnvironment().setAutoImports(true);
         spoon.getEnvironment().setShouldCompile(true);
         spoon.getEnvironment().setGenerateJavadoc(false);
         spoon.getEnvironment().setComplianceLevel(7);
@@ -161,7 +177,7 @@ public class Launcher {
     }
 
     private Class[] filterTest(URLClassLoader urlClassLoader, String[] testsString) {
-        List<Class> tests = new ArrayList<>();
+        Set<Class> tests = new HashSet<>();
         for (int i = 0; i < testsString.length; i++) {
             String s = testsString[i];
             if(!isValidTest(s)) {

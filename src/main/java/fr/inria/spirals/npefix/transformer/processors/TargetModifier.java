@@ -1,21 +1,19 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
-import spoon.SpoonException;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.*;
-import spoon.support.reflect.code.CtFieldAccessImpl;
-import spoon.support.reflect.code.CtFieldReadImpl;
 import spoon.support.reflect.code.CtInvocationImpl;
-import spoon.support.reflect.reference.CtFieldReferenceImpl;
 
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Set;
+
+import static fr.inria.spirals.npefix.transformer.processors.ProcessorUtility.createCtTypeElement;
+import static fr.inria.spirals.npefix.transformer.processors.ProcessorUtility.isStaticAndFinal;
 
 @SuppressWarnings("all")
 public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
@@ -25,27 +23,31 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 	public void processingDone() {
 		System.out.println("target-->"+i +" (failed:"+j+")");
 	}
+
+	@Override
+	public boolean isToBeProcessed(CtTargetedExpression element) {
+		CtExpression target = element.getTarget();
+		if (target == null)
+			return false;
+		if (isStaticAndFinal(element))
+			return false;
+		if (target instanceof CtThisAccess || target instanceof CtSuperAccess)
+			return false;
+		if (element.toString().startsWith(CallChecker.class.getSimpleName())) {
+			return false;
+		}
+		if (element.getType() instanceof CtTypeParameterReference) {
+			return false;
+		}
+		if (target.getType() instanceof CtTypeParameterReference) {
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public void process(CtTargetedExpression element) {
 		CtExpression target = element.getTarget();
-		if(target ==null)
-			return;
-		if(element instanceof CtFieldAccess<?> && ((CtFieldAccess) element).getVariable().isStatic())
-			return;
-		if(element instanceof CtInvocationImpl<?> && ((CtInvocationImpl) element).getExecutable().isStatic())
-			return;
-		if(target instanceof CtThisAccess || target instanceof CtSuperAccess)
-			return;
-		if(element.toString().startsWith(CallChecker.class.getSimpleName())) {
-			return;
-		}
-		if(element.getType() instanceof CtTypeParameterReference) {
-			return;
-		}
-		if(target.getType() instanceof CtTypeParameterReference) {
-			return;
-		}
-
 		String sign = "";
 		CtVariableReference variable = null;
 		if (target instanceof CtVariableAccess) {
@@ -54,41 +56,28 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 		}
 		try{
 			i++;
-			CtTypeReference tmp = target.getType();
+			CtTypeReference targetType = target.getType();
 			if(sign.equals("class")){
-				tmp = getFactory().Type().createReference(Class.class);
+				targetType = getFactory().Type().createReference(Class.class);
 				return;
 			}
-			if(target.getTypeCasts()!=null && target.getTypeCasts().size()>0){
-				tmp = (CtTypeReference) target.getTypeCasts().get(0);
+			if(target.getTypeCasts() != null && target.getTypeCasts().size() > 0){
+				targetType = (CtTypeReference) target.getTypeCasts().get(0);
 			}
-			
-			CtExpression arg = null;
-			if((tmp instanceof CtTypeParameterReference)) {
+			if((targetType instanceof CtTypeParameterReference)) {
 				return;
 			}
-			if(tmp==null || tmp.isAnonymous() || tmp.getSimpleName()==null || (tmp.getPackage()==null && tmp.getSimpleName().length()==1)){
-				arg = getFactory().Core().createLiteral();
-				arg.setType(getFactory().Type().nullType());
-			} else {
-				if(tmp instanceof CtArrayTypeReference){
-					if(((CtArrayTypeReference) tmp).getComponentType() instanceof CtTypeParameterReference) {
-						return;
-					}
-					tmp = getFactory().Type().createReference(((CtArrayTypeReference) tmp).getComponentType().getQualifiedName() + "[]");
-				} else {
-					tmp = getFactory().Type().createReference(tmp.getQualifiedName());
+			if(targetType == null && target instanceof CtVariableAccess) {
+				CtVariableReference variable1 = ((CtVariableAccess) target).getVariable();
+				if(variable1 != null) {
+					targetType = variable1.getType();
 				}
-				CtFieldReference<Object> ctfe = getFactory().Core().createFieldReference();
-				ctfe.setSimpleName("class");
-				ctfe.setDeclaringType(tmp.box());
-				ctfe.setType(getFactory().Code().createCtTypeReference(Class.class));
-				
-				arg = getFactory().Core().createFieldRead();
-				((CtFieldAccess) arg).setVariable(ctfe);
 			}
-			arg.getTypeCasts().clear();
 
+			CtExpression ctTargetType = createCtTypeElement(targetType);
+			if(ctTargetType == null) {
+				return;
+			}
 			
 			CtExecutableReference execref = getFactory().Core().createExecutableReference();
 			execref.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
@@ -97,64 +86,107 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 			
 			CtInvocationImpl invoc = (CtInvocationImpl) getFactory().Core().createInvocation();
 			invoc.setExecutable(execref);
-			invoc.setArguments(Arrays.asList(new CtExpression[]{target, arg}));
-			
+			invoc.setArguments(Arrays.asList(new CtExpression[]{target, ctTargetType}));
+			invoc.setType(targetType);
 			element.setTarget((CtExpression) invoc);
 
 
-			CtExecutableReference beforecallRef = getFactory().Core().createExecutableReference();
-			beforecallRef.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
-			beforecallRef.setSimpleName("beforeCalled");
-			beforecallRef.setStatic(true);
-
-
-			if(target instanceof CtVariableAccess) {
-				if(variable instanceof CtFieldReference) {
-					if(((CtFieldReference)variable).isFinal()) {
-						return;
-					}
-				}
-				Set<ModifierKind> modifiers = variable.getModifiers();
-				if(modifiers.contains(ModifierKind.FINAL)) {
-					return;
-				}
-				if(variable.getDeclaration() == null) {
-					return;
-				}
-				if(variable.getDeclaration().getParent() instanceof CtLoop) {
-					return;
-				}
-				target = getFactory().Core().clone(target);
-				target.getTypeCasts().clear();
-				CtInvocation beforeCall = getFactory().Code().createInvocation(null, beforecallRef, target, arg);
-				beforeCall.setType(target.getType());
-				boolean isStatic = false;
-				if(variable instanceof CtFieldReference) {
-					isStatic = ((CtFieldReference)variable).isStatic();
-					if(((CtFieldReference) variable).isFinal()) {
-						return;
-					}
-				}
-				CtAssignment variableAssignment = ((CtAssignment) getFactory().Core().createAssignment().setAssignment(beforeCall)).setAssigned(target);
-				CtElement parent = element;
-				if(parent.getParent(CtStatementList.class) == null) {
-					return;
-				}
-				while (!(parent.getParent() instanceof CtStatementList)) {
-					parent = parent.getParent();
-				}
-				// first contructor line
-				if(parent.getParent(CtConstructor.class) != null && parent instanceof CtInvocation && ((CtInvocation)parent).getExecutable().getSimpleName().startsWith("<init>")) {
-					return;
-				}
-				((CtStatement)parent).insertBefore(variableAssignment);
-				variableAssignment.setParent(parent.getParent());
-			}
-
+			createBeforeCall(element, target, variable, ctTargetType);
 		}catch(Throwable t){
 			t.printStackTrace();
 			j++;
 		}
+	}
+
+	private boolean createBeforeCall(CtTargetedExpression element, CtExpression target, CtVariableReference variable, CtExpression arg) {
+		CtExecutableReference beforecallRef = getFactory().Core().createExecutableReference();
+		beforecallRef.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
+		beforecallRef.setSimpleName("beforeCalled");
+		beforecallRef.setStatic(true);
+
+		if(target instanceof CtArrayRead) {
+            target = getFactory().Core().clone(target);
+            target.getTypeCasts().clear();
+
+            CtInvocation beforeCall = getFactory().Code().createInvocation(null, beforecallRef, target, arg);
+            beforeCall.setType(target.getType());
+
+            CtAssignment variableAssignment = ((CtAssignment) getFactory().Core().createAssignment().setAssignment(beforeCall)).setAssigned(target);
+
+            CtElement parent = element;
+            if(parent.getParent(CtStatementList.class) == null) {
+				return true;
+            }
+            while (!(parent.getParent() instanceof CtStatementList)) {
+                parent = parent.getParent();
+            }
+            // first contructor line
+            if(parent.getParent(CtConstructor.class) != null &&
+					parent instanceof CtInvocation &&
+					((CtInvocation)parent).getExecutable().getSimpleName().startsWith("<init>")) {
+				return true;
+            }
+            ((CtStatement)parent).insertBefore(variableAssignment);
+            variableAssignment.setParent(parent.getParent());
+        } else if(target instanceof CtVariableAccess) {
+            if(variable instanceof CtFieldReference) {
+                if(((CtFieldReference)variable).isFinal()) {
+					return true;
+                }
+            }
+            Set<ModifierKind> modifiers = variable.getModifiers();
+            if(modifiers.contains(ModifierKind.FINAL)) {
+				return true;
+            }
+            if(variable.getDeclaration() == null) {
+				return true;
+            }
+            if(variable.getDeclaration().getParent() instanceof CtLoop) {
+				return true;
+            }
+            target = getFactory().Core().clone(target);
+            target.getTypeCasts().clear();
+            CtInvocation beforeCall = getFactory().Code().createInvocation(null, beforecallRef, target, arg);
+            beforeCall.setType(target.getType());
+            for (int k = 0; k < target.getTypeCasts().size(); k++) {
+                Object o = target.getTypeCasts().get(k);
+                beforeCall.setType((CtTypeReference) o);
+            }
+            boolean isStatic = false;
+            if(variable instanceof CtFieldReference) {
+                isStatic = ((CtFieldReference)variable).isStatic();
+                if(((CtFieldReference) variable).isFinal()) {
+					return true;
+                }
+            }
+            CtAssignment variableAssignment = ((CtAssignment) getFactory().Core().createAssignment().setAssignment(beforeCall)).setAssigned(target);
+            CtElement parent = element;
+            if(parent.getParent(CtStatementList.class) == null) {
+				return true;
+            }
+            while (!(parent.getParent() instanceof CtStatementList)) {
+                parent = parent.getParent();
+            }
+            // first contructor line
+            if(parent.getParent(CtConstructor.class) != null && parent instanceof CtInvocation && ((CtInvocation)parent).getExecutable().getSimpleName().startsWith("<init>")) {
+				return true;
+            }
+            try {
+                if(!variable.getDeclaration().getType().getActualTypeArguments().get(0).getSimpleName().equals("?") &&
+                        (target instanceof CtFieldAccess) &&
+                        ((CtFieldAccess) target).getTarget() != null &&
+                        !(((CtFieldAccess) target).getTarget() instanceof CtThisAccess)) {
+                    System.err.println("test");
+					return true;
+                }
+            } catch (Exception e) {
+
+            }
+
+            ((CtStatement)parent).insertBefore(variableAssignment);
+            variableAssignment.setParent(parent.getParent());
+        }
+		return false;
 	}
 
 }

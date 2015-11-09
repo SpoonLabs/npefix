@@ -1,11 +1,17 @@
 package fr.inria.spirals.npefix.resi;
 
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
+import fr.inria.spirals.npefix.resi.strategies.ReturnType;
 import fr.inria.spirals.npefix.resi.strategies.Strat1A;
+import fr.inria.spirals.npefix.resi.strategies.Strat1B;
 import fr.inria.spirals.npefix.resi.strategies.Strat2A;
+import fr.inria.spirals.npefix.resi.strategies.Strat2B;
 import fr.inria.spirals.npefix.resi.strategies.Strat3;
+import fr.inria.spirals.npefix.resi.strategies.Strat4;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
 
 
 @SuppressWarnings("all")
@@ -59,14 +65,14 @@ public class CallChecker {
 	}
 
 	public static void methodStart() {
-		if(getStrat().collectData()) {
+		if(!getStrat().collectData()) {
 			return;
 		}
 		stack.push(new HashSet<Object>());
 	}
 
 	public static void methodEnd() {
-		if(getStrat().collectData()) {
+		if(!getStrat().collectData()) {
 			return;
 		}
 		if(!stack.isEmpty())

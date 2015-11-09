@@ -1,18 +1,14 @@
 package fr.inria.spirals.npefix.main.run;
 
-import java.util.Collections;
-import java.util.List;
-
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.Strategy;
 import fr.inria.spirals.npefix.resi.strategies.*;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import utils.sacha.impl.TestRunnerCore;
 import utils.sacha.interfaces.ITestResult;
+
+import java.util.List;
 
 public class MainRun {
 

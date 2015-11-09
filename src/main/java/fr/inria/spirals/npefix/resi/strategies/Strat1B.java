@@ -1,7 +1,7 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
-import fr.inria.spirals.npefix.resi.AbnormalExecutionError;
 import fr.inria.spirals.npefix.resi.Strategy;
+import fr.inria.spirals.npefix.resi.exception.AbnormalExecutionError;
 /**
  * a=b
  * @author bcornu

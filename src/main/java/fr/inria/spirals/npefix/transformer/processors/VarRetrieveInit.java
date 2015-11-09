@@ -7,28 +7,30 @@ import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtInvocationImpl;
 
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
 public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 
 	@Override
-	public void process(CtLocalVariable element) {
-
+	public boolean isToBeProcessed(CtLocalVariable element) {
 		if(element.getParent() instanceof CtForEach
 				|| element.getParent() instanceof CtFor)
-			return;
+			return false;
 		if(element.getType().getPackage()!=null && element.getType()
 				.getPackage()
 				.toString()
 				.startsWith("fr.inria.spirals.npefix")) {
-			return;
+			return false;
 		}
 		if (element.getSimpleName().startsWith("npe_")) {
-			return;
+			return false;
 		}
-		
+		return true;
+	}
+
+	@Override
+	public void process(CtLocalVariable element) {
 		CtExecutableReference execref = getFactory().Core().createExecutableReference();
 		execref.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
 		execref.setSimpleName("varInit");
@@ -41,16 +43,6 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 			return;
 		}
 		invoc.setArguments(Arrays.asList(new Object[]{defaultExpression}));
-
-		if(element.getType() != null &&
-				element.getAssignment() != null &&
-				element.getAssignment().getType() != null &&
-				element.getType().isPrimitive() &&
-				!element.getAssignment().getType().isPrimitive()) {
-			ForceNullInit forceNullInit = new ForceNullInit();
-			forceNullInit.setFactory(getFactory());
-			forceNullInit.process(element);
-		}
 
 		if(defaultExpression !=null &&
 				defaultExpression.getType() != null &&
@@ -65,6 +57,36 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 			defaultExpression.addTypeCast(destType);
 		}
 		element.setDefaultExpression(invoc);
+
+
+		/*
+		// assign Integer in int
+		if(element.getType() != null &&
+				element.getAssignment() != null &&
+				element.getAssignment().getType() != null &&
+				element.getType().isPrimitive() &&
+				!element.getAssignment().getType().isPrimitive()) {
+
+			CtExecutableReference isCalledExec = getFactory().Core().createExecutableReference();
+			isCalledExec.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
+			isCalledExec.setSimpleName("isCalled");
+			isCalledExec.setStatic(true);
+
+			CtTypeReference targetType = element.getDefaultExpression().getType();
+			CtFieldReference<Object> ctfe = getFactory().Core().createFieldReference();
+			ctfe.setSimpleName("class");
+			ctfe.setDeclaringType(targetType.box());
+			ctfe.setType(getFactory().Code().createCtTypeReference(Class.class));
+
+			CtFieldRead<Object> arg = getFactory().Core().createFieldRead();
+			arg.setVariable(ctfe);
+
+			CtInvocationImpl invocCalled = (CtInvocationImpl) getFactory().Core().createInvocation();
+			invocCalled.setExecutable(isCalledExec);
+			invocCalled.setArguments(Arrays.asList(new CtExpression[]{element.getDefaultExpression(), arg}));
+			invocCalled.setType(targetType);
+			element.setDefaultExpression(invocCalled);
+		}*/
 	}
 
 }

@@ -42,4 +42,10 @@ public class FooClassTest {
         String result = foo.usePreviousVaribaleGlobal();
         Assert.assertEquals("InitexpectedOutput", result);
     }
+
+    @Test
+    public void returnVoidTest() {
+        Foo foo = new Foo();
+        foo.returnVoid();
+    }
 }

@@ -1,7 +1,11 @@
 package fr.inria.spirals.npefix.resi;
 
+import fr.inria.spirals.npefix.resi.exception.ErrorInitClass;
+import fr.inria.spirals.npefix.resi.exception.VarNotFound;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -30,13 +34,13 @@ public abstract class Strategy {
 
 		if (object != null) return object;
 
-		Stack<Set<Object>> stack = CallChecker.getStack();
+		/*Stack<Set<Object>> stack = CallChecker.getStack();
 		for (Iterator<Set<Object>> iterator = stack.iterator(); iterator.hasNext(); ) {
 			vars = iterator.next();
 			object = obtainInstance(clazz, vars);
 			if (object != null) return object;
-		}
-		throw new AbnormalExecutionError("cannot found var: " + clazz);
+		}*/
+		throw new VarNotFound("cannot found var: " + clazz);
 	}
 
 	private <T> T obtainInstance(Class<?> clazz, Set<Object> vars) {
@@ -46,6 +50,24 @@ public abstract class Strategy {
 				return (T) object;
 			}
 		}
+		Field[] fields = clazz.getFields();
+		for (int i = 0; i < fields.length; i++) {
+			Field field = fields[i];
+			if(!Modifier.isStatic(field.getModifiers())) {
+				continue;
+			}
+			field.setAccessible(true);
+			if(field.getType().isAssignableFrom(clazz)) {
+				try {
+					Object o = field.get(null);
+					if(o != null) {
+						return (T) o;
+					}
+				} catch (IllegalAccessException e) {
+					continue;
+				}
+			}
+		}
 		return null;
 	}
 
@@ -53,7 +75,11 @@ public abstract class Strategy {
 		if(clazz==null)
 			return null;
 		if(clazz.isArray()) {
-			return (T) Array.newInstance(clazz.getComponentType(), 0);
+			T t = (T) Array.newInstance(clazz.getComponentType(), 100);
+			for (int i = 0; i< 100; i++) {
+				Array.set(t,i,init(clazz.getComponentType()));
+			}
+			return t;
 		}
 		if(clazz.isPrimitive()){
 			return initPrimitive(clazz);
@@ -69,7 +95,7 @@ public abstract class Strategy {
 			return (T) new Character(' ');
 		}
 		if(clazz == boolean.class){
-			return (T) new Boolean(false);
+			return (T) new Boolean(true);
 		}
 		if(clazz == float.class){
 			return (T) new Float(0);
@@ -86,58 +112,90 @@ public abstract class Strategy {
 		if(clazz == short.class){
 			return (T) new Short((short) 0);
 		}
-		throw new AbnormalExecutionError("missing primitive:"+clazz);
+		throw new fr.inria.spirals.npefix.resi.exception.AbnormalExecutionError("missing primitive: "+clazz);
 	}
 
 	protected <T> T  initNotNull(Class<?> clazz){
 		if(clazz==null)
 			return null;
+		/*if(clazz.equals(Class.class)) {
+			throw new ErrorInitClass("cannot new instance " + clazz);
+		}*/
 		if(clazz.isPrimitive()){
 			return initPrimitive(clazz);
 		}
-		Constructor<?>[] constructors = clazz.getConstructors();
+		List<Constructor<?>> constructors = Arrays.asList(clazz.getConstructors());
 		if(clazz.isInterface() ||
 				Modifier.isAbstract(clazz.getModifiers()) ||
-				constructors.length == 0) {
+				constructors.size() == 0) {
 			clazz = getImplForInterface(clazz);
 			if(clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
-				throw new AbnormalExecutionError("missing interface " + clazz);
+				throw new fr.inria.spirals.npefix.resi.exception.ErrorInitClass("missing interface " + clazz);
 			}
 		}
-		constructors = clazz.getConstructors();
+		constructors = Arrays.asList(clazz.getConstructors());
 		Object res = null;
 		try {
 			res = (T) clazz.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
 			try{
-				if(constructors.length == 0) {
-					constructors = clazz.getDeclaredConstructors();
+				if(constructors.size() == 0) {
+					constructors = Arrays.asList(clazz.getDeclaredConstructors());
 				}
-				if(constructors.length == 0) {
-					constructors = new Constructor[]{clazz.getEnclosingConstructor()};
+				if(constructors.size() == 0) {
+					constructors.add(clazz.getEnclosingConstructor());
 				}
-				if(constructors.length == 0) {
-					throw new AbnormalExecutionError("missing constructor " + clazz);
+				if(constructors.size() == 0) {
+					throw new fr.inria.spirals.npefix.resi.exception.ErrorInitClass("missing constructor " + clazz);
 				}
+				Collections.sort(constructors,
+						new Comparator<Constructor<?>>() {
+							@Override
+							public int compare(Constructor<?> c1,
+									Constructor<?> c2) {
+								int countPrimitifC1 = 0;
+								int countPrimitifC2 = 0;
+								for (int i = 0; i < c1.getParameterTypes().length; i++) {
+									Class<?> aClass = c1.getParameterTypes()[i];
+									if(aClass.isPrimitive()) {
+										countPrimitifC1 ++;
+									}
+								}
+								for (int i = 0; i < c2.getParameterTypes().length; i++) {
+									Class<?> aClass = c2.getParameterTypes()[i];
+									if(aClass.isPrimitive()) {
+										countPrimitifC2 ++;
+									}
+								}
+								if(countPrimitifC1 == countPrimitifC2) {
+									return c1.getParameterTypes().length - c2.getParameterTypes().length;
+								} else {
+									return countPrimitifC2 - countPrimitifC1;
+								}
+							}
+						});
 				for (Constructor<?> constructor : constructors) {
 					try{
 						Class<?>[] types = constructor.getParameterTypes();
 						// cannot use the Class constructor
-						if(Modifier.isPrivate(constructor.getModifiers()) &&
+						if(!constructor.isAccessible() &&
 								constructor.getDeclaringClass() == Class.class) {
 							continue;
 						}
-						if(Modifier.isPrivate(constructor.getModifiers()) &&
+						if(!constructor.isAccessible() &&
 								constructor.getDeclaringClass() != Class.class) {
 							constructor.setAccessible(true);
 						}
 						List<Object> params = new ArrayList<>();
-						for (int i = 0; i < types.length && !types[i].equals(clazz); i++) {
-							try{
-								params.add(init(types[i]));
-							}catch (Throwable t){
-								t.printStackTrace();
+						try{
+							for (int i = 0; i < types.length; i++) {
+								if(!types[i].equals(clazz)) {
+									params.add(init(types[i]));
+								}
 							}
+						}catch (Throwable t){
+							t.printStackTrace();
+							continue;
 						}
 						if(params.size() != types.length) {
 							continue;
@@ -145,13 +203,13 @@ public abstract class Strategy {
 						res = (T) constructor.newInstance(params.toArray());
 						return (T) res;
 					}catch (Throwable t){
-						t.printStackTrace();
+						System.err.println("Unable call constructor " + constructor);
 					}
 				}
 			} catch (Throwable t){
-				t.printStackTrace();
+				System.err.println("Unable new instance " + clazz);
 			}
-			//throw new AbnormalExecutionError("cannot new instance "+clazz);
+			throw new ErrorInitClass("cannot new instance "+clazz);
 		}
 		return (T) res;
 	}
@@ -219,6 +277,17 @@ public abstract class Strategy {
 
 		}
 		return clazz;
+	}
+
+	@Override
+	public int hashCode() {
+		return  this.getClass().getSimpleName().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return this.getClass().getSimpleName().equals(
+				obj.getClass().getSimpleName());
 	}
 
 	@Override
