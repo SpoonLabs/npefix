@@ -126,9 +126,9 @@ public abstract class AbstractStrategy implements Strategy {
 	public static  <T> List<Instance<T>>  initPrimitive(Class<?> clazz){
 		List<Instance<T>> instances = new ArrayList<>();
 		if(clazz == int.class){
-			instances.add(new PrimitiveInstance<T>((T) new Integer(1)));
 			instances.add(new PrimitiveInstance<T>((T) new Integer(0)));
 			instances.add(new PrimitiveInstance<T>((T) new Integer(-1)));
+			instances.add(new PrimitiveInstance<T>((T) new Integer(1)));
 		}
 		if(clazz == char.class){
 			instances.add(new PrimitiveInstance<T>((T) new Character(' ')));
