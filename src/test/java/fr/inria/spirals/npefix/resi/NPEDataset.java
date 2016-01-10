@@ -1,4 +1,4 @@
-package fr.inria.spirals.npefix.main.all;
+package fr.inria.spirals.npefix.resi;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -12,7 +12,7 @@ import utils.sacha.interfaces.ITestResult;
 /**
  * Created by thomas on 13/10/15.
  */
-public class NPEDataset extends AbstractTest{
+public class NPEDataset extends fr.inria.spirals.npefix.AbstractTest {
 
     private String rootNPEDataset = "/home/thomas/git/npedataset/";
 

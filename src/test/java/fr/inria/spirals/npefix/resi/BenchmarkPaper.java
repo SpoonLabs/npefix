@@ -1,5 +1,6 @@
-package fr.inria.spirals.npefix.main.all;
+package fr.inria.spirals.npefix.resi;
 
+import fr.inria.spirals.npefix.main.all.Launcher;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import org.junit.Test;
 import utils.TestClassesFinder;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class BenchmarkPaper extends AbstractTest {
+public class BenchmarkPaper extends fr.inria.spirals.npefix.AbstractTest {
 
     private static final int NBITERATION = 10;
 

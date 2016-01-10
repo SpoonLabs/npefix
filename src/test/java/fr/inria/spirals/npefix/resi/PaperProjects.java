@@ -1,4 +1,4 @@
-package fr.inria.spirals.npefix.main.all;
+package fr.inria.spirals.npefix.resi;
 
 import fr.inria.spirals.npefix.main.all.processor.RemoveNullCheckProcessor;
 import fr.inria.spirals.npefix.resi.Strategy;
@@ -6,7 +6,6 @@ import fr.inria.spirals.npefix.resi.strategies.*;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import spoon.*;
 import spoon.Launcher;
 import utils.sacha.interfaces.ITestResult;
 
@@ -14,7 +13,7 @@ import java.io.File;
 import java.util.Map;
 
 
-public class PaperProjects extends AbstractTest{
+public class PaperProjects extends fr.inria.spirals.npefix.AbstractTest {
 
     @Test
     public void math() throws Exception {

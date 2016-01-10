@@ -1,5 +1,6 @@
-package fr.inria.spirals.npefix.resi;
+package fr.inria.spirals.npefix.resi.strategies;
 
+import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.exception.ErrorInitClass;
 import fr.inria.spirals.npefix.resi.exception.VarNotFound;
 
@@ -9,7 +10,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-public abstract class Strategy {
+public abstract class AbstractStrategy {
 	public abstract <T> T isCalled(T o, Class<?> clazz);
 
 	public abstract <T> T returned(Class<?> clazz);

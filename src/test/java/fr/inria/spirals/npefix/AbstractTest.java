@@ -1,6 +1,8 @@
-package fr.inria.spirals.npefix.main.all;
+package fr.inria.spirals.npefix;
 
+import fr.inria.spirals.npefix.main.all.Launcher;
 import fr.inria.spirals.npefix.resi.*;
+import fr.inria.spirals.npefix.resi.selector.Selector;
 import fr.inria.spirals.npefix.resi.strategies.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.runner.Result;
@@ -43,6 +45,23 @@ public class AbstractTest {
                 new Strat4(ReturnType.VAR),
                 new Strat4(ReturnType.NEW),
                 new Strat4(ReturnType.VOID));
+    }
+
+    protected Map<Strategy, ITestResult> runProject(String name, String source, String test, String[] deps, boolean printException, Selector selector) {
+        Map<Strategy, ITestResult> results = new HashMap<>();
+        Launcher launcher;
+        if(instrumentCode) {
+            launcher = initNPEFix(name, source, test, deps);
+            launcher.instrument();
+        } else {
+            launcher = initNPEFix(name, "/tmp/npefix/"  + name + "/instrumented", null, deps);
+            launcher.getCompiler().compile();
+        }
+
+        ITestResult iTestResult = runSelector(launcher, selector);
+        results.put(new NoStrat(), iTestResult);
+        printResults(new Strategy[]{new NoStrat()}, results, printException);
+        return results;
     }
 
     protected Map<Strategy, ITestResult> runProject(String name, String source, String test, String[] deps, boolean printException, Strategy... strats) {
@@ -199,6 +218,13 @@ public class AbstractTest {
         } catch (IOException e) {
             // the file must be present
         }
+    }
+
+    protected ITestResult runSelector(Launcher launcher, Selector selector) {
+        System.out.println("Start " + selector);
+        ITestResult results = launcher.run(selector);
+        System.out.println("End  " + selector + " " + results.getResult().getRunTime() + "ms");
+        return results;
     }
 
     protected ITestResult runStrategy(Launcher launcher, Strategy strategy) {
