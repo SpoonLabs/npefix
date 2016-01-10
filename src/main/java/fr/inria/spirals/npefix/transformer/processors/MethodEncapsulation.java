@@ -1,17 +1,35 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
+import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.exception.ForceReturn;
 import fr.inria.spirals.npefix.transformer.utils.IConstants;
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtBlock;
+import spoon.reflect.code.CtCatch;
+import spoon.reflect.code.CtCatchVariable;
+import spoon.reflect.code.CtConstructorCall;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLiteral;
+import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtReturn;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtThisAccess;
+import spoon.reflect.code.CtTry;
+import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.reference.*;
-import spoon.support.reflect.code.*;
-import spoon.support.reflect.reference.CtFieldReferenceImpl;
+import spoon.reflect.declaration.CtParameter;
+import spoon.reflect.declaration.ModifierKind;
+import spoon.reflect.reference.CtArrayTypeReference;
+import spoon.reflect.reference.CtExecutableReference;
+import spoon.reflect.reference.CtTypeParameterReference;
+import spoon.reflect.reference.CtTypeReference;
+import spoon.support.reflect.code.CtVariableAccessImpl;
+import spoon.support.reflect.code.CtVariableReadImpl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -42,17 +60,19 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 
 	@Override
 	public void process(CtMethod ctMethode) {
-		CtLocalVariable methodVar = getNewMethodcontext();
-		
+		collectFields(ctMethode);
+		collectParams(ctMethode);
+		collectThis(ctMethode);
+
+		CtLocalVariable methodVar = getNewMethodcontext(ctMethode);
+		methodVar.setPosition(ctMethode.getPosition());
+
 		CtTypeReference tmpref = getFactory().Core().clone(ctMethode.getType());
-		if(!(tmpref instanceof CtArrayTypeReference)){
-			tmpref = tmpref.box();
-		}else if(((CtArrayTypeReference)tmpref).getComponentType()!=null){
-			((CtArrayTypeReference)tmpref).getComponentType().setActualTypeArguments(null);
+		if(tmpref instanceof CtArrayTypeReference && ((CtArrayTypeReference)tmpref).getComponentType()!=null){
+			((CtArrayTypeReference)tmpref).getComponentType().getActualTypeArguments().clear();
 		}
-//		tmpref.setActualTypeArguments(null);
 		
-		CtTry coreTry = createTry(methodVar,tmpref);
+		CtTry coreTry = createTry(methodVar, tmpref);
 		if(coreTry == null) {
 			return;
 		}
@@ -67,85 +87,184 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 	}
 	
 	private CtTry createTry(CtLocalVariable methodVar, CtTypeReference tmpref){
+		if((tmpref instanceof CtTypeParameterReference)) {
+			return null;
+		}
+
+		CtCatchVariable parameter = getFactory().Code().createCatchVariable(getFactory().Type().createReference(ForceReturn.class), "_bcornu_return_t");
+		parameter.setPosition(methodVar.getPosition());
+
+		CtCatch localCatch = getFactory().Core().createCatch();
+		localCatch.setParameter(parameter);
+		localCatch.setBody(getFactory().Core().createBlock());
+
 		CtVariableAccessImpl methodAccess = new CtVariableReadImpl();
 		methodAccess.setVariable(methodVar.getReference());
 		
 		CtReturn ret = getFactory().Core().createReturn();
+		ret.setPosition(methodVar.getPosition());
 
-		if(!tmpref.equals(getFactory().Code().createCtTypeReference(Void.class))){
-			CtTypeReference tmp2 = tmpref;
-			CtExpression arg = null;
-			if(tmp2 instanceof CtArrayTypeReference){
-				tmp2=((CtArrayTypeReference)tmp2).getDeclaringType();
-			}
-			if(tmp2==null || tmp2.isAnonymous() || tmp2.getSimpleName()==null || (tmp2.getPackage()==null && tmp2.getSimpleName().length()==1)){
-				arg = getFactory().Core().createLiteral();
-				arg.setType(getFactory().Type().nullType());
-			}else{
-				tmp2 = getFactory().Type().createReference(tmp2.getQualifiedName());
-				CtFieldReference ctfe = new CtFieldReferenceImpl();
-				ctfe.setSimpleName("class");
-				ctfe.setDeclaringType(tmp2);
-				
-				arg = new CtFieldReadImpl();
-				((CtFieldAccessImpl) arg).setVariable(ctfe);
-			}
+		CtExpression arg = ProcessorUtility.createCtTypeElement(tmpref);
 
-			if((tmp2 instanceof CtTypeParameterReference)) {
-				return null;
-			}
+		CtExecutableReference<Object> getDecisionReference = getFactory().Core().createExecutableReference();
+		getDecisionReference.setSimpleName("getDecision");
+		getDecisionReference.setDeclaringType(getFactory().Code().createCtTypeReference(ForceReturn.class));
 
-			CtExecutableReference execref = getFactory().Core().createExecutableReference();
-			execref.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
-			execref.setSimpleName("returned");
-			execref.setStatic(true);
-			
-			CtInvocationImpl invoc = (CtInvocationImpl) getFactory().Core().createInvocation();
-			invoc.setExecutable(execref);
-			invoc.setArguments(Arrays.asList(new CtExpression[]{arg}));
-			
-			ret.setReturnedExpression(invoc);
+		CtExecutableReference<Object> getValueReference = getFactory().Core().createExecutableReference();
+		getValueReference.setSimpleName("getValue");
+		getValueReference.setDeclaringType(getFactory().Code().createCtTypeReference(Decision.class));
+
+		CtInvocation invocReturn = getFactory().Code().createInvocation(
+				getFactory().Code().createInvocation(
+						getFactory().Code().createVariableRead(parameter.getReference(), false),
+						getDecisionReference),
+				getValueReference);
+		//CtInvocation invocReturn = ProcessorUtility.createStaticCall(getFactory(), CallChecker.class, "returned", arg);
+		invocReturn.setPosition(methodVar.getPosition());
+
+		CtTypeReference variableType = tmpref;
+		if(tmpref.equals(getFactory().Type().VOID_PRIMITIVE)){
+			variableType = getFactory().Code().createCtTypeReference(Object.class);
+			localCatch.getBody().addStatement(invocReturn);
 		}
 
-		CtCatchVariable parameter = getFactory().Core().createCatchVariable();
-		parameter.setType(getFactory().Type().createReference(ForceReturn.class));
-		parameter.setSimpleName("_bcornu_return_t");
-		
-		CtCatch localCatch = getFactory().Core().createCatch();
-		localCatch.setParameter(parameter);
-		localCatch.setBody(getFactory().Core().createBlock());
+		if(!tmpref.equals(getFactory().Type().VOID_PRIMITIVE)){
+			invocReturn.addTypeCast(variableType.box());
+			ret.setReturnedExpression(invocReturn);
+		}
+
 		localCatch.getBody().addStatement(ret);
-		
+		localCatch.setPosition(methodVar.getPosition());
+
 		CtExecutableReference executableRef = getFactory().Core().createExecutableReference();
 		executableRef.setSimpleName("methodEnd");
 
 		CtInvocation invoc = getFactory().Core().createInvocation();
 		invoc.setExecutable(executableRef);
 		invoc.setTarget(methodAccess);
-		
+		invoc.setPosition(methodVar.getPosition());
 		CtBlock finalizer = getFactory().Core().createBlock();
 		finalizer.addStatement(invoc);
 		
 		CtTry e = getFactory().Core().createTry();
 		e.addCatcher(localCatch);
 		e.setFinalizer(finalizer);
+		e.setPosition(methodVar.getPosition());
+
 		return e;
 	}
 	
-	private CtLocalVariable getNewMethodcontext() {
-		CtConstructorCall ctx = getFactory().Core().createConstructorCall();
-		ctx.setType(getFactory().Type().createReference(IConstants.Class.METHODE_CONTEXT));
+	private CtLocalVariable getNewMethodcontext(CtMethod ctMethod) {
+		CtTypeReference<?> methodContextRef = getFactory().Type()
+				.createReference(IConstants.Class.METHODE_CONTEXT);
+
+		CtExpression methodType;
+		if(ctMethod != null && !(ctMethod.getType() instanceof CtTypeParameterReference)) {
+			CtTypeReference tmpref = getFactory().Core().clone(ctMethod.getType());
+			if(tmpref instanceof CtArrayTypeReference && ((CtArrayTypeReference)tmpref).getComponentType() != null){
+				((CtArrayTypeReference)tmpref).getComponentType().getActualTypeArguments().clear();
+			}
+			methodType = ProcessorUtility.createCtTypeElement(tmpref);
+		} else {
+			methodType = getFactory().Code().createLiteral(null);
+		}
+		methodType.setType(getFactory().Type().createReference(Class.class));
+		CtConstructorCall ctx = getFactory().Code().createConstructorCall(methodContextRef, methodType);
 
 		List<CtLiteral> args = new ArrayList<>();
 
-		CtLiteral tryNum = getFactory().Core().createLiteral();
-		tryNum.setValue(methodNumber);
+		CtLiteral tryNum = getFactory().Code().createLiteral(methodNumber);
 		args.add(tryNum);
 
-		CtLocalVariable context = getFactory().Core().createLocalVariable();
-		context.setSimpleName(IConstants.Var.METHODE_CONTEXT+ methodNumber);
-		context.setType(getFactory().Type().createReference(IConstants.Class.METHODE_CONTEXT));
-		context.setDefaultExpression(ctx);
-		return context;
+		return getFactory().Code().createLocalVariable(methodContextRef,
+				IConstants.Var.METHODE_CONTEXT + methodNumber,
+				ctx);
+	}
+
+	private void collectParams(CtMethod element) {
+		List<CtParameter> parameters = element.getParameters();
+		for (int i = 0; i < parameters.size(); i++) {
+			CtParameter ctParameter = parameters.get(i);
+
+
+			CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
+			CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
+			CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
+
+			CtVariableAccess variableRead = getFactory().Code().createVariableRead(ctParameter.getReference(), false);
+
+			CtLiteral<String> variableName = getFactory().Code()
+					.createLiteral(variableRead.getVariable().toString());
+
+			CtInvocation invoc = ProcessorUtility.createStaticCall(getFactory(),
+					CallChecker.class,
+					"varInit",
+					variableRead,
+					variableName,
+					lineNumber,
+					sourceStart,
+					sourceEnd);
+			invoc.setPosition(element.getPosition());
+
+			element.getBody().insertBegin(invoc);
+		}
+	}
+
+	private void collectFields(CtMethod element) {
+		List<CtField<?>> fields = element.getDeclaringType().getFields();
+		for (int i = 0; i < fields.size(); i++) {
+			CtField<?> ctField = fields.get(i);
+			if(!ctField.hasModifier(ModifierKind.STATIC) && element.hasModifier(ModifierKind.STATIC)) {
+				continue;
+			}
+
+			CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
+			CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
+			CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
+
+			boolean isStatic = ctField.hasModifier(ModifierKind.STATIC);
+			if(ctField.getType() == null) {
+				isStatic = true;
+			}
+			CtVariableAccess variableRead = getFactory().Code().createVariableRead(ctField.getReference(), isStatic);
+
+			CtLiteral<String> variableName = getFactory().Code()
+					.createLiteral(variableRead.getVariable().toString());
+			CtInvocation invoc = ProcessorUtility.createStaticCall(getFactory(),
+					CallChecker.class,
+					"varInit",
+					variableRead,
+					variableName,
+					lineNumber,
+					sourceStart,
+					sourceEnd);
+			invoc.setPosition(element.getPosition());
+			element.getBody().insertBegin(invoc);
+		}
+	}
+
+	private void collectThis(CtMethod element) {
+		if(element.hasModifier(ModifierKind.STATIC)) {
+			return;
+		}
+		CtThisAccess thisAccess = getFactory().Code().createThisAccess(element.getDeclaringType().getReference());
+
+		CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
+		CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
+		CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
+
+		CtLiteral<String> variableName = getFactory().Code()
+				.createLiteral("this");
+
+		CtInvocation invoc = ProcessorUtility.createStaticCall(getFactory(),
+				CallChecker.class,
+				"varInit",
+				thisAccess,
+				variableName,
+				lineNumber,
+				sourceStart,
+				sourceEnd);
+		invoc.setPosition(element.getPosition());
+		element.getBody().insertBegin(invoc);
 	}
 }

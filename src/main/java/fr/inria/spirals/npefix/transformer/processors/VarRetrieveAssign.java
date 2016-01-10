@@ -2,14 +2,18 @@ package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtArrayAccess;
+import spoon.reflect.code.CtAssignment;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLiteral;
+import spoon.reflect.code.CtLoop;
+import spoon.reflect.code.CtReturn;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtStatementList;
+import spoon.reflect.code.CtTargetedExpression;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.ParentNotInitializedException;
-import spoon.reflect.reference.CtExecutableReference;
-import spoon.reflect.visitor.filter.AbstractFilter;
-import spoon.support.reflect.code.CtInvocationImpl;
-
-import java.util.Arrays;
 
 public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 
@@ -41,13 +45,6 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 	public void process(CtAssignment element) {
 		try{
 			j++;
-			CtExecutableReference execref = getFactory().Core().createExecutableReference();
-			execref.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
-			execref.setSimpleName("varAssign");
-			execref.setStatic(true);
-			
-			CtInvocationImpl invoc = (CtInvocationImpl) getFactory().Core().createInvocation();
-			invoc.setExecutable(execref);
 
 			CtExpression assigned = element.getAssigned();
 			/*if(element.getAssignment().getElements(new AbstractFilter<CtInvocation>(CtInvocation.class) {}).size() == 0) {
@@ -55,7 +52,23 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 			}*/
 			assigned = ProcessorUtility.removeUnaryOperator(assigned, false);
 
-			invoc.setArguments(Arrays.asList(new Object[]{assigned}));
+			CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
+			CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
+			CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
+
+			CtLiteral<String> variableName = getFactory().Code()
+					.createLiteral(assigned.toString());
+
+			CtInvocation invoc = ProcessorUtility.createStaticCall(getFactory(),
+					CallChecker.class,
+					"varAssign",
+					assigned,
+					variableName,
+					lineNumber,
+					sourceStart,
+					sourceEnd);
+			invoc.setPosition(element.getPosition());
+
 
 			if (element.getParent() instanceof CtStatementList) {
 				element.insertAfter(invoc);

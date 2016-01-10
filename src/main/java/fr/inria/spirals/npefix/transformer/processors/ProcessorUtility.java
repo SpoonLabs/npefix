@@ -1,7 +1,16 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
-import spoon.reflect.code.*;
+import spoon.reflect.code.BinaryOperatorKind;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFieldAccess;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtTargetedExpression;
+import spoon.reflect.code.CtTypeAccess;
+import spoon.reflect.code.CtUnaryOperator;
+import spoon.reflect.code.UnaryOperatorKind;
+import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtArrayTypeReference;
+import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
@@ -11,6 +20,28 @@ import java.util.List;
 
 
 public class ProcessorUtility {
+
+    public static CtInvocation createStaticCall(Factory factory, Class<?> clazz, String methodName, CtExpression...arguments) {
+        CtTypeReference<?> classReference = factory.Type().createReference(clazz);
+        CtExecutableReference execRef = factory.Core().createExecutableReference();
+        execRef.setDeclaringType(classReference);
+        execRef.setSimpleName(methodName);
+        execRef.setStatic(true);
+
+        CtTypeAccess typeAccess = factory.Core().createTypeAccess();
+        typeAccess.setType(classReference);
+        return factory.Code().createInvocation(typeAccess, execRef, arguments);
+    }
+
+    public static boolean isStatic(CtTargetedExpression element) {
+        if (element instanceof CtFieldAccess<?> &&
+                ((CtFieldAccess) element).getVariable().isStatic())
+            return true;
+        if (element instanceof CtInvocation<?> &&
+                ((CtInvocation) element).getExecutable().isStatic())
+            return true;
+        return false;
+    }
 
     public static boolean isStaticAndFinal(CtTargetedExpression element) {
         if (element instanceof CtFieldAccess<?> &&
@@ -108,7 +139,6 @@ public class ProcessorUtility {
             ((CtFieldAccess) ctType).setVariable(ctfe);
             ctType.setType(targetType.getFactory().Code().createCtTypeReference(Class.class));
         }
-        ctType.getTypeCasts().clear();
         return ctType;
     }
 }

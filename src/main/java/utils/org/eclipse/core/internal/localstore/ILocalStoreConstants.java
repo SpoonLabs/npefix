@@ -12,7 +12,7 @@ package utils.org.eclipse.core.internal.localstore;
 
 public interface ILocalStoreConstants {
 
-	/** Common constants for History Store classes. */
+	/** Common constants for NPEFixExecution Store classes. */
 	public final static int SIZE_LASTMODIFIED = 8;
 	public static final int SIZE_COUNTER = 1;
 	public static final int SIZE_KEY_SUFFIX = SIZE_LASTMODIFIED + SIZE_COUNTER;

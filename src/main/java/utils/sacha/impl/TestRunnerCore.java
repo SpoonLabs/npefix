@@ -27,7 +27,7 @@ public class TestRunnerCore extends AbstractConfigurator implements IRunner {
 			}
 			testList.add(tests[i]);
 		}
-		return new TestRunner(testList.toArray(new Class[]{})).run();
+		return new TestRunner().run(testList.toArray(new Class[]{}));
 	}
 
 	@Override
@@ -40,6 +40,6 @@ public class TestRunnerCore extends AbstractConfigurator implements IRunner {
 		Thread.currentThread().setContextClassLoader(eClassloader);
 		Class<?>[] tests = new TestClassFinder(eClassloader).findTestClasses();
 		
-		return new TestRunner(tf.find()).run();
+		return new TestRunner().run(tf.find());
 	}
 }

@@ -1,30 +1,21 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
-import fr.inria.spirals.npefix.resi.Strategy;
-import fr.inria.spirals.npefix.resi.exception.AbnormalExecutionError;
+import fr.inria.spirals.npefix.resi.context.Decision;
+import fr.inria.spirals.npefix.resi.context.Location;
 
-public class NoStrat extends Strategy{
+import java.util.Collections;
+import java.util.List;
+
+public class NoStrat extends AbstractStrategy {
 
 	@Override
-	public <T> T init(Class<?> clazz) {
-		if(clazz.isPrimitive()) {
-			return initPrimitive(clazz);
-		}
-		return null;
-	}
-
-
-
-	public <T> T isCalled(T o, Class<?> clazz) {
-		return (T) o;
-	}
-
-	public boolean beforeDeref(Object called) {
-		return true;
+	public boolean isCompatibleAction(ACTION action) {
+		return false;
 	}
 
 	@Override
-	public <T> T returned(Class<?> clazz) {
-		throw new AbnormalExecutionError("should not call return");
+	public <T> List<Decision<T>> getSearchSpace(Class<T> clazz,
+			Location location) {
+		return Collections.EMPTY_LIST;
 	}
 }

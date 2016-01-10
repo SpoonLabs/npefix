@@ -1,19 +1,28 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
-import fr.inria.spirals.npefix.resi.Strategy;
-import fr.inria.spirals.npefix.resi.exception.ForceReturn;
-import fr.inria.spirals.npefix.resi.exception.ReturnNotSupported;
+import fr.inria.spirals.npefix.resi.CallChecker;
+import fr.inria.spirals.npefix.resi.context.Decision;
+import fr.inria.spirals.npefix.resi.context.Location;
+import fr.inria.spirals.npefix.resi.context.instance.Instance;
+import fr.inria.spirals.npefix.resi.context.instance.PrimitiveInstance;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * return null
  * @author bcornu
  *
  */
-public class Strat4 extends Strategy {
-	
+public class Strat4 extends AbstractStrategy {
+
 	private ReturnType rt;
 	
 	public Strat4(ReturnType rt) {
-		this.rt=rt;
+		this.rt = rt;
 	}
 
 	@Override
@@ -21,33 +30,53 @@ public class Strat4 extends Strategy {
 		return rt.equals(ReturnType.VAR);
 	}
 
-	public <T> T isCalled(T o, Class<?> clazz) {
-		if(o==null)
-			throw new ForceReturn();
-		return o;
-	}
 
-	public boolean beforeDeref(Object called) {
-		if(called==null)
-			throw new ForceReturn();
-		return true;
+	@Override
+	public boolean isCompatibleAction(ACTION action) {
+		return action.equals(ACTION.isCalled) || action.equals(ACTION.beforeDeref);
 	}
 
 	@Override
-	public <T> T returned(Class<?> clazz) {
+	public <T> List<Decision<T>> getSearchSpace(Class<T> clazz,
+			Location location) {
+		clazz = CallChecker.getCurrentMethodContext().getMethodType();
+
+		List<Decision<T>> output = new ArrayList<>();
 		switch (rt) {
+		case VOID:
+			if(void.class.equals(clazz)) {
+				output.add(new Decision(this, location, new PrimitiveInstance(null), void.class));
+			}
+			break;
 		case NULL:
-			//System.out.println("return null");
-			return null;
+			if(!clazz.isPrimitive()) {
+				output.add(new Decision(this, location, new PrimitiveInstance(null), clazz));
+			}
+			break;
 		case NEW:
-			//System.out.println("return new");
-			return initNotNull(clazz);
+			List<Instance<T>> instances = initNotNull(clazz);
+			for (int i = 0; i < instances.size(); i++) {
+				Instance<T> instance = instances.get(i);
+				Decision<T> decision = new Decision<>(this, location, instance, clazz);
+				output.add(decision);
+			}
+			break;
 		case VAR:
-			//System.out.println("return var");
-			return obtain(clazz);
-		default:
-			throw new ReturnNotSupported(clazz.getCanonicalName());
+			Map<String, Instance<T>> variables = obtain(clazz);
+			Set<String> strings = variables.keySet();
+			for (Iterator<String> iterator = strings.iterator(); iterator
+					.hasNext(); ) {
+				String key = iterator.next();
+				Decision<T> decision = new Decision<>(this, location, variables.get(key), clazz, key);
+				output.add(decision);
+			}
+			break;
 		}
+		return output;
+	}
+
+	public ReturnType getReturnType() {
+		return rt;
 	}
 
 	@Override
@@ -57,8 +86,7 @@ public class Strat4 extends Strategy {
 
 	@Override
 	public boolean equals(Object obj) {
-		return this.getClass().getSimpleName().equals(
-				obj.getClass().getSimpleName()) && rt.equals(((Strat4)obj).rt);
+		return super.equals(obj) && rt.equals(((Strat4)obj).rt);
 	}
 
 	@Override

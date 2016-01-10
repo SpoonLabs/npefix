@@ -2,13 +2,14 @@ package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.*;
-import spoon.reflect.reference.CtExecutableReference;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFor;
+import spoon.reflect.code.CtForEach;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLiteral;
+import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtNewClass;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.code.CtInvocationImpl;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 
@@ -26,34 +27,39 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 		if (element.getSimpleName().startsWith("npe_")) {
 			return false;
 		}
+		CtExpression defaultExpression = element.getDefaultExpression();
+		if(defaultExpression instanceof CtNewClass) {
+			return false;
+		}
 		return true;
 	}
 
 	@Override
 	public void process(CtLocalVariable element) {
-		CtExecutableReference execref = getFactory().Core().createExecutableReference();
-		execref.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
-		execref.setSimpleName("varInit");
-		execref.setStatic(true);
-		
-		CtInvocationImpl invoc = (CtInvocationImpl) getFactory().Core().createInvocation();
-		invoc.setExecutable(execref);
 		CtExpression defaultExpression = element.getDefaultExpression();
-		if(defaultExpression instanceof CtNewClass) {
-			return;
-		}
-		invoc.setArguments(Arrays.asList(new Object[]{defaultExpression}));
+
+		CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
+		CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
+		CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
+
+		CtLiteral<String> variableName = getFactory().Code()
+				.createLiteral(element.getSimpleName());
+
+		CtInvocation invoc = ProcessorUtility.createStaticCall(getFactory(),
+				CallChecker.class,
+				"varInit",
+				defaultExpression,
+				variableName,
+				lineNumber,
+				sourceStart,
+				sourceEnd);
+		invoc.setPosition(element.getPosition());
 
 		if(defaultExpression !=null &&
 				defaultExpression.getType() != null &&
 				defaultExpression.getType().isPrimitive() &&
 				!defaultExpression.toString().equals("null")) {
 			CtTypeReference destType = element.getType();
-			CtTypeReference expressionType = defaultExpression.getType();
-			List typeCasts = defaultExpression.getTypeCasts();
-			if(typeCasts.size() > 0) {
-				expressionType = ((CtTypeReference) typeCasts.get(typeCasts.size() - 1));
-			}
 			defaultExpression.addTypeCast(destType);
 		}
 		element.setDefaultExpression(invoc);

@@ -1,7 +1,12 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.*;
+import spoon.reflect.code.BinaryOperatorKind;
+import spoon.reflect.code.CtBinaryOperator;
+import spoon.reflect.code.CtBlock;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtStatement;
 
 /**
  * Split if condition into several if in order to add check not null before each section of the condition

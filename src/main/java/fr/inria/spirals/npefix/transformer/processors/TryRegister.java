@@ -2,8 +2,16 @@ package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.transformer.utils.IConstants;
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.*;
-import spoon.reflect.declaration.CtClass;
+import spoon.reflect.code.CtCatch;
+import spoon.reflect.code.CtConstructorCall;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLiteral;
+import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtTry;
+import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.declaration.CtType;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtVariableAccessImpl;
@@ -49,23 +57,17 @@ public class TryRegister extends AbstractProcessor<CtTry> {
 	}
 
 	private CtStatement getFinallyStart(CtLocalVariable tryVar) {
-		CtExecutableReference executableRef = getFactory().Core().createExecutableReference();
-		executableRef.setSimpleName("finallyStart");
-		
-		CtLiteral tryNum = getFactory().Core().createLiteral();
-		tryNum.setValue(tryNumber);
-
-		CtInvocation invoc = getFactory().Core().createInvocation();
-		invoc.setExecutable(executableRef);
-		invoc.setTarget(mainContextVar);
-		invoc.setArguments(Arrays.asList(new CtLiteral[]{tryNum}));
-		return invoc;
+		return createCatch("finallyStart");
 	}
 
 	private CtInvocation getCatchStart(CtLocalVariable tryVar) {
+		return createCatch("catchStart");
+	}
+
+	private CtInvocation createCatch(String name) {
 		CtExecutableReference executableRef = getFactory().Core().createExecutableReference();
-		executableRef.setSimpleName("catchStart");
-		
+		executableRef.setSimpleName(name);
+
 		CtLiteral tryNum = getFactory().Core().createLiteral();
 		tryNum.setValue(tryNumber);
 
@@ -77,32 +79,29 @@ public class TryRegister extends AbstractProcessor<CtTry> {
 	}
 
 	private CtLocalVariable getNewTrycontext(CtTry element, List<CtTypeReference> catchables) {
-		CtConstructorCall ctx = getFactory().Core().createConstructorCall();
-		ctx.setType(getFactory().Type().createReference(IConstants.Class.TRY_CONTEXT));
+		CtTypeReference<Object> tryTypeRef = getFactory().Type().createReference(IConstants.Class.TRY_CONTEXT);
 
 		List<CtExpression<?>> args = new ArrayList<>();
 
-		CtLiteral tryNum = getFactory().Core().createLiteral();
-		tryNum.setValue(tryNumber);
+		CtLiteral tryNum = getFactory().Code().createLiteral(tryNumber);
 		args.add(tryNum);
-		
-		CtClass parent = element.getParent(CtClass.class);
-		while (parent.isAnonymous() || !parent.isTopLevel()) {
-			parent = parent.getParent(CtClass.class);
+
+		CtType parentClass = element.getParent(CtType.class);
+		while (parentClass.isAnonymous() || !parentClass.isTopLevel()) {
+			parentClass = parentClass.getParent(CtType.class);
 		}
-		args.add(getFactory().Code().createCodeSnippetExpression(parent.getQualifiedName() + ".class"));
+		args.add(getFactory().Code().createCodeSnippetExpression(parentClass.getQualifiedName() + ".class"));
 
 		for (CtTypeReference type : catchables) {
-			CtLiteral literal = getFactory().Core().createLiteral();
-			literal.setValue(type.getQualifiedName());
-			args.add(literal);
+			args.add(getFactory().Code().createLiteral(type.getQualifiedName()));
 		}
-		ctx.setArguments(args);
+		CtConstructorCall ctx = getFactory().Code().createConstructorCall(tryTypeRef, args.toArray(new CtExpression[]{}));
+		ctx.setPosition(element.getPosition());
 
-		CtLocalVariable context = getFactory().Core().createLocalVariable();
-		context.setSimpleName(IConstants.Var.TRY_CONTEXT_PREFIX + tryNumber);
-		context.setType(getFactory().Type().createReference(IConstants.Class.TRY_CONTEXT));
-		context.setDefaultExpression(ctx);
+		CtLocalVariable context = getFactory().Code().createLocalVariable(tryTypeRef,
+				IConstants.Var.TRY_CONTEXT_PREFIX + tryNumber,
+				ctx);
+		context.setPosition(element.getPosition());
 
 		return context;
 	}

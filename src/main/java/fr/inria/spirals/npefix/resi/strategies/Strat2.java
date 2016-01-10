@@ -2,28 +2,28 @@ package fr.inria.spirals.npefix.resi.strategies;
 
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Location;
-import fr.inria.spirals.npefix.resi.context.instance.PrimitiveInstance;
+import fr.inria.spirals.npefix.resi.context.instance.Instance;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * if != null
+ * new A.foo
  * @author bcornu
  *
  */
-public class Strat3 extends AbstractStrategy {
-
-	@Override
-	public boolean isCompatibleAction(ACTION action) {
-		return action.equals(ACTION.beforeDeref);
-	}
+public abstract class Strat2 extends AbstractStrategy {
 
 	@Override
 	public <T> List<Decision<T>> getSearchSpace(Class<T> clazz,
 			Location location) {
 		List<Decision<T>> output = new ArrayList<>();
-		output.add(new Decision(this, location, new PrimitiveInstance(false), boolean.class));
+		List<Instance<T>> instances = initNotNull(clazz);
+		for (int i = 0; i < instances.size(); i++) {
+			Instance<T> instance = instances.get(i);
+			Decision<T> decision = new Decision<>(this, location, instance, clazz);
+			output.add(decision);
+		}
 		return output;
 	}
 }

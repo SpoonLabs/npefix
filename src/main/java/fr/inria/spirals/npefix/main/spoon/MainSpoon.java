@@ -1,6 +1,14 @@
 package fr.inria.spirals.npefix.main.spoon;
 
-import fr.inria.spirals.npefix.transformer.processors.*;
+import fr.inria.spirals.npefix.transformer.processors.BeforeDerefAdder;
+import fr.inria.spirals.npefix.transformer.processors.ForceNullInit;
+import fr.inria.spirals.npefix.transformer.processors.IfSplitter;
+import fr.inria.spirals.npefix.transformer.processors.MethodEncapsulation;
+import fr.inria.spirals.npefix.transformer.processors.TargetModifier;
+import fr.inria.spirals.npefix.transformer.processors.TryRegister;
+import fr.inria.spirals.npefix.transformer.processors.VarRetrieveAssign;
+import fr.inria.spirals.npefix.transformer.processors.VarRetrieveInit;
+import fr.inria.spirals.npefix.transformer.processors.VariableFor;
 import utils.sacha.impl.DefaultSpooner;
 import utils.sacha.interfaces.ISpooner;
 
@@ -9,7 +17,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class MainSpoon {

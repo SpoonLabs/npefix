@@ -2,12 +2,19 @@ package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtBlock;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFor;
+import spoon.reflect.code.CtForEach;
+import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLiteral;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.declaration.CtElement;
-import spoon.reflect.reference.CtExecutableReference;
-import spoon.support.reflect.code.CtInvocationImpl;
-
-import java.util.Arrays;
+import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.reference.CtArrayTypeReference;
+import spoon.reflect.reference.CtTypeReference;
 
 /**
  * Verify that a variable is not null in a loop or a foreach loop if(varA !=null) for(a in varA)
@@ -30,17 +37,38 @@ public class VariableFor extends AbstractProcessor<CtVariableRead<?>> {
 	@Override
 	public void process(CtVariableRead<?> element) {
 		CtElement parent = element.getParent();
-		CtExecutableReference execif = getFactory().Core().createExecutableReference();
-		execif.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
-		execif.setSimpleName("beforeDeref");
-		execif.setStatic(true);
 
-		CtInvocationImpl ifInvoc = (CtInvocationImpl) getFactory().Core().createInvocation();
-		ifInvoc.setExecutable(execif);
-		ifInvoc.setArguments(Arrays.asList(new CtExpression[]{element}));
+		CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
+		CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
+		CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
+
+		CtMethod ctMethod = element.getParent(CtMethod.class);
+
+		CtExpression methodType;
+		if(ctMethod != null) {
+			CtTypeReference tmpref = getFactory().Core().clone(ctMethod.getType());
+			if(tmpref instanceof CtArrayTypeReference
+					&& ((CtArrayTypeReference)tmpref).getComponentType() != null){
+				((CtArrayTypeReference)tmpref).getComponentType().getActualTypeArguments().clear();
+			}
+			methodType = ProcessorUtility.createCtTypeElement(tmpref);
+		} else {
+			methodType = getFactory().Code().createLiteral(null);
+		}
+
+		CtInvocation ifInvoc = ProcessorUtility.createStaticCall(getFactory(),
+				CallChecker.class,
+				"beforeDeref",
+				element,
+				methodType,
+				lineNumber,
+				sourceStart,
+				sourceEnd);
+		ifInvoc.setPosition(element.getPosition());
 
 		CtIf encaps = getFactory().Core().createIf();
 		encaps.setCondition(ifInvoc);
+		encaps.setPosition(element.getPosition());
 
 		CtBlock thenBloc = getFactory().Core().createBlock();
 

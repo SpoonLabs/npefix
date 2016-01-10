@@ -2,14 +2,27 @@ package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtArrayRead;
+import spoon.reflect.code.CtAssignment;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFieldAccess;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLiteral;
+import spoon.reflect.code.CtLoop;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtStatementList;
+import spoon.reflect.code.CtSuperAccess;
+import spoon.reflect.code.CtTargetedExpression;
+import spoon.reflect.code.CtThisAccess;
+import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.ModifierKind;
-import spoon.reflect.reference.*;
-import spoon.support.reflect.code.CtInvocationImpl;
+import spoon.reflect.reference.CtFieldReference;
+import spoon.reflect.reference.CtTypeParameterReference;
+import spoon.reflect.reference.CtTypeReference;
+import spoon.reflect.reference.CtVariableReference;
 
-import java.util.Arrays;
 import java.util.Set;
 
 import static fr.inria.spirals.npefix.transformer.processors.ProcessorUtility.createCtTypeElement;
@@ -34,7 +47,7 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 		if (target instanceof CtThisAccess || target instanceof CtSuperAccess)
 			return false;
 		if (element.toString().startsWith(CallChecker.class.getSimpleName())) {
-			return false;
+			//return false;
 		}
 		if (element.getType() instanceof CtTypeParameterReference) {
 			return false;
@@ -78,18 +91,23 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 			if(ctTargetType == null) {
 				return;
 			}
-			
-			CtExecutableReference execref = getFactory().Core().createExecutableReference();
-			execref.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
-			execref.setSimpleName("isCalled");
-			execref.setStatic(true);
-			
-			CtInvocationImpl invoc = (CtInvocationImpl) getFactory().Core().createInvocation();
-			invoc.setExecutable(execref);
-			invoc.setArguments(Arrays.asList(new CtExpression[]{target, ctTargetType}));
-			invoc.setType(targetType);
-			element.setTarget((CtExpression) invoc);
 
+			CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
+			CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
+			CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
+
+			CtInvocation invoc = ProcessorUtility.createStaticCall(getFactory(),
+					CallChecker.class,
+					"isCalled",
+					target,
+					ctTargetType,
+					lineNumber,
+					sourceStart,
+					sourceEnd);
+			invoc.setPosition(element.getPosition());
+			invoc.setType(targetType);
+
+			element.setTarget(invoc);
 
 			createBeforeCall(element, target, variable, ctTargetType);
 		}catch(Throwable t){
@@ -99,19 +117,30 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 	}
 
 	private boolean createBeforeCall(CtTargetedExpression element, CtExpression target, CtVariableReference variable, CtExpression arg) {
-		CtExecutableReference beforecallRef = getFactory().Core().createExecutableReference();
-		beforecallRef.setDeclaringType(getFactory().Type().createReference(CallChecker.class));
-		beforecallRef.setSimpleName("beforeCalled");
-		beforecallRef.setStatic(true);
+		CtLiteral<Integer> lineNumber = getFactory().Code()
+				.createLiteral(element.getPosition().getLine());
+		CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
+		CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
 
 		if(target instanceof CtArrayRead) {
             target = getFactory().Core().clone(target);
             target.getTypeCasts().clear();
 
-            CtInvocation beforeCall = getFactory().Code().createInvocation(null, beforecallRef, target, arg);
+			CtInvocation beforeCall = ProcessorUtility.createStaticCall(getFactory(),
+					CallChecker.class,
+					"beforeCalled",
+					target,
+					arg,
+					lineNumber,
+					sourceStart,
+					sourceEnd);
             beforeCall.setType(target.getType());
+			beforeCall.setPosition(element.getPosition());
 
-            CtAssignment variableAssignment = ((CtAssignment) getFactory().Core().createAssignment().setAssignment(beforeCall)).setAssigned(target);
+            CtAssignment variableAssignment = ((CtAssignment) getFactory().Core().createAssignment()
+					.setAssignment(beforeCall))
+					.setAssigned(target);
+			variableAssignment.setPosition(element.getPosition());
 
             CtElement parent = element;
             if(parent.getParent(CtStatementList.class) == null) {
@@ -146,7 +175,17 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
             }
             target = getFactory().Core().clone(target);
             target.getTypeCasts().clear();
-            CtInvocation beforeCall = getFactory().Code().createInvocation(null, beforecallRef, target, arg);
+
+
+			CtInvocation beforeCall = ProcessorUtility.createStaticCall(getFactory(),
+					CallChecker.class,
+					"beforeCalled",
+					target,
+					arg,
+					lineNumber,
+					sourceStart,
+					sourceEnd);
+
             beforeCall.setType(target.getType());
             for (int k = 0; k < target.getTypeCasts().size(); k++) {
                 Object o = target.getTypeCasts().get(k);
@@ -160,6 +199,8 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
                 }
             }
             CtAssignment variableAssignment = ((CtAssignment) getFactory().Core().createAssignment().setAssignment(beforeCall)).setAssigned(target);
+			variableAssignment.setPosition(element.getPosition());
+
             CtElement parent = element;
             if(parent.getParent(CtStatementList.class) == null) {
 				return true;
@@ -176,14 +217,17 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
                         (target instanceof CtFieldAccess) &&
                         ((CtFieldAccess) target).getTarget() != null &&
                         !(((CtFieldAccess) target).getTarget() instanceof CtThisAccess)) {
-                    System.err.println("test");
 					return true;
                 }
             } catch (Exception e) {
 
             }
+			try{
+				((CtStatement)parent).insertBefore(variableAssignment);
+			} catch (IndexOutOfBoundsException e) {
+				e.printStackTrace();
+			}
 
-            ((CtStatement)parent).insertBefore(variableAssignment);
             variableAssignment.setParent(parent.getParent());
         }
 		return false;

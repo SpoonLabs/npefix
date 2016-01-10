@@ -1,6 +1,6 @@
 package fr.inria.spirals.npefix.transformer.utils;
 
-import fr.inria.spirals.npefix.resi.context.MethodeContext;
+import fr.inria.spirals.npefix.resi.context.MethodContext;
 import fr.inria.spirals.npefix.resi.context.TryContext;
 
 public interface IConstants{
@@ -25,7 +25,7 @@ public interface IConstants{
 		public static final String BLOCK_CONTEXT = "bcornu.resi.context.BlockContext";
 		public static final String STATIC_CONTEXT = "bcornu.resi.context.StaticContext";
 		public static final String CONSTRUCTOR_CONTEXT = "bcornu.resi.context.ConstructorContext";
-		public static final String METHODE_CONTEXT = MethodeContext.class.getCanonicalName();
+		public static final String METHODE_CONTEXT = MethodContext.class.getCanonicalName();
 		public static final String FAKE_INITIALIZER = "bcornu.resi.utils.FakeInitializer";
 		public static final String THROW_MANAGER = "bcornu.resi.context.ThrowManager";
 	}

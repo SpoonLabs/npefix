@@ -1,8 +1,15 @@
 package fr.inria.spirals.npefix.main.run;
 
-import fr.inria.spirals.npefix.resi.CallChecker;
-import fr.inria.spirals.npefix.resi.Strategy;
-import fr.inria.spirals.npefix.resi.strategies.*;
+import fr.inria.spirals.npefix.resi.selector.DomSelector;
+import fr.inria.spirals.npefix.resi.strategies.NoStrat;
+import fr.inria.spirals.npefix.resi.strategies.ReturnType;
+import fr.inria.spirals.npefix.resi.strategies.Strat1A;
+import fr.inria.spirals.npefix.resi.strategies.Strat1B;
+import fr.inria.spirals.npefix.resi.strategies.Strat2A;
+import fr.inria.spirals.npefix.resi.strategies.Strat2B;
+import fr.inria.spirals.npefix.resi.strategies.Strat3;
+import fr.inria.spirals.npefix.resi.strategies.Strat4;
+import fr.inria.spirals.npefix.resi.strategies.Strategy;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import utils.sacha.impl.TestRunnerCore;
@@ -36,14 +43,14 @@ public class MainRun {
 		// runner.setEclipseProject("math-1115-o");
 		// runner.setEclipseProject("math-1117-o");
 
-		CallChecker.strat = new NoStrat();
+		DomSelector.strategy = new NoStrat();
 		ITestResult res = runner.runAllTestsInClasspath();
 		
 		// runs the test folder
 		res = runStrategy(runner, new NoStrat());
 		boolean noStrat = res.getNbFailedTests() == 0;
 
-		CallChecker.strat = new Strat1A();
+		DomSelector.strategy = new Strat1A();
 		res = runStrategy(runner, new Strat1A());
 		boolean s1a = res.getNbFailedTests() == 0;
 
@@ -81,7 +88,7 @@ public class MainRun {
 	}
 	
 	private static ITestResult runStrategy(TestRunnerCore runner, Strategy strategy) {
-		CallChecker.strat = strategy;
+		DomSelector.strategy = strategy;
 		
 		ITestResult res = runner.runAllTestsInClasspath();
 		Result result = res.getResult();

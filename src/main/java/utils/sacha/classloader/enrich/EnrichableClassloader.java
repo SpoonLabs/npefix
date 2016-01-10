@@ -9,11 +9,20 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.MissingResourceException;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class EnrichableClassloader extends URLClassLoader{
 	
