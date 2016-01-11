@@ -4,6 +4,7 @@ import fr.inria.spirals.npefix.resi.CallChecker;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.CtArrayRead;
 import spoon.reflect.code.CtAssignment;
+import spoon.reflect.code.CtCatchVariable;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtInvocation;
@@ -22,6 +23,7 @@ import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
+import spoon.support.reflect.code.CtCatchVariableImpl;
 
 import java.util.Set;
 
@@ -163,6 +165,11 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 					return true;
                 }
             }
+			if(variable.getDeclaration() instanceof CtCatchVariable) {
+				if(((CtCatchVariable) variable.getDeclaration()).getMultiTypes().size() > 1) {
+					return true;
+				}
+			}
             Set<ModifierKind> modifiers = variable.getModifiers();
             if(modifiers.contains(ModifierKind.FINAL)) {
 				return true;
