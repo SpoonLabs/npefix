@@ -17,7 +17,7 @@ import java.util.Set;
 
 public class NPEFixExecution implements Comparable<NPEFixExecution>{
 	private final Selector strategySelector;
-	private Set<fr.inria.spirals.npefix.resi.context.Location> locations;
+	private Set<Location> locations;
 	private Map<fr.inria.spirals.npefix.resi.context.Decision, Integer> nbApplication;
 	private Map<fr.inria.spirals.npefix.resi.context.Decision, Integer> currentIndex;
 	private Result testResult;
@@ -60,7 +60,7 @@ public class NPEFixExecution implements Comparable<NPEFixExecution>{
 		return nbApplication;
 	}
 
-	public Set<fr.inria.spirals.npefix.resi.context.Location> getLocations() {
+	public Set<Location> getLocations() {
 		return locations;
 	}
 
@@ -139,8 +139,8 @@ public class NPEFixExecution implements Comparable<NPEFixExecution>{
 			jsonTest.append("error", failureJSON);
 		}
 
-		for (Iterator<fr.inria.spirals.npefix.resi.context.Location> iterator = locations.iterator(); iterator.hasNext(); ) {
-			fr.inria.spirals.npefix.resi.context.Location location = iterator.next();
+		for (Iterator<Location> iterator = locations.iterator(); iterator.hasNext(); ) {
+			Location location = iterator.next();
 			JSONObject locationJSON = new JSONObject();
 			locationJSON.put("class", location.className);
 			locationJSON.put("line", location.line);
@@ -203,6 +203,14 @@ public class NPEFixExecution implements Comparable<NPEFixExecution>{
 
 	@Override
 	public int compareTo(NPEFixExecution o) {
-		return (this.getTest().getDeclaringClass().getCanonicalName() + this.getTest().getName() + decisions.get(0)).compareTo(o.getTest().getDeclaringClass().getCanonicalName() + o.getTest().getName() + o.getDecisions().get(0));
+		Decision thisDecision = null;
+		if(!decisions.isEmpty()) {
+			thisDecision = decisions.get(0);
+		}
+		Decision oDecision = null;
+		if(!o.decisions.isEmpty()) {
+			oDecision = o.decisions.get(0);
+		}
+		return (this.getTest().getDeclaringClass().getCanonicalName() + this.getTest().getName() + thisDecision).compareTo(o.getTest().getDeclaringClass().getCanonicalName() + o.getTest().getName() + oDecision);
 	}
 }

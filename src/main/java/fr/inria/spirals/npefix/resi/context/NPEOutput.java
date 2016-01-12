@@ -67,8 +67,7 @@ public class NPEOutput extends ArrayList<NPEFixExecution>{
 		return output;
 	}
 
-	public NPEOutput getExecutionsForLocation(
-			fr.inria.spirals.npefix.resi.context.Location location) {
+	public NPEOutput getExecutionsForLocation(Location location) {
 		NPEOutput output = new NPEOutput();
 		for (int i = 0; i < this.size(); i++) {
 			NPEFixExecution npeFixExecution = this.get(i);
