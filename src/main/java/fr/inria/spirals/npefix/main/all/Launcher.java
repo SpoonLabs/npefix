@@ -7,6 +7,7 @@ import fr.inria.spirals.npefix.resi.selector.DomSelector;
 import fr.inria.spirals.npefix.resi.selector.RandomSelector;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
+import fr.inria.spirals.npefix.transformer.processors.AddImplicitCastChecker;
 import fr.inria.spirals.npefix.transformer.processors.BeforeDerefAdder;
 import fr.inria.spirals.npefix.transformer.processors.ForceNullInit;
 import fr.inria.spirals.npefix.transformer.processors.IfSplitter;
@@ -81,6 +82,7 @@ public class Launcher {
         //p.addProcessor(TernarySplitter.class.getCanonicalName());
         p.addProcessor(IfSplitter.class.getCanonicalName());
         p.addProcessor(ForceNullInit.class.getCanonicalName());
+        p.addProcessor(AddImplicitCastChecker.class.getCanonicalName());
         p.addProcessor(BeforeDerefAdder.class.getCanonicalName());
         p.addProcessor(TargetModifier.class.getCanonicalName());
         p.addProcessor(TryRegister.class.getCanonicalName());

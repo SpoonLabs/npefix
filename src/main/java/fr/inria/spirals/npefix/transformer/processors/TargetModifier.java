@@ -38,7 +38,7 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 	private int j=0;
 	@Override
 	public void processingDone() {
-		System.out.println("target-->"+i +" (failed:"+j+")");
+		System.out.println("target--> "+i +" (failed:"+j+")");
 	}
 
 	@Override

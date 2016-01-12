@@ -13,6 +13,8 @@ import spoon.reflect.reference.CtTypeReference;
 
 public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 
+	private int nbVarInit;
+
 	@Override
 	public boolean isToBeProcessed(CtLocalVariable element) {
 		if(element.getParent() instanceof CtForEach
@@ -31,11 +33,16 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 		if(defaultExpression instanceof CtNewClass) {
 			return false;
 		}
+		if(defaultExpression.toString().contains("CallChecker.init")) {
+			return false;
+		}
 		return true;
 	}
 
 	@Override
 	public void process(CtLocalVariable element) {
+		nbVarInit++;
+
 		CtExpression defaultExpression = element.getDefaultExpression();
 
 		CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
@@ -93,6 +100,12 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 			invocCalled.setType(targetType);
 			element.setDefaultExpression(invocCalled);
 		}*/
+	}
+
+
+	@Override
+	public void processingDone() {
+		System.out.println("VarInit --> "+ nbVarInit);
 	}
 
 }

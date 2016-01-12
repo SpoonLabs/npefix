@@ -90,7 +90,8 @@ public class TryRegister extends AbstractProcessor<CtTry> {
 		while (parentClass.isAnonymous() || !parentClass.isTopLevel()) {
 			parentClass = parentClass.getParent(CtType.class);
 		}
-		args.add(getFactory().Code().createCodeSnippetExpression(parentClass.getQualifiedName() + ".class"));
+		args.add(ProcessorUtility.createCtTypeElement(parentClass.getReference()));
+		//args.add(getFactory().Code().createCodeSnippetExpression(parentClass.getQualifiedName() + ".class"));
 
 		for (CtTypeReference type : catchables) {
 			args.add(getFactory().Code().createLiteral(type.getQualifiedName()));

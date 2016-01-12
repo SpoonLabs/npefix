@@ -64,7 +64,7 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 
 	@Override
 	public void processingDone() {
-		System.out.println("if --> " + nbBeforeDeref + " (failed:" + countFailed + ")");
+		System.out.println("BeforeDeref --> " + nbBeforeDeref + " (failed:" + countFailed + ")");
 	}
 
 	@Override
@@ -322,9 +322,7 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 			if(type instanceof CtTypeParameterReference) {
 				List<CtTypeReference<?>> bounds = ((CtTypeParameterReference) type)
 						.getBounds();
-				if(bounds.isEmpty()) {
-					type = getFactory().Type().createReference(Object.class);
-				} else {
+				if(!bounds.isEmpty()) {
 					type = bounds.get(0);
 				}
 			}

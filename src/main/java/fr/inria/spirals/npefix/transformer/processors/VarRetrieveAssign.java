@@ -111,7 +111,7 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 
 	@Override
 	public void processingDone() {
-		System.out.println("assign --> "+j+" (failed: "+i+")");
+		System.out.println("Assign --> "+j+" (failed: "+i+")");
 	}
 
 }

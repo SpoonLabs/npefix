@@ -39,6 +39,7 @@ public class ForceNullInit extends AbstractProcessor<CtLocalVariable> {
 		CtInvocation invoc = ProcessorUtility.createStaticCall(getFactory(), CallChecker.class, "init", arg);
 		element.setDefaultExpression(invoc);
 		invoc.setPosition(element.getPosition());
+		invoc.setType(element.getType());
 	}
 
 }
