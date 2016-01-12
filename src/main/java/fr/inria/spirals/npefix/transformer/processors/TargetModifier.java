@@ -16,9 +16,11 @@ import spoon.reflect.code.CtSuperAccess;
 import spoon.reflect.code.CtTargetedExpression;
 import spoon.reflect.code.CtThisAccess;
 import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.ModifierKind;
+import spoon.reflect.reference.CtCatchVariableReference;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
@@ -56,6 +58,11 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 		}
 		if (target.getType() instanceof CtTypeParameterReference) {
 			return false;
+		}
+		if(target instanceof CtVariableRead) {
+			if (((CtVariableRead)target).getVariable() instanceof CtCatchVariableReference) {
+				return false;
+			}
 		}
 		return true;
 	}

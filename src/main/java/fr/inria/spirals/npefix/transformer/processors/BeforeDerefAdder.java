@@ -30,14 +30,17 @@ import spoon.reflect.code.CtThrow;
 import spoon.reflect.code.CtTypeAccess;
 import spoon.reflect.code.CtUnaryOperator;
 import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.code.UnaryOperatorKind;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtTypedElement;
+import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.reference.CtArrayTypeReference;
+import spoon.reflect.reference.CtCatchVariableReference;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
@@ -79,6 +82,11 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 		if(element.getParent() instanceof CtBinaryOperator &&
 				element.getParent(CtReturn.class) != null ) {
 			return false;
+		}
+		if(target instanceof CtVariableRead) {
+			if (((CtVariableRead)target).getVariable() instanceof CtCatchVariableReference) {
+				return false;
+			}
 		}
 		return true;
 	}
