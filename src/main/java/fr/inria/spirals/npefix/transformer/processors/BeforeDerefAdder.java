@@ -311,6 +311,15 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 			CtExpression localTarget = getFactory().Core().clone(target);
 
 			CtTypeReference type = localTarget.getType();
+			if(type instanceof CtTypeParameterReference) {
+				List<CtTypeReference<?>> bounds = ((CtTypeParameterReference) type)
+						.getBounds();
+				if(bounds.isEmpty()) {
+					type = getFactory().Type().createReference(Object.class);
+				} else {
+					type = bounds.get(0);
+				}
+			}
 			List<CtTypeReference> typeCasts = localTarget.getTypeCasts();
 			// use cast
 			if(typeCasts.size() > 0) {
