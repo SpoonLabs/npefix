@@ -84,7 +84,6 @@ public class GreedySelector extends AbstractSelector {
 			}
 			usedDecisions.add(bestDecision);
 			bestDecision.setDecisionType("best");
-			System.out.println("Best strategy " + bestDecision);
 			CallChecker.currentExecution.putMetadata("strategy_selection", "best");
 			return bestDecision;
 		}
@@ -101,7 +100,6 @@ public class GreedySelector extends AbstractSelector {
 			usedDecisions.add(output);
 			output.setDecisionType("new");
 		}
-		System.out.println("Random strategy " + output);
 		return output;
 	}
 
@@ -118,7 +116,8 @@ public class GreedySelector extends AbstractSelector {
 			counts.put(decision, count);
 			double value = values.get(decision);
 			int reward = 0;
-			if(npeFixExecution.getTestResult().wasSuccessful()) {
+			if(npeFixExecution.getTestResult() != null &&
+					npeFixExecution.getTestResult().wasSuccessful()) {
 				reward = 1;
 			}
 
