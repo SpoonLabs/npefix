@@ -10,7 +10,6 @@ import fr.inria.spirals.npefix.resi.strategies.Strategy;
 import fr.inria.spirals.npefix.transformer.processors.AddImplicitCastChecker;
 import fr.inria.spirals.npefix.transformer.processors.BeforeDerefAdder;
 import fr.inria.spirals.npefix.transformer.processors.ForceNullInit;
-import fr.inria.spirals.npefix.transformer.processors.IfSplitter;
 import fr.inria.spirals.npefix.transformer.processors.MethodEncapsulation;
 import fr.inria.spirals.npefix.transformer.processors.TargetModifier;
 import fr.inria.spirals.npefix.transformer.processors.TryRegister;
@@ -18,6 +17,10 @@ import fr.inria.spirals.npefix.transformer.processors.VarRetrieveAssign;
 import fr.inria.spirals.npefix.transformer.processors.VarRetrieveInit;
 import fr.inria.spirals.npefix.transformer.processors.VariableFor;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
@@ -80,7 +83,7 @@ public class Launcher {
         ProcessingManager p = new QueueProcessingManager(spoon.getFactory());
 
         //p.addProcessor(TernarySplitter.class.getCanonicalName());
-        p.addProcessor(IfSplitter.class.getCanonicalName());
+        //p.addProcessor(IfSplitter.class.getCanonicalName());
         p.addProcessor(ForceNullInit.class.getCanonicalName());
         p.addProcessor(AddImplicitCastChecker.class.getCanonicalName());
         p.addProcessor(BeforeDerefAdder.class.getCanonicalName());
@@ -182,7 +185,7 @@ public class Launcher {
         spoon.getEnvironment().setShouldCompile(true);
         spoon.getEnvironment().setGenerateJavadoc(false);
         spoon.getEnvironment().setComplianceLevel(7);
-
+        spoon.getEnvironment().setLevel("DEBUG");
         spoon.buildModel();
         copyResources();
         return compiler;
@@ -193,45 +196,31 @@ public class Launcher {
     }
 
     public NPEOutput run(Selector selector) {
+        List<Method> methodTests = getTests();
+
+        return run(selector, methodTests);
+    }
+
+    public NPEOutput run(Selector selector, List<Method> methodTests) {
         CallChecker.enable();
         CallChecker.strategySelector = selector;
-
-
-        String[] sourceClasspath = spoon.getModelBuilder().getSourceClasspath();
-
-        URLClassLoader urlClassLoader = getUrlClassLoader(sourceClasspath);
-
-        CallChecker.currentClassLoader = urlClassLoader;
-
-        String[] testsString = new TestClassesFinder().findIn(urlClassLoader, false);
-        Class[] tests = filterTest(urlClassLoader, testsString);
-
-        List<Method> methodTests = new ArrayList();
-        for (int i = 0; i < tests.length; i++) {
-            Class test = tests[i];
-            Method[] methods = test.getDeclaredMethods();
-            for (int j = 0; j < methods.length; j++) {
-                Method method = methods[j];
-                if(method.getReturnType().equals(void.class)
-                        && method.getParameterTypes().length == 0) {
-                    methodTests.add(method);
-                }
-            }
-        }
 
         NPEOutput output = new NPEOutput();
 
         NPEFixExecution npeFixExecution = new NPEFixExecution(selector);
 
-        TestRunner testRunner = new TestRunner();
+        final TestRunner testRunner = new TestRunner();
         for (int i = 0; i < methodTests.size(); i++) {
             Method method = methodTests.get(i);
-            Request request = Request.method(method.getDeclaringClass(), method.getName());
+            final Request request = Request.method(method.getDeclaringClass(), method.getName());
 
             npeFixExecution.setTest(method);
             CallChecker.currentExecution = npeFixExecution;
             Result result = testRunner.run(request);
+
             npeFixExecution.setTestResult(result);
+
+            System.out.println(npeFixExecution);
             if(result.getRunCount() > 0) {
                 output.add(npeFixExecution);
                 if (selector.restartTest(npeFixExecution)) {
@@ -274,6 +263,40 @@ public class Launcher {
         }
         Collections.sort(output);
         return output;
+    }
+
+	/**
+     * Returns all test methods of the projects
+     * @return a list of test methods
+     */
+    public List<Method> getTests() {
+        String[] sourceClasspath = spoon.getModelBuilder().getSourceClasspath();
+
+        URLClassLoader urlClassLoader = getUrlClassLoader(sourceClasspath);
+
+        CallChecker.currentClassLoader = urlClassLoader;
+
+        String[] testsString = new TestClassesFinder().findIn(urlClassLoader, false);
+        Class[] tests = filterTest(urlClassLoader, testsString);
+
+        List<Method> methodTests = new ArrayList();
+        for (int i = 0; i < tests.length; i++) {
+            Class test = tests[i];
+            Method[] methods = test.getDeclaredMethods();
+            for (int j = 0; j < methods.length; j++) {
+                Method method = methods[j];
+                if(method.getReturnType().equals(void.class)
+                        && method.getParameterTypes().length == 0) {
+                    if(!method.isAnnotationPresent(After.class)
+                            && !method.isAnnotationPresent(AfterClass.class)
+                            && !method.isAnnotationPresent(Before.class)
+                            && !method.isAnnotationPresent(BeforeClass.class)) {
+                        methodTests.add(method);
+                    }
+                }
+            }
+        }
+        return methodTests;
     }
 
     public NPEOutput runStrategy(Strategy strategy) {
