@@ -30,6 +30,7 @@ public class ProcessorUtility {
 
         CtTypeAccess typeAccess = factory.Core().createTypeAccess();
         typeAccess.setType(classReference);
+        typeAccess.setAccessedType(classReference);
         return factory.Code().createInvocation(typeAccess, execRef, arguments);
     }
 
