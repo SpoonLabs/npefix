@@ -13,7 +13,6 @@ import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strat4;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -150,14 +149,14 @@ public class CallChecker {
 	public static <T> T init(Class clazz) {
 		if(!isEnable()) {
 			if(clazz.isPrimitive()) {
-				List<Instance<T>> primitive = AbstractStrategy.<T>initPrimitive(clazz);
-				return (T) primitive.get(0).getValue();
+				List<Instance<T>> instances = AbstractStrategy.<T>initPrimitive(clazz);
+				return (T) instances.get(0).getValue();
 			}
 			return null;
 		}
 		disable();
 		try {
-			return (T) AbstractStrategy.<T>initClass(clazz).getValue();
+			return (T) AbstractStrategy.initClass(clazz).getValue();
 		} finally {
 			enable();
 		}
