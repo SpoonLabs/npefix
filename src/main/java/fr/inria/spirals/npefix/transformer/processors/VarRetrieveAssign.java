@@ -4,6 +4,7 @@ import fr.inria.spirals.npefix.resi.CallChecker;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.CtArrayAccess;
 import spoon.reflect.code.CtAssignment;
+import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLiteral;
@@ -22,8 +23,12 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 
 	@Override
 	public boolean isToBeProcessed(CtAssignment element) {
+		CtStatement parentStatement = element.getParent(CtStatement.class);
+		while(!(parentStatement.getParent() instanceof CtBlock) && parentStatement.getParent(CtStatement.class) != null) {
+			parentStatement = parentStatement.getParent(CtStatement.class);
+		}
 		try {
-			if(element.getParent(CtStatement.class) instanceof CtLoop) {
+			if(parentStatement instanceof CtLoop) {
 				return false;
 			}
 			if(element.getParent(CtReturn.class) instanceof CtLoop) {
