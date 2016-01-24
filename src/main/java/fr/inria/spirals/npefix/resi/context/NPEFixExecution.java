@@ -181,18 +181,20 @@ public class NPEFixExecution implements Comparable<NPEFixExecution>{
 	@Override
 	public String toString() {
 		StringBuilder output = new StringBuilder();
+		if(test != null) {
+			output.append(test.getDeclaringClass().getCanonicalName() + "#" + test.getName());
+		}
+
 		if(decisions.isEmpty()) {
 			output.append("<No Strat> ");
 		} else {
 			for (int i = 0; i < decisions.size(); i++) {
 				fr.inria.spirals.npefix.resi.context.Decision decision =  decisions.get(i);
-				output.append(decision.toString() + " ");
+				output.append("\t" + (i + 1) + " " + decision.toString() + "\n");
 			}
 		}
-		if(test != null) {
-			output.append(test.getDeclaringClass().getCanonicalName() + "#" + test.getName());
-		}
 
+		output.append("Status: ");
 		if(getTestResult()!=null) {
 			output.append(getTestResult().wasSuccessful() ? "Ok" : "Ko");
 		} else {
