@@ -15,6 +15,7 @@ import spoon.reflect.code.CtStatementList;
 import spoon.reflect.code.CtSuperAccess;
 import spoon.reflect.code.CtTargetedExpression;
 import spoon.reflect.code.CtThisAccess;
+import spoon.reflect.code.CtTypeAccess;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.declaration.CtConstructor;
@@ -25,7 +26,6 @@ import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
-import spoon.support.reflect.code.CtCatchVariableImpl;
 
 import java.util.Set;
 
@@ -63,6 +63,15 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 			if (((CtVariableRead)target).getVariable() instanceof CtCatchVariableReference) {
 				return false;
 			}
+		}
+		if(target instanceof CtThisAccess) {
+			return false;
+		}
+		if(target instanceof CtTypeAccess) {
+			return false;
+		}
+		if(element.getPosition() == null) {
+			return false;
 		}
 		return true;
 	}
