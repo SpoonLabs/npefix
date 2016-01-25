@@ -1,5 +1,6 @@
 package fr.inria.spirals.npefix.resi;
 
+import fr.inria.spirals.npefix.AbstractEvaluation;
 import fr.inria.spirals.npefix.main.all.Launcher;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import org.junit.Test;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class BenchmarkPaper extends fr.inria.spirals.npefix.AbstractTest {
+public class BenchmarkPaper extends AbstractEvaluation {
 
     private static final int NBITERATION = 10;
 
@@ -39,7 +40,7 @@ public class BenchmarkPaper extends fr.inria.spirals.npefix.AbstractTest {
         Class[] tests = filterTest(urlClassLoader, testsString);
         long start = System.currentTimeMillis();
         for (int i = 0; i < NBITERATION; i++) {
-            new TestRunner(tests).run();
+            new TestRunner().run(tests);
         }
         long end = System.currentTimeMillis();
         return (end - start)/(double)NBITERATION;

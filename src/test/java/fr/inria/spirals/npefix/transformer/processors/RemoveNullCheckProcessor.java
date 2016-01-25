@@ -1,7 +1,15 @@
-package fr.inria.spirals.npefix.main.all.processor;
+package fr.inria.spirals.npefix.transformer.processors;
 
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.*;
+import spoon.reflect.code.BinaryOperatorKind;
+import spoon.reflect.code.CtBinaryOperator;
+import spoon.reflect.code.CtBreak;
+import spoon.reflect.code.CtContinue;
+import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtReturn;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtStatementList;
+import spoon.reflect.code.CtThrow;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 

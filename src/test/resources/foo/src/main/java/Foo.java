@@ -1,4 +1,5 @@
-import fr.inria.spirals.npefix.resi.strategies.Strat1A;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Foo {
     public String field = null;
@@ -60,5 +61,27 @@ public class Foo {
             return;
         }
         return;
+    }
+
+    public void multiCatch() {
+        try {
+
+        } catch (IllegalArgumentException | NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void genericInMethodType() {
+        List<? extends String> var = new ArrayList<>();
+        if(var.get(0).toString().equals("")) {
+
+        }
+    }
+
+    public static <T> void  genericWithoutExtendsInMethodType() {
+        List<T> var = new ArrayList<>();
+        if(var.get(0).toString().equals("")) {
+
+        }
     }
 }

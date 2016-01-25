@@ -1,19 +1,19 @@
 package fr.inria.spirals.npefix.resi;
 
-import fr.inria.spirals.npefix.main.all.processor.RemoveNullCheckProcessor;
-import fr.inria.spirals.npefix.resi.Strategy;
-import fr.inria.spirals.npefix.resi.strategies.*;
-import org.junit.Assert;
+import fr.inria.spirals.npefix.AbstractEvaluation;
+import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.strategies.NoStrat;
+import fr.inria.spirals.npefix.resi.strategies.Strategy;
+import fr.inria.spirals.npefix.transformer.processors.RemoveNullCheckProcessor;
 import org.junit.Ignore;
 import org.junit.Test;
 import spoon.Launcher;
-import utils.sacha.interfaces.ITestResult;
 
 import java.io.File;
-import java.util.Map;
+import java.util.List;
 
 
-public class PaperProjects extends fr.inria.spirals.npefix.AbstractTest {
+public class PaperProjects extends AbstractEvaluation {
 
     @Test
     public void math() throws Exception {
@@ -25,8 +25,7 @@ public class PaperProjects extends fr.inria.spirals.npefix.AbstractTest {
         };
 
         Strategy strat = new NoStrat();
-        Map<Strategy, ITestResult> results = runProject("math", source, test, deps, true, strat);
-        Assert.assertEquals(0, results.get(strat).getNbFailedTests());
+        List<Laps> results = runProject("math", source, test, deps, true, strat);
     }
 
     @Test
@@ -45,8 +44,7 @@ public class PaperProjects extends fr.inria.spirals.npefix.AbstractTest {
         };
 
         Strategy strat = new NoStrat();
-        Map<Strategy, ITestResult> results = runProject("lang", source, test, deps, true, strat);
-        Assert.assertEquals(0, results.get(strat).getNbFailedTests());
+        List<Laps> results = runProject("lang", source, test, deps, true, strat);
     }
 
     @Test
@@ -67,8 +65,7 @@ public class PaperProjects extends fr.inria.spirals.npefix.AbstractTest {
         };
 
         Strategy strat = new NoStrat();
-        Map<Strategy, ITestResult> results = runProject("spojo", source, test, deps, true, strat);
-        Assert.assertEquals(0, results.get(strat).getNbFailedTests());
+        List<Laps> results = runProject("spojo", source, test, deps, true, strat);
     }
 
     @Test
@@ -114,8 +111,7 @@ public class PaperProjects extends fr.inria.spirals.npefix.AbstractTest {
         };
 
         Strategy strat = new NoStrat();
-        Map<Strategy, ITestResult> results = runProject(name, source, test, deps, true, strat);
-        Assert.assertEquals(0, results.get(strat).getNbFailedTests());
+        List<Laps> results = runProject(name, source, test, deps, true, strat);
     }
 
     @Test
@@ -128,7 +124,7 @@ public class PaperProjects extends fr.inria.spirals.npefix.AbstractTest {
                 "org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
                 "org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar"
         };
-        if(instrumentCode) {
+        if(isInstrumentCode()) {
             spoon.Launcher spoon = new Launcher();
             spoon.addInputResource(source);
             source = "/tmp/npefix/" + name + "/src";
@@ -157,8 +153,7 @@ public class PaperProjects extends fr.inria.spirals.npefix.AbstractTest {
         };
 
         Strategy strat = new NoStrat();
-        Map<Strategy, ITestResult> results = runProject(name, source, test, deps, true, strat);
-        Assert.assertEquals(0, results.get(strat).getNbFailedTests());
+        List<Laps> results = runProject(name, source, test, deps, true, strat);
     }
 
     @Test
@@ -196,7 +191,6 @@ public class PaperProjects extends fr.inria.spirals.npefix.AbstractTest {
         };
 
         Strategy strat = new NoStrat();
-        Map<Strategy, ITestResult> results = runProject("junit", source, test, deps, false, strat);
-        Assert.assertEquals(0, results.get(strat).getNbFailedTests());
+        List<Laps> results = runProject("junit", source, test, deps, false, strat);
     }
 }
