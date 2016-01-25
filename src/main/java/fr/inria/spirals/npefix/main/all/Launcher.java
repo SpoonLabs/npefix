@@ -1,8 +1,10 @@
 package fr.inria.spirals.npefix.main.all;
 
+import fr.inria.spirals.npefix.main.ExecutionClient;
 import fr.inria.spirals.npefix.resi.CallChecker;
-import fr.inria.spirals.npefix.resi.context.NPEFixExecution;
+import fr.inria.spirals.npefix.resi.context.Laps;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
+import fr.inria.spirals.npefix.resi.oracle.TestOracle;
 import fr.inria.spirals.npefix.resi.selector.DomSelector;
 import fr.inria.spirals.npefix.resi.selector.RandomSelector;
 import fr.inria.spirals.npefix.resi.selector.Selector;
@@ -39,17 +41,28 @@ import utils.sacha.runner.main.TestRunner;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class Launcher {
 
@@ -207,59 +220,133 @@ public class Launcher {
 
         NPEOutput output = new NPEOutput();
 
-        NPEFixExecution npeFixExecution = new NPEFixExecution(selector);
+        Laps laps = new Laps(selector);
 
         final TestRunner testRunner = new TestRunner();
         for (int i = 0; i < methodTests.size(); i++) {
             Method method = methodTests.get(i);
             final Request request = Request.method(method.getDeclaringClass(), method.getName());
 
-            npeFixExecution.setTest(method);
-            CallChecker.currentExecution = npeFixExecution;
+            laps.setTestClassName(method.getDeclaringClass().getCanonicalName());
+            laps.setTestName(method.getName());
+            CallChecker.currentExecution = laps;
             Result result = testRunner.run(request);
 
-            npeFixExecution.setTestResult(result);
+            laps.setOracle(new TestOracle(result));
 
-            System.out.println(npeFixExecution);
+            System.out.println(laps);
             if(result.getRunCount() > 0) {
-                output.add(npeFixExecution);
-                if (selector.restartTest(npeFixExecution)) {
-                    /*Map<Location, Integer> currentIndex = new HashMap<>(npeFixExecution.getCurrentIndex());
-                    Map<Location, Map<String, Object>> possibleVariables = npeFixExecution
-                            .getPossibleVariables();
-                    Map<Location, List<Object>> possibleValues = npeFixExecution
-                            .getPossibleValues();
+                output.add(laps);
+                try {
+                    if (selector.restartTest(laps)) {
+						/*Map<Location, Integer> currentIndex = new HashMap<>(laps.getCurrentIndex());
+						Map<Location, Map<String, Object>> possibleVariables = laps
+								.getPossibleVariables();
+						Map<Location, List<Object>> possibleValues = laps
+								.getPossibleValues();
 
-                    Set<Location> locations = currentIndex.keySet();
-                    for (Iterator<Location> iterator = locations
-                            .iterator(); iterator.hasNext(); ) {
-                        Location location = iterator.next();
+						Set<Location> locations = currentIndex.keySet();
+						for (Iterator<Location> iterator = locations
+								.iterator(); iterator.hasNext(); ) {
+							Location location = iterator.next();
 
-                        if(possibleVariables != null
-                                && possibleVariables.containsKey(location)
-                                && possibleVariables.get(location).size() > currentIndex.get(location) + 1) {
-                            currentIndex.put(location, currentIndex.get(location) + 1);
-                        } else if ( possibleValues != null
-                                && possibleValues.containsKey(location)
-                                && possibleValues.get(location).size() > currentIndex.get(location) + 1) {
-                            currentIndex.put(location, currentIndex.get(location) + 1);
-                        }
-                    }*/
+							if(possibleVariables != null
+									&& possibleVariables.containsKey(location)
+									&& possibleVariables.get(location).size() > currentIndex.get(location) + 1) {
+								currentIndex.put(location, currentIndex.get(location) + 1);
+							} else if ( possibleValues != null
+									&& possibleValues.containsKey(location)
+									&& possibleValues.get(location).size() > currentIndex.get(location) + 1) {
+								currentIndex.put(location, currentIndex.get(location) + 1);
+							}
+						}*/
 
-                    npeFixExecution = new NPEFixExecution(selector);
-                    /*npeFixExecution.setCurrentIndex(currentIndex);
-                    npeFixExecution.setPossibleValues(possibleValues);
-                    npeFixExecution.setPossibleVariables(possibleVariables);
-                    i--;*/
-                } else {
-                    npeFixExecution = new NPEFixExecution(selector);
+                        laps = new Laps(selector);
+						/*laps.setCurrentIndex(currentIndex);
+						laps.setPossibleValues(possibleValues);
+						laps.setPossibleVariables(possibleVariables);
+						i--;*/
+                    } else {
+                        laps = new Laps(selector);
+                    }
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
                 }
             } else {
-                npeFixExecution = new NPEFixExecution(selector);
+                laps = new Laps(selector);
             }
             CallChecker.enable();
             //CallChecker.cache.clear();
             CallChecker.getDecisions().clear();
+        }
+        Collections.sort(output);
+        return output;
+    }
+
+    private static void inheritIO(final InputStream src, final PrintStream dest) {
+        new Thread(new Runnable() {
+            public void run() {
+                Scanner sc = new Scanner(src);
+                while (sc.hasNextLine()) {
+                    dest.println(sc.nextLine());
+                }
+            }
+        }).start();
+    }
+
+    public NPEOutput runCommandLine(Selector selector, List<Method> methodTests) {
+
+        CallChecker.enable();
+        CallChecker.strategySelector = selector;
+
+        NPEOutput output = new NPEOutput();
+
+        for (int i = 0; i < methodTests.size(); i++) {
+            Method method = methodTests.get(i);
+            String separator = System.getProperty("file.separator");
+            String path = System.getProperty("java.home")
+                    + separator + "bin" + separator + "java";
+            ProcessBuilder processBuilder =
+                    new ProcessBuilder(path, "-cp",
+                            classpath,
+                            ExecutionClient.class.getName(),
+                            method.getDeclaringClass().getCanonicalName(),
+                            method.getName());
+            System.out.println(path+" -cp " +
+                    classpath + " " +
+                    ExecutionClient.class.getName() + " " +
+                    method.getDeclaringClass().getCanonicalName() +  " " +
+                    method.getName());
+            try {
+                final Process process = processBuilder.start();
+                inheritIO(process.getInputStream(), System.out);
+                inheritIO(process.getErrorStream(), System.out);
+
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+
+                final Future<Integer> handler = executor.submit(new Callable<Integer>() {
+                    @Override
+                    public Integer call() throws Exception {
+                        return process.waitFor();
+                    }
+                });
+
+                try {
+                    handler.get(25, TimeUnit.SECONDS);
+                } catch (TimeoutException e) {
+                    handler.cancel(true);
+                    process.destroy();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                    handler.cancel(true);
+                }
+                executor.shutdownNow();
+                process.destroy();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         Collections.sort(output);
         return output;

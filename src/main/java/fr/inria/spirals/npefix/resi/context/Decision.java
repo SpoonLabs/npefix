@@ -4,11 +4,13 @@ import fr.inria.spirals.npefix.resi.context.instance.Instance;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 import org.json.JSONObject;
 
-public class Decision<T> {
+import java.io.Serializable;
+
+public class Decision<T> implements Serializable {
 	private Strategy strategy;
 	private Location location;
 	private Instance<T> value;
-	private Class<T> valueType;
+	private String valueType;
 	private String variableName;
 	private String decisionType;
 	private boolean isUsed = false;
@@ -26,7 +28,7 @@ public class Decision<T> {
 
 	public Decision(Strategy strategy, Location location, Instance<T> value, Class<T> valueType) {
 		this(strategy, location, value);
-		this.valueType = valueType;
+		this.valueType = valueType.getCanonicalName();
 	}
 
 	public Decision(Strategy strategy, Location location, Instance<T> value, Class<T> valueType, String variableName) {
@@ -67,11 +69,15 @@ public class Decision<T> {
 	}
 
 	public Class<T> getValueType() {
-		return valueType;
+		try {
+			return (Class<T>) getClass().forName(valueType);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void setValueType(Class<T> valueType) {
-		this.valueType = valueType;
+		this.valueType = valueType.getCanonicalName();
 	}
 
 	public String getVariableName() {
@@ -130,10 +136,7 @@ public class Decision<T> {
 
 	@Override
 	public int hashCode() {
-		int result = strategy.hashCode();
-		result = 31 * result + location.hashCode();
-		result = 31 * result + (value != null ? value.hashCode() : 0);
-		return result;
+		return -1;
 	}
 
 	public JSONObject toJSON() {

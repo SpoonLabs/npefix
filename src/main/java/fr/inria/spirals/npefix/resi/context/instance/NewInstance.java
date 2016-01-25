@@ -3,17 +3,18 @@ package fr.inria.spirals.npefix.resi.context.instance;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.exception.ErrorInitClass;
 
-import java.lang.reflect.Constructor;
 import java.util.List;
 
 public class NewInstance<T> implements Instance<T> {
 
-	private Constructor<?> constructor;
+	private final String clazz;
+	private String[] parameterType;
 	private List<Instance<?>> parameters;
 
-	public NewInstance(Constructor<?> constructor,
+	public NewInstance(String clazz, String[] parameterType,
 			List<Instance<?>> parameters) {
-		this.constructor = constructor;
+		this.clazz = clazz;
+		this.parameterType = parameterType;
 		this.parameters = parameters;
 	}
 
@@ -27,9 +28,14 @@ public class NewInstance<T> implements Instance<T> {
 			objectParam[i] = instance.getValue();
 		}
 		try {
-			return (T) constructor.newInstance(objectParam);
+			Class[] parameterTypes = new Class[parameterType.length];
+			for (int i = 0; i < parameterType.length; i++) {
+				String s = parameterType[i];
+				parameterTypes[i] = getClass().forName(s);
+			}
+			return (T) getClass().forName(clazz).getConstructor(parameterTypes).newInstance(objectParam);
 		} catch (Exception e) {
-			throw new ErrorInitClass("Unable to create the new instance of " + constructor);
+			throw new ErrorInitClass("Unable to create the new instance of " + parameterType);
 		} finally {
 			if(wasEnable) {
 				CallChecker.enable();
@@ -40,7 +46,7 @@ public class NewInstance<T> implements Instance<T> {
 	@Override
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(constructor.getDeclaringClass().getCanonicalName());
+		stringBuilder.append(clazz);
 		stringBuilder.append("(");
 		for (int i = 0; i < parameters.size(); i++) {
 			Instance<?> instance = parameters.get(i);

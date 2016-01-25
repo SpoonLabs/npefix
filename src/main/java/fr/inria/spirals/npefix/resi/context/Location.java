@@ -1,7 +1,11 @@
 package fr.inria.spirals.npefix.resi.context;
 
+import java.io.Serializable;
 
-public class Location implements Comparable<Location> {
+public class Location implements Comparable<Location>, Serializable {
+
+	private static final long serialVersionUID = 1L;
+
 	String className;
 	int line;
 	int sourceStart;

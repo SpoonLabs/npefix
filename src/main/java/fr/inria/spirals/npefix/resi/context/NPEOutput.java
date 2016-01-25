@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public class NPEOutput extends ArrayList<NPEFixExecution>{
+public class NPEOutput extends ArrayList<Laps>{
 
 	public NPEOutput() {
 
@@ -16,8 +16,8 @@ public class NPEOutput extends ArrayList<NPEFixExecution>{
 	public Set<String> getTests() {
 		Set<String> output = new HashSet<>();
 		for (int i = 0; i < this.size(); i++) {
-			NPEFixExecution npeFixExecution = this.get(i);
-			output.add(npeFixExecution.getTest().getDeclaringClass().getCanonicalName() + "#" + npeFixExecution.getTest().getName());
+			Laps laps = this.get(i);
+			output.add(laps.getTestClassName() + "#" + laps.getTestName());
 		}
 		return output;
 	}
@@ -25,9 +25,9 @@ public class NPEOutput extends ArrayList<NPEFixExecution>{
 	public Set<Strategy> getRunnedStrategies() {
 		Set<Strategy> output = new HashSet<>();
 		for (int i = 0; i < this.size(); i++) {
-			NPEFixExecution npeFixExecution = this.get(i);
-			for (int j = 0; j < npeFixExecution.getDecisions().size(); j++) {
-				fr.inria.spirals.npefix.resi.context.Decision decision = npeFixExecution.getDecisions().get(j);
+			Laps laps = this.get(i);
+			for (int j = 0; j < laps.getDecisions().size(); j++) {
+				Decision decision = laps.getDecisions().get(j);
 				output.add(decision.getStrategy());
 			}
 		}
@@ -37,11 +37,11 @@ public class NPEOutput extends ArrayList<NPEFixExecution>{
 	public NPEOutput getExecutionsForStrategy(Strategy strategy) {
 		NPEOutput output = new NPEOutput();
 		for (int i = 0; i < this.size(); i++) {
-			NPEFixExecution npeFixExecution = this.get(i);
-			for (int j = 0; j < npeFixExecution.getDecisions().size(); j++) {
-				fr.inria.spirals.npefix.resi.context.Decision decision = npeFixExecution.getDecisions().get(j);
+			Laps laps = this.get(i);
+			for (int j = 0; j < laps.getDecisions().size(); j++) {
+				Decision decision = laps.getDecisions().get(j);
 				if(decision.getStrategy().equals(strategy)) {
-					output.add(npeFixExecution);
+					output.add(laps);
 				}
 			}
 		}
@@ -51,8 +51,10 @@ public class NPEOutput extends ArrayList<NPEFixExecution>{
 	public int getFailureCount() {
 		int output = 0;
 		for (int i = 0; i < this.size(); i++) {
-			NPEFixExecution npeFixExecution = this.get(i);
-			output += npeFixExecution.getTestResult().getFailureCount();
+			Laps laps = this.get(i);
+			if(!laps.getOracle().isValid()) {
+				output += 1;
+			}
 		}
 		return output;
 	}
@@ -61,8 +63,10 @@ public class NPEOutput extends ArrayList<NPEFixExecution>{
 		int output = 0;
 		NPEOutput executionsForStrategy = getExecutionsForStrategy(strategy);
 		for (int i = 0; i < executionsForStrategy.size(); i++) {
-			NPEFixExecution npeFixExecution = executionsForStrategy.get(i);
-			output += npeFixExecution.getTestResult().getFailureCount();
+			Laps laps = executionsForStrategy.get(i);
+			if(!laps.getOracle().isValid()) {
+				output += 1;
+			}
 		}
 		return output;
 	}
@@ -70,9 +74,9 @@ public class NPEOutput extends ArrayList<NPEFixExecution>{
 	public NPEOutput getExecutionsForLocation(Location location) {
 		NPEOutput output = new NPEOutput();
 		for (int i = 0; i < this.size(); i++) {
-			NPEFixExecution npeFixExecution = this.get(i);
-			if(npeFixExecution.getLocations().contains(location)) {
-				output.add(npeFixExecution);
+			Laps laps = this.get(i);
+			if(laps.getLocations().contains(location)) {
+				output.add(laps);
 			}
 		}
 		return output;
@@ -82,8 +86,8 @@ public class NPEOutput extends ArrayList<NPEFixExecution>{
 		JSONObject output = new JSONObject();
 		output.put("date", new Date());
 		for (int i = 0; i < this.size(); i++) {
-			NPEFixExecution npeFixExecution = this.get(i);
-			output.append("executions", npeFixExecution.toJSON());
+			Laps laps = this.get(i);
+			output.append("executions", laps.toJSON());
 		}
 		return output;
 	}

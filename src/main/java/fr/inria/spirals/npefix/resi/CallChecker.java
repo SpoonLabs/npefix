@@ -1,9 +1,9 @@
 package fr.inria.spirals.npefix.resi;
 
 import fr.inria.spirals.npefix.resi.context.Decision;
+import fr.inria.spirals.npefix.resi.context.Laps;
 import fr.inria.spirals.npefix.resi.context.Location;
 import fr.inria.spirals.npefix.resi.context.MethodContext;
-import fr.inria.spirals.npefix.resi.context.NPEFixExecution;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
 import fr.inria.spirals.npefix.resi.exception.ForceReturn;
 import fr.inria.spirals.npefix.resi.selector.DomSelector;
@@ -13,6 +13,7 @@ import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strat4;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ public class CallChecker {
 
 	public static Selector strategySelector = new DomSelector();
 
-	public static NPEFixExecution currentExecution = new NPEFixExecution(strategySelector);
+	public static Laps currentExecution = new Laps(strategySelector);
 
 	private static Stack<MethodContext> stack = new Stack<>();
 
@@ -39,25 +40,37 @@ public class CallChecker {
 		strategyBackup = null;
 		selectorBackup = null;
 		stack = new Stack<>();
-		currentExecution = new NPEFixExecution(strategySelector);
+		currentExecution = new Laps(strategySelector);
 		isEnable = true;
 		decisions.clear();
 		cache.clear();
 	}
 
 	public static <T> Decision<T> getDecision(List<Decision<T>> decisions) {
-		return strategySelector.select(decisions);
+		try {
+			return strategySelector.select(decisions);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static <T> List<Decision<T>> getSearchSpace(Strategy.ACTION action, Class clazz, Location location) {
 		List<Decision<T>> output = new ArrayList<>();
-		List<Strategy> strategies = strategySelector.getStrategies();
+		List<Strategy> strategies = null;
+		try {
+			strategies = strategySelector.getStrategies();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
 		disable();
 		for (int i = 0; i < strategies.size(); i++) {
 			Strategy strategy = strategies.get(i);
 			try {
 				output.addAll(strategy.getSearchSpace(clazz, location));
 			} catch (Exception e) {
+				e.printStackTrace();
 				continue;
 			}
 		}
@@ -101,7 +114,6 @@ public class CallChecker {
 			searchSpace = getSearchSpace(action, clazz, location);
 			cache.put(location, new ArrayList<Decision>(searchSpace));
 		}
-		System.out.println();
 
 		if(searchSpace.isEmpty()) {
 			return o;

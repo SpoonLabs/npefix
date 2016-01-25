@@ -1,14 +1,11 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
-import com.sun.org.apache.bcel.internal.generic.ExceptionThrower;
-import fr.inria.spirals.npefix.main.all.Launcher;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.MethodContext;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
 import fr.inria.spirals.npefix.resi.context.instance.NewInstance;
 import fr.inria.spirals.npefix.resi.context.instance.PrimitiveInstance;
 import fr.inria.spirals.npefix.resi.context.instance.VariableInstance;
-import fr.inria.spirals.npefix.resi.exception.ErrorInitClass;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -25,10 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.Vector;
 
 public abstract class AbstractStrategy implements Strategy {
+
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	public boolean collectData() {

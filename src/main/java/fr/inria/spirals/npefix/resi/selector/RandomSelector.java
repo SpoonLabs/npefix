@@ -2,7 +2,7 @@ package fr.inria.spirals.npefix.resi.selector;
 
 import fr.inria.spirals.npefix.resi.RandomGenerator;
 import fr.inria.spirals.npefix.resi.context.Decision;
-import fr.inria.spirals.npefix.resi.context.NPEFixExecution;
+import fr.inria.spirals.npefix.resi.context.Laps;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
@@ -35,9 +35,9 @@ public class RandomSelector extends AbstractSelector {
 	}
 
 	@Override
-	public boolean restartTest(NPEFixExecution npeFixExecution) {
+	public boolean restartTest(Laps laps) {
 		return false;
-		//return !npeFixExecution.getTestResult().wasSuccessful();
+		//return !laps.getOracle().wasSuccessful();
 	}
 
 	@Override

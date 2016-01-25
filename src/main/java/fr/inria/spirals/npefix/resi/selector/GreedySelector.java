@@ -3,7 +3,7 @@ package fr.inria.spirals.npefix.resi.selector;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.RandomGenerator;
 import fr.inria.spirals.npefix.resi.context.Decision;
-import fr.inria.spirals.npefix.resi.context.NPEFixExecution;
+import fr.inria.spirals.npefix.resi.context.Laps;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
@@ -104,20 +104,22 @@ public class GreedySelector extends AbstractSelector {
 	}
 
 	@Override
-	public boolean restartTest(NPEFixExecution npeFixExecution) {
-		if(npeFixExecution.getDecisions().isEmpty()) {
+	public boolean restartTest(Laps laps) {
+		if(laps.getDecisions().isEmpty()) {
 			return false;
-			//return !npeFixExecution.getTestResult().wasSuccessful();
+			//return !laps.getOracle().wasSuccessful();
 		}
+		getLapses().add(laps);
 
-		for (int i = 0; i < npeFixExecution.getDecisions().size(); i++) {
-			Decision decision =  npeFixExecution.getDecisions().get(i);
+		for (int i = 0; i < laps.getDecisions().size(); i++) {
+			Decision decision =  laps.getDecisions().get(i);
+
 			int count = counts.get(decision) + 1;
 			counts.put(decision, count);
 			double value = values.get(decision);
 			int reward = 0;
-			if(npeFixExecution.getTestResult() != null &&
-					npeFixExecution.getTestResult().wasSuccessful()) {
+			if(laps.getOracle() != null &&
+					laps.getOracle().isValid()) {
 				reward = 1;
 			}
 
@@ -126,6 +128,6 @@ public class GreedySelector extends AbstractSelector {
 			values.put(decision, newValue);
 		}
 		return false;
-		//return !npeFixExecution.getTestResult().wasSuccessful();
+		//return !laps.getOracle().wasSuccessful();
 	}
 }
