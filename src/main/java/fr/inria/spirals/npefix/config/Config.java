@@ -25,4 +25,16 @@ public class Config  {
 	public int getServerPort() {
 		return Integer.parseInt(properties.getProperty("server.port"));
 	}
+
+	public String getDatasetRoot() {
+		return properties.getProperty("evaluation.datasetRoot");
+	}
+
+	public String getEvaluationWorkingDirectory() {
+		return properties.getProperty("evaluation.workingDirectory");
+	}
+
+	public String getM2Repo() {
+		return properties.getProperty("evaluation.m2Root").replaceFirst("^~", System.getProperty("user.home")) + "repository/";
+	}
 }
