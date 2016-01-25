@@ -14,6 +14,9 @@ import spoon.reflect.code.CtStatement;
 public class IfSplitter extends AbstractProcessor<CtIf>{
     @Override
     public boolean isToBeProcessed(CtIf candidate) {
+        if(!super.isToBeProcessed(candidate)) {
+            return false;
+        }
         CtExpression<Boolean> condition = candidate.getCondition();
         if(condition instanceof CtBinaryOperator) {
             BinaryOperatorKind kind = ((CtBinaryOperator) condition).getKind();

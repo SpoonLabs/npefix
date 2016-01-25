@@ -27,6 +27,12 @@ public class VariableFor extends AbstractProcessor<CtVariableRead<?>> {
 		if(!(parent instanceof CtForEach
 				|| parent instanceof CtFor))
 			return false;
+
+		if(element.getVariable().getDeclaration() == null) {
+			System.out.println(element.getVariable().getDeclaration());
+			return false;
+		}
+
 		// for variable declared in a for and used oin the declaration ex: for(boolean loop = true;loop;)
 		if(element.getVariable().getDeclaration().getParent().equals(element.getParent())) {
 			return false;
