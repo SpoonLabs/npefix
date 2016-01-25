@@ -36,7 +36,7 @@ public abstract class AbstractStrategy implements Strategy {
 
 	public static <T> Instance<T> initClass(Class<T> clazz) {
 		if(clazz == null)
-			return new PrimitiveInstance<T>(null);
+			return new PrimitiveInstance<>(null);
 		if(clazz.isArray()) {
 			T t = (T) Array.newInstance(clazz.getComponentType(), 100);
 			for (int i = 0; i < 100; i++) {
@@ -45,17 +45,13 @@ public abstract class AbstractStrategy implements Strategy {
 			return new PrimitiveInstance<T>(t);
 		}
 		if(clazz.isPrimitive()){
-			List<Instance<T>> instances = initPrimitive(clazz);
-			return instances.get(0);
-		}
-		List<Instance<T>> instances = AbstractStrategy.<T>initNotNull(clazz);
-		if(instances.size() > 0) {
+			List<Instance<T>> instances = AbstractStrategy.initPrimitive(clazz);
 			return instances.get(0);
 		}
 		return new PrimitiveInstance<>(null);
 	}
 
-	protected static <T> Map<String, Instance<T>> obtain(Class<?> clazz) {
+	protected <T> Map<String, Instance<T>> obtain(Class<?> clazz) {
 		if(clazz == null || clazz == void.class) {
 			return Collections.EMPTY_MAP;
 		}
@@ -74,7 +70,7 @@ public abstract class AbstractStrategy implements Strategy {
 		//throw new VarNotFound("cannot found var: " + clazz);
 	}
 
-	private static Map<Class,Class> primitiveToClass = new HashMap<Class,Class>();{
+	private Map<Class,Class> primitiveToClass = new HashMap<Class,Class>();{
 		primitiveToClass.put(int.class, Integer.class);
 		primitiveToClass.put(long.class, Long.class);
 		primitiveToClass.put(double.class, Double.class);
@@ -85,7 +81,7 @@ public abstract class AbstractStrategy implements Strategy {
 		primitiveToClass.put(short.class, Short.class);
 	}
 
-	private static <T> Map<String, Instance<T>> obtainInstance(Class<?> clazz, Map<String, Object> vars) {
+	private <T> Map<String, Instance<T>> obtainInstance(Class<?> clazz, Map<String, Object> vars) {
 		if(clazz.isPrimitive()) {
 			clazz = primitiveToClass.get(clazz);
 		}
@@ -121,7 +117,7 @@ public abstract class AbstractStrategy implements Strategy {
 		return instances;
 	}
 
-	public static  <T> List<Instance<T>>  initPrimitive(Class<?> clazz){
+	public static <T> List<Instance<T>> initPrimitive(Class<T> clazz){
 		List<Instance<T>> instances = new ArrayList<>();
 		if(clazz == int.class){
 			instances.add(new PrimitiveInstance<T>((T) new Integer(0)));
@@ -162,7 +158,7 @@ public abstract class AbstractStrategy implements Strategy {
 		return instances;
 	}
 
-	protected static <T> List<Instance<T>>  initNotNull(Class<?> clazz){
+	protected <T> List<Instance<T>>  initNotNull(Class<T> clazz){
 		if(clazz == null) {
 			return Collections.EMPTY_LIST;
 		}
@@ -178,110 +174,112 @@ public abstract class AbstractStrategy implements Strategy {
 		}
 		for (int i = 0; i < classes.size(); i++) {
 			Class aClass = classes.get(i);
-			instances.addAll(getInstancesClass(aClass));
+			instances.addAll(this.<T>getInstancesClass(aClass));
 		}
 		return instances;
 	}
 
-	private static Stack<Class> stackInstance = new Stack<>();
-
-	private static <T> List<Instance<T>> getInstancesClass(Class<T> clazz) {
-		stackInstance.add(clazz);
+	private <T> List<Instance<T>> getInstancesClass(Class<T> clazz) {
 		List<Instance<T>> instances = new ArrayList<>();
 		if(clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
 			return instances;
 		}
 		List<Constructor<?>> constructors = Arrays.asList(clazz.getConstructors());
 		if(constructors.isEmpty()) {
-			constructors = Arrays.asList(clazz.getDeclaredConstructors());
-		}
-		if(constructors.isEmpty()) {
-			constructors.add(clazz.getEnclosingConstructor());
-		}
-		if(constructors.isEmpty()) {
-			//throw new ErrorInitClass("missing constructor " + clazz);
 			return instances;
 		}
-		try{
-
-			Collections.sort(constructors,
-					new Comparator<Constructor<?>>() {
-						@Override
-						public int compare(Constructor<?> c1,
-								Constructor<?> c2) {
-							int countPrimitifC1 = 0;
-							int countPrimitifC2 = 0;
-							for (int i = 0; i < c1.getParameterTypes().length; i++) {
-								Class<?> aClass = c1.getParameterTypes()[i];
-								if(aClass.isPrimitive()) {
-									countPrimitifC1 ++;
-								}
-							}
-							for (int i = 0; i < c2.getParameterTypes().length; i++) {
-								Class<?> aClass = c2.getParameterTypes()[i];
-								if(aClass.isPrimitive()) {
-									countPrimitifC2 ++;
-								}
-							}
-							if(countPrimitifC1 == countPrimitifC2) {
-								return c1.getParameterTypes().length - c2.getParameterTypes().length;
-							} else {
-								return countPrimitifC2 - countPrimitifC1;
-							}
-						}
-					});
-			for (int j = 0; j < constructors.size(); j++) {
-				Constructor<?> constructor = constructors.get(j);
-				try{
-					Class<?>[] types = constructor.getParameterTypes();
-					// cannot use the Class constructor
-					if(!constructor.isAccessible() &&
-							constructor.getDeclaringClass() == Class.class) {
-						continue;
-					}
-					if(!constructor.isAccessible() &&
-							constructor.getDeclaringClass() != Class.class) {
-						constructor.setAccessible(true);
-					}
-					List<Instance<?>> params = new ArrayList<>();
-					try{
-						for (int i = 0; i < types.length; i++) {
-							if(!stackInstance.contains(types[i])) {
-								Instance<?> value = initClass(types[i]);
-								value.getValue();
-								params.add(value);
-							} else {
-								continue;
-							}
-						}
-					}catch (Throwable t){
-						t.printStackTrace();
-						continue;
-					}
-					if(params.size() != types.length) {
-						continue;
-					}
-					Instance<T> instance = new NewInstance<T>(constructor, params);
-					try {
-						instance.getValue();
-						instances.add(instance);
-					} catch (ErrorInitClass e) {
-						System.err.println("Unable call constructor " + constructor);
-						continue;
-					}
-				}catch (Throwable t){
-					System.err.println("Unable call constructor " + constructor);
+		try {
+			NewInstance<T> newInstance = new NewInstance<>(clazz.getCanonicalName(), new String[0], new ArrayList<Instance<?>>());
+			newInstance.getValue();
+			instances.add(newInstance);
+		} catch (Throwable e) {
+			try{
+				if(constructors.size() == 0) {
+					constructors = Arrays.asList(clazz.getDeclaredConstructors());
 				}
+				if(constructors.size() == 0) {
+					constructors.add(clazz.getEnclosingConstructor());
+				}
+				if(constructors.size() == 0) {
+					//throw new ErrorInitClass("missing constructor " + clazz);
+					return instances;
+				}
+				Collections.sort(constructors,
+						new Comparator<Constructor<?>>() {
+							@Override
+							public int compare(Constructor<?> c1,
+									Constructor<?> c2) {
+								int countPrimitifC1 = 0;
+								int countPrimitifC2 = 0;
+								for (int i = 0; i < c1.getParameterTypes().length; i++) {
+									Class<?> aClass = c1.getParameterTypes()[i];
+									if(aClass.isPrimitive()) {
+										countPrimitifC1 ++;
+									}
+								}
+								for (int i = 0; i < c2.getParameterTypes().length; i++) {
+									Class<?> aClass = c2.getParameterTypes()[i];
+									if(aClass.isPrimitive()) {
+										countPrimitifC2 ++;
+									}
+								}
+								if(countPrimitifC1 == countPrimitifC2) {
+									return c1.getParameterTypes().length - c2.getParameterTypes().length;
+								} else {
+									return countPrimitifC2 - countPrimitifC1;
+								}
+							}
+						});
+				for (Constructor<?> constructor : constructors) {
+					try{
+						Class<?>[] types = constructor.getParameterTypes();
+						// cannot use the Class constructor
+						if(!constructor.isAccessible() &&
+								constructor.getDeclaringClass() == Class.class) {
+							continue;
+						}
+						if(!constructor.isAccessible() &&
+								constructor.getDeclaringClass() != Class.class) {
+							constructor.setAccessible(true);
+						}
+						List<Instance<?>> params = new ArrayList<>();
+						try{
+							for (int i = 0; i < types.length; i++) {
+								if(!types[i].equals(clazz)) {
+									params.add(initClass(types[i]));
+								}
+							}
+						}catch (Throwable t){
+							t.printStackTrace();
+							continue;
+						}
+						if(params.size() != types.length) {
+							continue;
+						}
+						String[] parameterTypes = new String[constructor.getParameterTypes().length];
+						for (int i = 0;
+							 i < constructor.getParameterTypes().length; i++) {
+							Class<?> aClass = constructor
+									.getParameterTypes()[i];
+							parameterTypes[i] = aClass.getCanonicalName();
+						}
+						NewInstance<T> newInstance = new NewInstance<>(
+								clazz.getCanonicalName(),
+								parameterTypes, params);
+						newInstance.getValue();
+						instances.add(newInstance);
+					}catch (Throwable t){
+						System.err.println("Unable call constructor " + constructor);
+					}
+				}
+			} catch (Throwable t){
+				System.err.println("Unable new instance " + clazz);
 			}
-		} catch (Throwable t){
-			System.err.println("Unable new instance " + clazz);
-		} finally {
-			stackInstance.remove(clazz);
 		}
 		return instances;
 	}
 
-	protected static List<Class> getImplForInterface(Class<?> clazz) {
+	protected List<Class> getImplForInterface(Class<?> clazz) {
 		List<Class> classes = new ArrayList<>();
 		if(!(clazz.isInterface() ||
 				Modifier.isAbstract(clazz.getModifiers()) ||
@@ -309,7 +307,7 @@ public abstract class AbstractStrategy implements Strategy {
 			try {
 				clazz = CallChecker.currentClassLoader.loadClass(clazz.getCanonicalName() + "Impl");
 				classes.add(clazz);
-			} catch (Throwable e) {
+			} catch (ClassNotFoundException e) {
 				ClassLoader classLoader = CallChecker.currentClassLoader;
 				if(classLoader == null) {
 					classes.add(clazz);
