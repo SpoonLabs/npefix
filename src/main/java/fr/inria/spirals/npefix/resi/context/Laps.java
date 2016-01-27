@@ -29,6 +29,7 @@ public class Laps implements Comparable<Laps>,
 	private List<Decision> decisions = null;
 	private Map<String, Object> metadata = new HashMap();
 	private Date startDate;
+	private Date endDate;
 
 	public Laps(Selector strategySelector) {
 		this.locations = new HashSet<>();
@@ -103,6 +104,14 @@ public class Laps implements Comparable<Laps>,
 		return decisions;
 	}
 
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
 	public void addDecision(Decision mainDecision) {
 		this.decisions.add(mainDecision);
 	}
@@ -122,7 +131,8 @@ public class Laps implements Comparable<Laps>,
 			Decision decision = decisions.get(i);
 			output.append("decisions", decision.toJSON());
 		}
-		output.put("date", startDate.getTime());
+		output.put("startDate", startDate.getTime());
+		output.put("endDate", endDate.getTime());
 
 		// test
 		JSONObject jsonTest = new JSONObject();

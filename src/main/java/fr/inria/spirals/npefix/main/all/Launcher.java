@@ -229,7 +229,7 @@ public class Launcher {
 
             laps.setTestClassName(method.getDeclaringClass().getCanonicalName());
             laps.setTestName(method.getName());
-            CallChecker.currentExecution = laps;
+            CallChecker.currentLaps = laps;
             Result result = testRunner.run(request);
 
             laps.setOracle(new TestOracle(result));
@@ -372,12 +372,20 @@ public class Launcher {
             Method[] methods = test.getDeclaredMethods();
             for (int j = 0; j < methods.length; j++) {
                 Method method = methods[j];
+                if(method.getName().equals("setUp")) {
+                    continue;
+                }
+                if(method.getName().equals("tearDown")) {
+                    continue;
+                }
+
                 if(method.getReturnType().equals(void.class)
                         && method.getParameterTypes().length == 0) {
                     if(!method.isAnnotationPresent(After.class)
                             && !method.isAnnotationPresent(AfterClass.class)
                             && !method.isAnnotationPresent(Before.class)
-                            && !method.isAnnotationPresent(BeforeClass.class)) {
+                            && !method.isAnnotationPresent(BeforeClass.class)
+                            && !method.isAnnotationPresent(Override.class)) {
                         methodTests.add(method);
                     }
                 }

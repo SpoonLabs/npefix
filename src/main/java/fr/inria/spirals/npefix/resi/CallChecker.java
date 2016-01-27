@@ -25,7 +25,7 @@ public class CallChecker {
 
 	public static Selector strategySelector = new DomSelector();
 
-	public static Laps currentExecution = new Laps(strategySelector);
+	public static Laps currentLaps = new Laps(strategySelector);
 
 	private static Stack<MethodContext> stack = new Stack<>();
 
@@ -40,7 +40,7 @@ public class CallChecker {
 		strategyBackup = null;
 		selectorBackup = null;
 		stack = new Stack<>();
-		currentExecution = new Laps(strategySelector);
+		currentLaps = new Laps(strategySelector);
 		isEnable = true;
 		decisions.clear();
 		cache.clear();
@@ -93,10 +93,10 @@ public class CallChecker {
 			if(!decisions.get(location).getStrategy().isCompatibleAction(action)) {
 				return o;
 			}
+			currentLaps.addApplication(decisions.get(location));
 			if(decisions.get(location).getStrategy() instanceof Strat4) {
 				throw new ForceReturn(decisions.get(location));
 			}
-
 			return (T) decisions.get(location).getValue();
 		}
 		if(!isEnable()) {
@@ -123,13 +123,14 @@ public class CallChecker {
 		decision.setUsed(true);
 		//disable();
 
-		currentExecution.addDecision(decision);
+		currentLaps.addDecision(decision);
 
 		decisions.put(location, decision);
 
 		if(!decision.getStrategy().isCompatibleAction(action)) {
 			return o;
 		}
+		currentLaps.addApplication(decisions.get(location));
 
 		if(decision.getStrategy() instanceof Strat4) {
 			throw new ForceReturn(decision);
@@ -175,10 +176,10 @@ public class CallChecker {
 	}
 
 	/*public static <T> T returned(Class clazz) {
-		Strategy strat = currentExecution.getMainDecision();
+		Strategy strat = currentLaps.getMainDecision();
 		if(strat == null) {
 			strat = getStrat();
-			currentExecution.setMainDecision(strat);
+			currentLaps.setMainDecision(strat);
 		}
 		disable();
 		try {

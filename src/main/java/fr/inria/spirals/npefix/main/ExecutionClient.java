@@ -47,7 +47,7 @@ public class ExecutionClient {
 		Laps laps = new Laps(selector);
 		laps.setTestClassName(classTestName);
 		laps.setTestName(testName);
-		CallChecker.currentExecution = laps;
+		CallChecker.currentLaps = laps;
 		CallChecker.strategySelector = selector;
 		CallChecker.currentClassLoader = getClass().getClassLoader();
 		final TestRunner testRunner = new TestRunner();

@@ -9,6 +9,7 @@ import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +57,7 @@ public class GreedySelector extends AbstractSelector {
 	@Override
 	public <T> Decision<T> select(List<Decision<T>> decisions) {
 		initDecision(decisions);
-		CallChecker.currentExecution.putMetadata("epsilon", epsilon);
+		CallChecker.currentLaps.putMetadata("epsilon", epsilon);
 
 		Collections.shuffle(decisions, RandomGenerator.getGenerator());
 
@@ -84,12 +85,12 @@ public class GreedySelector extends AbstractSelector {
 			}
 			usedDecisions.add(bestDecision);
 			bestDecision.setDecisionType("best");
-			CallChecker.currentExecution.putMetadata("strategy_selection", "best");
+			CallChecker.currentLaps.putMetadata("strategy_selection", "best");
 			bestDecision.setEpsilon(epsilon);
 			return bestDecision;
 		}
 		// return a random strategy
-		CallChecker.currentExecution.putMetadata("strategy_selection", "random");
+		CallChecker.currentLaps.putMetadata("strategy_selection", "random");
 		Decision output;
 		if(localUnusedDecision.isEmpty()) {
 			int maxValue = decisions.size();
@@ -107,6 +108,7 @@ public class GreedySelector extends AbstractSelector {
 
 	@Override
 	public boolean restartTest(Laps laps) {
+		laps.setEndDate(new Date());
 		if(laps.getDecisions().isEmpty()) {
 			return false;
 			//return !laps.getOracle().wasSuccessful();
