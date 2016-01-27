@@ -42,17 +42,6 @@ public abstract class AbstractSelectorEvaluation extends AbstractEvaluation {
 	}
 
 	@Test
-	public void collections299() throws Exception {
-		String root = rootNPEDataset + "collections-299/";
-		String source = root + "src";
-		String test = root + "test";
-		String[] deps = new String[]{
-				"junit/junit/3.8.1/junit-3.8.1.jar"
-		};
-		runProject("collections299", source, test, deps);
-	}
-
-	@Test
 	public void collections331() throws Exception {
 		String root = rootNPEDataset + "collections-331/";
 		String source = root + "src";
