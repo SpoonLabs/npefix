@@ -3,6 +3,7 @@ package fr.inria.spirals.npefix.resi.context.instance;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.exception.ErrorInitClass;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class NewInstance<T> implements Instance<T> {
@@ -41,6 +42,36 @@ public class NewInstance<T> implements Instance<T> {
 				CallChecker.enable();
 			}
 		}
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		NewInstance<?> that = (NewInstance<?>) o;
+
+		if (clazz != null ? !clazz.equals(that.clazz) : that.clazz != null)
+			return false;
+		// Probably incorrect - comparing Object[] arrays with Arrays.equals
+		if (!Arrays.equals(parameterType, that.parameterType))
+			return false;
+		if (parameters != null ?
+				!parameters.equals(that.parameters) :
+				that.parameters != null)
+			return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = clazz != null ? clazz.hashCode() : 0;
+		result = 31 * result + Arrays.hashCode(parameterType);
+		result = 31 * result + (parameters != null ? parameters.hashCode() : 0);
+		return result;
 	}
 
 	@Override

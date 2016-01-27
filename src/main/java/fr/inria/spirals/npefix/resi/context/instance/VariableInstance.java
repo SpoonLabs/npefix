@@ -16,6 +16,28 @@ public class  VariableInstance<T> implements Instance<T> {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		VariableInstance<?> that = (VariableInstance<?>) o;
+
+		if (variableName != null ?
+				!variableName.equals(that.variableName) :
+				that.variableName != null)
+			return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return variableName != null ? variableName.hashCode() : 0;
+	}
+
+	@Override
 	public String toString() {
 		return variableName;
 	}
