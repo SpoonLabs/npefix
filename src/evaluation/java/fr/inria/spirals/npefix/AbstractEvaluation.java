@@ -30,7 +30,7 @@ import java.util.List;
 
 public class AbstractEvaluation {
 
-    private static final String M2REPO = Config.CONFIG.getM2Repo();
+    private static final String M2REPO = Config.CONFIG.getM2Repository();
 
     boolean instrumentCode = false;
 

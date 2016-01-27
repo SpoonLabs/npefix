@@ -39,7 +39,7 @@ public class Laps implements Comparable<Laps>,
 		decisions = new ArrayList<>();
 		startDate = new Date();
 		this.strategySelector = strategySelector;
-		metadata.put("seed", Config.CONFIG.getGreedyEpsilon());
+		metadata.put("seed", Config.CONFIG.getRandomSeed());
 	}
 
 	public void increaseNbApplication(Decision decision) {
