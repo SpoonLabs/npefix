@@ -251,7 +251,7 @@ public abstract class AbstractSelectorEvaluation extends AbstractEvaluation {
 				"org/osgi/org.osgi.core/5.0.0/org.osgi.core-5.0.0.jar",
 				"org/ow2/asm/asm-all/4.2/asm-all-4.2.jar",
 				"org/mockito/mockito-all/1.10.19/mockito-all-1.10.19.jar",
-				"junit/junit/4.0/junit-4.0.jar",
+				"junit/junit/4.7/junit-4.7.jar",
 				"org/easymock/easymock/2.4/easymock-2.4.jar"
 		};
 		runProject("felix-4960", source, test, deps);
