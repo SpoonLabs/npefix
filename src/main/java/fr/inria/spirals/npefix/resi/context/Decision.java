@@ -14,6 +14,7 @@ public class Decision<T> implements Serializable {
 	private String variableName;
 	private String decisionType;
 	private boolean isUsed = false;
+	private double epsilon;
 
 	public Decision(Strategy strategy, Location location) {
 		this.strategy = strategy;
@@ -96,6 +97,14 @@ public class Decision<T> implements Serializable {
 		this.decisionType = decisionType;
 	}
 
+	public void setEpsilon(double epsilon) {
+		this.epsilon = epsilon;
+	}
+
+	public double getEpsilon() {
+		return epsilon;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
@@ -144,6 +153,7 @@ public class Decision<T> implements Serializable {
 		output.put("strategy", strategy.toString());
 		output.put("decisionType", decisionType);
 		output.put("used", isUsed);
+		output.put("epsilon", epsilon);
 
 		JSONObject valueJSON = new JSONObject();
 		if(value!= null) {

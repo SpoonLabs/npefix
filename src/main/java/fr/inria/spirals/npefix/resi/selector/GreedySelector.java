@@ -85,6 +85,7 @@ public class GreedySelector extends AbstractSelector {
 			usedDecisions.add(bestDecision);
 			bestDecision.setDecisionType("best");
 			CallChecker.currentExecution.putMetadata("strategy_selection", "best");
+			bestDecision.setEpsilon(epsilon);
 			return bestDecision;
 		}
 		// return a random strategy
@@ -100,6 +101,7 @@ public class GreedySelector extends AbstractSelector {
 			usedDecisions.add(output);
 			output.setDecisionType("new");
 		}
+		output.setEpsilon(epsilon);
 		return output;
 	}
 
