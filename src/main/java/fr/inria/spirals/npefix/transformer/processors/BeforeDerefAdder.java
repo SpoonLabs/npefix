@@ -331,6 +331,9 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 				type = typeCasts.get(typeCasts.size() - 1);
 			}
 			removeGenType(type);
+			if(type.toString().equals("?")) {
+				type = getFactory().Code().createCtTypeReference(Object.class);
+			}
 			CtLocalVariable localVariable = getFactory().Code().createLocalVariable(type, variableName, localTarget);
 			localVariable.addModifier(ModifierKind.FINAL);
 			if(line instanceof CtStatement) {
