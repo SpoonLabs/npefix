@@ -26,6 +26,14 @@ public class Config  {
 		return Integer.parseInt(properties.getProperty("server.port"));
 	}
 
+	public int getRandomSeed() {
+		return Integer.parseInt(properties.getProperty("random.seed"));
+	}
+
+	public double getGreedyEpsilon() {
+		return Double.parseDouble(properties.getProperty("selector.greedy.epsilon"));
+	}
+
 	public String getDatasetRoot() {
 		return properties.getProperty("evaluation.datasetRoot");
 	}

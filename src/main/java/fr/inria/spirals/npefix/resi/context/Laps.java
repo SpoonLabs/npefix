@@ -1,5 +1,6 @@
 package fr.inria.spirals.npefix.resi.context;
 
+import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.oracle.Oracle;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 import org.json.JSONObject;
@@ -38,6 +39,7 @@ public class Laps implements Comparable<Laps>,
 		decisions = new ArrayList<>();
 		startDate = new Date();
 		this.strategySelector = strategySelector;
+		metadata.put("seed", Config.CONFIG.getGreedyEpsilon());
 	}
 
 	public void increaseNbApplication(Decision decision) {

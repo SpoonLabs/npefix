@@ -1,9 +1,12 @@
 package fr.inria.spirals.npefix.resi;
 
+import fr.inria.spirals.npefix.config.Config;
+
 import java.util.Random;
 
 public class RandomGenerator {
-	private static long seed = 10;
+	private static long seed = Config.CONFIG.getRandomSeed();
+
 	private static Random generator = new Random(seed);
 
 	public static int nextInt(){

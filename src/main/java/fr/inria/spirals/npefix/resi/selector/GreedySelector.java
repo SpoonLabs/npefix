@@ -1,5 +1,6 @@
 package fr.inria.spirals.npefix.resi.selector;
 
+import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.RandomGenerator;
 import fr.inria.spirals.npefix.resi.context.Decision;
@@ -19,13 +20,13 @@ import java.util.Set;
 public class GreedySelector extends AbstractSelector {
 
 	private double epsilon;
-	private Map<Decision<?>, Integer> counts = new HashMap<>(100);
-	private Map<Decision<?>, Double> values = new HashMap<>(100);
+	private Map<Decision<?>, Integer> counts = new HashMap<>();
+	private Map<Decision<?>, Double> values = new HashMap<>();
 	private Set<Decision<?>> usedDecisions = new HashSet<>();
-	private List<Decision<?>> unusedDecisions  = new ArrayList<Decision<?>>();
+	private List<Decision<?>> unusedDecisions  = new ArrayList<>();
 
 	public GreedySelector() {
-		epsilon = 0.2;
+		epsilon = Config.CONFIG.getGreedyEpsilon();
 	}
 
 	private <T> void initDecision(List<Decision<T>> decisions) {
@@ -57,7 +58,6 @@ public class GreedySelector extends AbstractSelector {
 	@Override
 	public <T> Decision<T> select(List<Decision<T>> decisions) {
 		initDecision(decisions);
-		CallChecker.currentLaps.putMetadata("epsilon", epsilon);
 
 		Collections.shuffle(decisions, RandomGenerator.getGenerator());
 
