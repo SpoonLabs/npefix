@@ -21,11 +21,5 @@ public class TernarySplitterTest {
 
 		CtClass<Object> fooTernary = spoon.getFactory().Class().get("FooTernary");
 		Assert.assertNotNull(fooTernary);
-
-		try {
-			((Integer)null).equals(0);
-		} catch (NullPointerException e) {
-			e.getMessage().contains("");
-		}
 	}
 }
