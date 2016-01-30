@@ -5,6 +5,7 @@ import fr.inria.spirals.npefix.resi.context.MethodContext;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
 import fr.inria.spirals.npefix.resi.context.instance.NewInstance;
 import fr.inria.spirals.npefix.resi.context.instance.PrimitiveInstance;
+import fr.inria.spirals.npefix.resi.context.instance.StaticVariableInstance;
 import fr.inria.spirals.npefix.resi.context.instance.VariableInstance;
 
 import java.lang.reflect.Array;
@@ -94,7 +95,7 @@ public abstract class AbstractStrategy implements Strategy {
 				instances.put(variable, new VariableInstance<T>(variable));
 			}
 		}
-		/*
+
 		// search static  instance in the field
 		Field[] fields = clazz.getFields();
 		for (int i = 0; i < fields.length; i++) {
@@ -107,13 +108,13 @@ public abstract class AbstractStrategy implements Strategy {
 				try {
 					Object o = field.get(null);
 					if(o != null) {
-						instances.put(clazz.getCanonicalName() + "." + field.getName(), (T) o);
+						instances.put(clazz.getCanonicalName() + "." + field.getName(), new StaticVariableInstance<T>(clazz.getCanonicalName(), field.getName()));
 					}
 				} catch (IllegalAccessException e) {
 					continue;
 				}
 			}
-		}*/
+		}
 		return instances;
 	}
 
