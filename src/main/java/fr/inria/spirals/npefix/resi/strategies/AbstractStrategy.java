@@ -162,9 +162,15 @@ public abstract class AbstractStrategy implements Strategy {
 		if(clazz == null) {
 			return Collections.EMPTY_LIST;
 		}
-		List<Class> classes = new ArrayList<>();
-		classes.add(clazz);
 		List<Instance<T>> instances = new ArrayList<>();
+		if(clazz.isArray()) {
+			T t = (T) Array.newInstance(clazz.getComponentType(), 0);
+			instances.add(new PrimitiveInstance<T>(t));
+			return instances;
+		}
+		Set<Class> classes = new HashSet<>();
+		classes.add(clazz);
+
 		if(clazz.isPrimitive()){
 			return initPrimitive(clazz);
 		}
@@ -172,8 +178,9 @@ public abstract class AbstractStrategy implements Strategy {
 		if(clazz.isInterface() ||Modifier.isAbstract(clazz.getModifiers()) || clazz.getConstructors().length == 0) {
 			classes.addAll(getImplForInterface(clazz));
 		}
-		for (int i = 0; i < classes.size(); i++) {
-			Class aClass = classes.get(i);
+		for (Iterator<Class> iterator = classes.iterator(); iterator
+				.hasNext(); ) {
+			Class aClass = iterator.next();
 			instances.addAll(this.<T>getInstancesClass(aClass));
 		}
 		return instances;
@@ -334,17 +341,21 @@ public abstract class AbstractStrategy implements Strategy {
 				}
 				for (int i = 0; i < clazzes.size(); i++) {
 					Class<?> cl = clazzes.elementAt(i);
-					if(cl.isInterface()) {
-						continue;
-					}
-					if( Modifier.isAbstract(cl.getModifiers())) {
-						continue;
-					}
-					if (cl.getConstructors().length == 0) {
-						continue;
-					}
-					if(clazz.isAssignableFrom(cl)){
-						classes.add(clazz);
+					try {
+						if(cl.isInterface()) {
+							continue;
+						}
+						if( Modifier.isAbstract(cl.getModifiers())) {
+							continue;
+						}
+						if (cl.getConstructors().length == 0) {
+							continue;
+						}
+						if(clazz.isAssignableFrom(cl)){
+							classes.add(clazz);
+						}
+					} catch (Throwable e1) {
+						//e1.printStackTrace();
 					}
 				}
 				

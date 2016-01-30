@@ -3,6 +3,7 @@ package fr.inria.spirals.npefix.resi.context.instance;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.exception.ErrorInitClass;
 
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,6 +20,55 @@ public class NewInstance<T> implements Instance<T> {
 		this.parameters = parameters;
 	}
 
+	private Class getClassFromString (String className) {
+		if(className.equals("int")) {
+			return int.class;
+		}
+		if(className.equals("int[]")) {
+			return int[].class;
+		}
+		if(className.equals("long")) {
+			return long.class;
+		}
+		if(className.equals("long[]")) {
+			return long[].class;
+		}
+		if(className.equals("float")) {
+			return float.class;
+		}
+		if(className.equals("float[]")) {
+			return float[].class;
+		}
+		if(className.equals("double")) {
+			return double.class;
+		}
+		if(className.equals("double[]")) {
+			return double[].class;
+		}
+		if(className.equals("byte")) {
+			return byte.class;
+		}
+		if(className.equals("byte[]")) {
+			return byte[].class;
+		}
+		if(className.equals("char")) {
+			return char.class;
+		}
+		if(className.equals("char[]")) {
+			return char[].class;
+		}
+		if(className.equals("boolean")) {
+			return boolean.class;
+		}
+		if(className.equals("boolean[]")) {
+			return boolean[].class;
+		}
+		try {
+			return getClass().forName(className);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
 	@Override
 	public T getValue() {
 		boolean wasEnable = CallChecker.isEnable();
@@ -32,11 +82,14 @@ public class NewInstance<T> implements Instance<T> {
 			Class[] parameterTypes = new Class[parameterType.length];
 			for (int i = 0; i < parameterType.length; i++) {
 				String s = parameterType[i];
-				parameterTypes[i] = getClass().forName(s);
+				parameterTypes[i] = getClassFromString(s);
 			}
-			return (T) getClass().forName(clazz).getConstructor(parameterTypes).newInstance(objectParam);
+			Constructor<?> constructor = getClass().forName(clazz)
+					.getConstructor(parameterTypes);
+			constructor.setAccessible(true);
+			return (T) constructor.newInstance(objectParam);
 		} catch (Exception e) {
-			throw new ErrorInitClass("Unable to create the new instance of " + parameterType);
+			throw new ErrorInitClass("Unable to create the new instance of " + parameterType, e);
 		} finally {
 			if(wasEnable) {
 				CallChecker.enable();
