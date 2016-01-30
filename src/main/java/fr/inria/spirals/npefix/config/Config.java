@@ -92,6 +92,6 @@ public class Config  {
 	}
 
 	public void setM2Repository(String m2Repository) {
-		this.m2Repository = m2Repository.replaceFirst("^~", System.getProperty("user.home")) + "repository/";
+		this.m2Repository = (m2Repository + "/").replaceFirst("^~", System.getProperty("user.home")) + "repository/";
 	}
 }

@@ -59,23 +59,27 @@ public class AbstractEvaluation {
             launcher = initNPEFix(name, source, test, deps);
             launcher.instrument();
         } else {
-            launcher = initNPEFix(name, Config.CONFIG.getEvaluationWorkingDirectory() + name + "/instrumented", null, deps);
+            launcher = initNPEFix(name, Config.CONFIG.getEvaluationWorkingDirectory() + "/" + name + "/instrumented", null, deps);
             //launcher.getCompiler().compile();
         }
         DecisionServer decisionServer = new DecisionServer(selector);
         decisionServer.startServer();
         List<Method> tests = launcher.getTests();
+        if(test.isEmpty()) {
+            throw new RuntimeException("No test found");
+        }
         NPEOutput output = new NPEOutput();
         while (output.size() < nbIteration) {
             try {
-                launcher.runCommandLine(selector, tests);
-                List<Laps> result = selector.getLapses();
+                List<Laps> result =launcher.runCommandLine(selector, tests);
+                if(result.isEmpty()) {
+                    break;
+                }
                 if(output.size() + result.size() > nbIteration) {
                     output.addAll(result.subList(0, (nbIteration - output.size())));
                 } else {
                     output.addAll(result);
                 }
-                result.clear();
             } catch (OutOfMemoryError e) {
                 e.printStackTrace();
                 break;
@@ -316,8 +320,8 @@ public class AbstractEvaluation {
     }
 
     protected Launcher initNPEFix(String name, String source, String test, String[] deps) {
-        File binFolder = new File(Config.CONFIG.getEvaluationWorkingDirectory() + name + "/bin");
-        File outputSource = new File(Config.CONFIG.getEvaluationWorkingDirectory()  + name + "/instrumented");
+        File binFolder = new File(Config.CONFIG.getEvaluationWorkingDirectory() + "/" + name + "/bin");
+        File outputSource = new File(Config.CONFIG.getEvaluationWorkingDirectory()  + "/" + name + "/instrumented");
 
         binFolder.mkdirs();
         outputSource.mkdirs();
