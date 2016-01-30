@@ -331,6 +331,8 @@ public class Launcher {
 
                 try {
                     handler.get(25, TimeUnit.SECONDS);
+                    output.addAll(selector.getLapses());
+                    selector.getLapses().clear();
                 } catch (TimeoutException e) {
                     handler.cancel(true);
                     process.destroy();
@@ -392,17 +394,19 @@ public class Launcher {
         return methodTests;
     }
 
-    public NPEOutput runStrategy(Strategy strategy) {
-        DomSelector.strategy = strategy;
-        return run(new DomSelector());
-    }
-
     public NPEOutput runStrategy(Strategy...strategies) {
         NPEOutput output = new NPEOutput();
+
+        Selector selector= new DomSelector();
+        DecisionServer decisionServer = new DecisionServer(selector);
+        decisionServer.startServer();
+
+        List<Method> tests = getTests();
         for (int i = 0; i < strategies.length; i++) {
             Strategy strategy = strategies[i];
+            System.out.println(strategy);
             DomSelector.strategy = strategy;
-            NPEOutput run = run(new DomSelector());
+            NPEOutput run = runCommandLine(selector, tests);
             output.addAll(run);
         }
         Collections.sort(output);

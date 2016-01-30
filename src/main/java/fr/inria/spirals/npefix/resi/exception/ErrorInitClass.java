@@ -11,4 +11,7 @@ public class ErrorInitClass extends NPEFixError {
     public ErrorInitClass(String string) {
         super(string);
     }
+    public ErrorInitClass(String string, Throwable t) {
+        super(string, t);
+    }
 }
