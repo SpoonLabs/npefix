@@ -1,5 +1,7 @@
 package fr.inria.spirals.npefix.main.all;
 
+import fr.inria.spirals.npefix.config.Config;
+import fr.inria.spirals.npefix.main.DecisionServer;
 import fr.inria.spirals.npefix.main.ExecutionClient;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Laps;
@@ -311,12 +313,8 @@ public class Launcher {
                             classpath,
                             ExecutionClient.class.getName(),
                             method.getDeclaringClass().getCanonicalName(),
-                            method.getName());
-            System.out.println(path+" -cp " +
-                    classpath + " " +
-                    ExecutionClient.class.getName() + " " +
-                    method.getDeclaringClass().getCanonicalName() +  " " +
-                    method.getName());
+                            method.getName(),
+                            Config.CONFIG.getRandomSeed() + "");
             try {
                 final Process process = processBuilder.start();
                 inheritIO(process.getInputStream(), System.out);

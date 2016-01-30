@@ -5,7 +5,7 @@ import fr.inria.spirals.npefix.config.Config;
 import java.util.Random;
 
 public class RandomGenerator {
-	private static long seed = Config.CONFIG.getRandomSeed();
+	public static long seed = Config.CONFIG.getRandomSeed();
 
 	private static Random generator = new Random(seed);
 

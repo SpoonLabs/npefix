@@ -1,5 +1,7 @@
 package fr.inria.spirals.npefix.config;
 
+import fr.inria.spirals.npefix.resi.RandomGenerator;
+
 import java.io.IOException;
 import java.util.Properties;
 
@@ -61,6 +63,7 @@ public class Config  {
 
 	public void setRandomSeed(int randomSeed) {
 		this.randomSeed = randomSeed;
+		RandomGenerator.seed = randomSeed;
 	}
 
 	public double getGreedyEpsilon() {

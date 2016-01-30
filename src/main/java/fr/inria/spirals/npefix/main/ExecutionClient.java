@@ -16,6 +16,7 @@ public class ExecutionClient {
 
 	public static void main(String[] args) {
 		ExecutionClient executionClient = new ExecutionClient(args[0], args[1]);
+		Config.CONFIG.setRandomSeed(Integer.parseInt(args[2]));
 		executionClient.run();
 	}
 
