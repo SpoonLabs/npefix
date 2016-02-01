@@ -34,7 +34,7 @@ public class CallChecker {
 	private static Selector selectorBackup;
 
 	public static Location currentLocation;
-	public static ClassLoader currentClassLoader;
+	public static ClassLoader currentClassLoader = CallChecker.class.getClassLoader();
 
 	public static void clear() {
 		strategyBackup = null;
