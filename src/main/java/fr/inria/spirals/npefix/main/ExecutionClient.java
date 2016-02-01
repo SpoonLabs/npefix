@@ -3,6 +3,7 @@ package fr.inria.spirals.npefix.main;
 import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.oracle.ExceptionOracle;
 import fr.inria.spirals.npefix.resi.oracle.TestOracle;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 import org.junit.runner.Request;
@@ -11,6 +12,13 @@ import utils.sacha.runner.main.TestRunner;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class ExecutionClient {
 
@@ -45,7 +53,7 @@ public class ExecutionClient {
 
 	private void run() {
 		Selector selector = getSelector();
-		Laps laps = new Laps(selector);
+		final Laps laps = new Laps(selector);
 		laps.setTestClassName(classTestName);
 		laps.setTestName(testName);
 		CallChecker.currentLaps = laps;
@@ -55,12 +63,34 @@ public class ExecutionClient {
 		try {
 			Class<?> testClass = getClass().forName(classTestName);
 			final Request request = Request.method(testClass, testName);
-			Result result = testRunner.run(request);
-			laps.setOracle(new TestOracle(result));
+
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+
+			final Future<Result> handler = executor.submit(new Callable<Result>() {
+				@Override
+				public Result call() throws Exception {
+					Result result = testRunner.run(request);
+					laps.setOracle(new TestOracle(result));
+					return result;
+				}
+			});
+
+			try {
+				handler.get(25, TimeUnit.SECONDS);
+			} catch (TimeoutException e) {
+				laps.setOracle(new ExceptionOracle(e));
+				e.printStackTrace();
+				handler.cancel(true);
+			} catch (ExecutionException e) {
+				laps.setOracle(new ExceptionOracle(e));
+				e.printStackTrace();
+				handler.cancel(true);
+			}
+			executor.shutdownNow();
 
 			System.out.println(laps);
-
 			selector.restartTest(laps);
+			System.exit(0);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

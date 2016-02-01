@@ -58,13 +58,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class Launcher {
 
@@ -190,7 +183,6 @@ public class Launcher {
                 spoon.addInputResource(s);
             }
         }
-        //spoon.addTemplateResource(new FileSystemFolder(new File("src/main/java/fr/inria/spirals/npefix/transformer/template")));
 
         SpoonModelBuilder compiler = spoon.getModelBuilder();
         compiler.setSourceClasspath(classpath.split(File.pathSeparator));
@@ -316,31 +308,17 @@ public class Launcher {
                             method.getName(),
                             Config.CONFIG.getRandomSeed() + "");
             try {
+                // run the new JVM
                 final Process process = processBuilder.start();
+                // print the output to the current console
                 inheritIO(process.getInputStream(), System.out);
-                inheritIO(process.getErrorStream(), System.out);
-
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-
-                final Future<Integer> handler = executor.submit(new Callable<Integer>() {
-                    @Override
-                    public Integer call() throws Exception {
-                        return process.waitFor();
-                    }
-                });
-
-                try {
-                    handler.get(25, TimeUnit.SECONDS);
-                    output.addAll(selector.getLapses());
-                    selector.getLapses().clear();
-                } catch (TimeoutException e) {
-                    handler.cancel(true);
-                    process.destroy();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                    handler.cancel(true);
-                }
-                executor.shutdownNow();
+                inheritIO(process.getErrorStream(), System.err);
+                // wait the end of the process
+                process.waitFor();
+                // adds all laps
+                output.addAll(selector.getLapses());
+                selector.getLapses().clear();
+                // destroy the process
                 process.destroy();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -353,7 +331,7 @@ public class Launcher {
     }
 
 	/**
-     * Returns all test methods of the projects
+     * Returns all test methods of the spooned project
      * @return a list of test methods
      */
     public List<Method> getTests() {
