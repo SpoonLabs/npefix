@@ -2,6 +2,13 @@ package fr.inria.spirals.npefix.resi;
 
 import fr.inria.spirals.npefix.AbstractEvaluation;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
+import fr.inria.spirals.npefix.resi.strategies.ReturnType;
+import fr.inria.spirals.npefix.resi.strategies.Strat1A;
+import fr.inria.spirals.npefix.resi.strategies.Strat1B;
+import fr.inria.spirals.npefix.resi.strategies.Strat2A;
+import fr.inria.spirals.npefix.resi.strategies.Strat2B;
+import fr.inria.spirals.npefix.resi.strategies.Strat3;
+import fr.inria.spirals.npefix.resi.strategies.Strat4;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -49,46 +56,38 @@ public class NPEDataset extends AbstractEvaluation {
     }
 
     @Test
-    public void collections331() throws Exception {
-        String root = rootNPEDataset + "collections-331/";
+    public void collections360() throws Exception {
+        // svn 1076034
+        String root = rootNPEDataset + "collections-360/";
         String source = root + "src";
         String test = root + "test";
         String[] deps = new String[]{
                 "junit/junit/4.7/junit-4.7.jar"
         };
+        NPEOutput results = runProject("collections360", source, test, deps);
+        System.out.println(results);
+        boolean start1AOk = results.getExecutionsForStrategy(new Strat1A()).getFailureCount() == 0;
+        Assert.assertFalse("Start1A did not work on collections360", start1AOk);
 
-        NPEOutput results = runProject("collections331", source,
-                test, deps);
-        eval(results);
-    }
+        boolean start1BOk = results.getExecutionsForStrategy(new Strat1B()).getFailureCount() == 0;
+        Assert.assertFalse("Start1B did not work on collections360", start1BOk);
 
-    @Test
-    @Ignore
-    public void freemarker02() throws Exception {
-        String root = rootNPEDataset + "freemarker-02/";
-        String source = root + "src";
-        String test = root + "test";
-        String[] deps = new String[]{
-                "junit/junit/4.7/junit-4.7.jar"
-        };
+        Assert.assertTrue("Start2A empty search space on collections360", results.getExecutionsForStrategy(new Strat2A()).isEmpty());
 
-        NPEOutput results = runProject("freemarker02", source, test, deps);
-        eval(results);
-    }
+        Assert.assertTrue("Start2B empty search space on collections360", results.getExecutionsForStrategy(new Strat2B()).isEmpty());
 
-    @Test
-    @Ignore
-    public void jfreechart03() throws Exception {
-        String root = rootNPEDataset + "jfreechart-03/";
-        String source = root + "src";
-        String test = root + "test";
-        String[] deps = new String[]{
-                "junit/junit/4.7/junit-4.7.jar",
-                "org/jfree/jcommon/1.0.23/jcommon-1.0.23.jar",
-                "javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar"
-        };
-        NPEOutput results = runProject("jfreechart03", source, test, deps);
-        eval(results);
+        boolean start3Ok = results.getExecutionsForStrategy(new Strat3()).getFailureCount() == 0;
+        Assert.assertFalse("Start3 did not work on collections360", start3Ok);
+
+        Assert.assertTrue("Start4Null empty search space on collections360", results.getExecutionsForStrategy(new Strat4(ReturnType.NULL)).isEmpty());
+
+        Assert.assertTrue("Start4Void empty search space on collections360", results.getExecutionsForStrategy(new Strat4(ReturnType.VOID)).isEmpty());
+
+        boolean start4NewOk = results.getExecutionsForStrategy(new Strat4(ReturnType.NEW)).getFailureCount() == 0;
+        Assert.assertTrue("Start4 NEW worked on collections360", start4NewOk);
+
+        boolean start4VarOk = results.getExecutionsForStrategy(new Strat4(ReturnType.VAR)).getFailureCount() == 0;
+        Assert.assertTrue("Start4 VAR worked on collections360", start4VarOk);
     }
 
     @Test
