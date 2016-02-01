@@ -4,6 +4,7 @@ import fr.inria.spirals.npefix.AbstractEvaluation;
 import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -41,6 +42,7 @@ public abstract class AbstractSelectorEvaluation extends AbstractEvaluation {
 		this.selector = selector;
 	}
 
+	@Ignore
 	@Test
 	public void collections331() throws Exception {
 		String root = rootNPEDataset + "collections-331/";
