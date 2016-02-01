@@ -7,6 +7,7 @@ import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,8 @@ public class RandomSelector extends AbstractSelector {
 
 	@Override
 	public boolean restartTest(Laps laps) {
+		getLapses().add(laps);
+		laps.setEndDate(new Date());
 		return false;
 		//return !laps.getOracle().wasSuccessful();
 	}
