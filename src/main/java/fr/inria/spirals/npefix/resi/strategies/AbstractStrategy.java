@@ -2,13 +2,13 @@ package fr.inria.spirals.npefix.resi.strategies;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.MethodContext;
+import fr.inria.spirals.npefix.resi.context.instance.ArrayInstance;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
 import fr.inria.spirals.npefix.resi.context.instance.NewInstance;
 import fr.inria.spirals.npefix.resi.context.instance.PrimitiveInstance;
 import fr.inria.spirals.npefix.resi.context.instance.StaticVariableInstance;
 import fr.inria.spirals.npefix.resi.context.instance.VariableInstance;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -39,11 +39,12 @@ public abstract class AbstractStrategy implements Strategy {
 		if(clazz == null)
 			return new PrimitiveInstance<>(null);
 		if(clazz.isArray()) {
-			T t = (T) Array.newInstance(clazz.getComponentType(), 100);
+			List<Instance<?>> values = new ArrayList<>();
 			for (int i = 0; i < 100; i++) {
-				Array.set(t,i, initClass(clazz.getComponentType()).getValue());
+				values.add(initClass(clazz.getComponentType()));
 			}
-			return new PrimitiveInstance<T>(t);
+			ArrayInstance<T> instance = new ArrayInstance<>(clazz.getComponentType().getCanonicalName(), values);
+			return instance;
 		}
 		if(clazz.isPrimitive()){
 			List<Instance<T>> instances = AbstractStrategy.initPrimitive(clazz);
@@ -165,8 +166,9 @@ public abstract class AbstractStrategy implements Strategy {
 		}
 		List<Instance<T>> instances = new ArrayList<>();
 		if(clazz.isArray()) {
-			T t = (T) Array.newInstance(clazz.getComponentType(), 0);
-			instances.add(new PrimitiveInstance<T>(t));
+			List<Instance<?>> values = new ArrayList<>();
+			ArrayInstance<T> instance = new ArrayInstance<>(clazz.getComponentType().getCanonicalName(), values);
+			instances.add(instance);
 			return instances;
 		}
 		Set<Class> classes = new HashSet<>();
