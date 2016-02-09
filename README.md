@@ -1,4 +1,4 @@
-# Bandit Repair
+# Bandit Repair [![Build Status](https://travis-ci.org/Spirals-Team/bandit-repair.svg?branch=master)](https://travis-ci.org/Spirals-Team/bandit-repair) [![Coverage Status](https://coveralls.io/repos/github/Spirals-Team/bandit-repair/badge.svg?branch=master)](https://coveralls.io/github/Spirals-Team/bandit-repair?branch=master)
 
 ## Getting Started
 
