@@ -1,6 +1,6 @@
 package fr.inria.spirals.npefix.resi.context.instance;
 
-public class  PrimitiveInstance<T> implements Instance<T> {
+public class  PrimitiveInstance<T> extends AbstractInstance<T> {
 
 	public T value;
 

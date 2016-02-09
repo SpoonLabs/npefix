@@ -4,7 +4,7 @@ import fr.inria.spirals.npefix.resi.exception.VarNotFound;
 
 import java.lang.reflect.Field;
 
-public class StaticVariableInstance<T> implements Instance<T> {
+public class StaticVariableInstance<T> extends AbstractInstance<T> {
 
 	private final String clazz;
 	private String fieldName;

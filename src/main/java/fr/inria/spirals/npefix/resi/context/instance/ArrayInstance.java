@@ -3,7 +3,7 @@ package fr.inria.spirals.npefix.resi.context.instance;
 import java.lang.reflect.Array;
 import java.util.List;
 
-public class ArrayInstance<T> implements Instance<T> {
+public class ArrayInstance<T> extends AbstractInstance<T> {
 
 	private final String clazz;
 	private List<Instance<?>> values;
@@ -15,17 +15,13 @@ public class ArrayInstance<T> implements Instance<T> {
 
 	@Override
 	public T getValue() {
-		try {
-			Class<?> aClass = getClass().forName(clazz);
-			T t = (T) Array.newInstance(aClass, values.size());
-			for (int i = 0; i < values.size(); i++) {
-				Instance<?> value = values.get(i);
-				Array.set(t, i, value.getValue());
-			}
-			return t;
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+		Class<?> aClass = getClassFromString(clazz);
+		T t = (T) Array.newInstance(aClass, values.size());
+		for (int i = 0; i < values.size(); i++) {
+			Instance<?> value = values.get(i);
+			Array.set(t, i, value.getValue());
 		}
+		return t;
 	}
 
 	@Override

@@ -7,7 +7,7 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 
-public class NewInstance<T> implements Instance<T> {
+public class NewInstance<T> extends AbstractInstance<T> {
 
 	private final String clazz;
 	private String[] parameterType;
@@ -20,55 +20,6 @@ public class NewInstance<T> implements Instance<T> {
 		this.parameters = parameters;
 	}
 
-	private Class getClassFromString (String className) {
-		if(className.equals("int")) {
-			return int.class;
-		}
-		if(className.equals("int[]")) {
-			return int[].class;
-		}
-		if(className.equals("long")) {
-			return long.class;
-		}
-		if(className.equals("long[]")) {
-			return long[].class;
-		}
-		if(className.equals("float")) {
-			return float.class;
-		}
-		if(className.equals("float[]")) {
-			return float[].class;
-		}
-		if(className.equals("double")) {
-			return double.class;
-		}
-		if(className.equals("double[]")) {
-			return double[].class;
-		}
-		if(className.equals("byte")) {
-			return byte.class;
-		}
-		if(className.equals("byte[]")) {
-			return byte[].class;
-		}
-		if(className.equals("char")) {
-			return char.class;
-		}
-		if(className.equals("char[]")) {
-			return char[].class;
-		}
-		if(className.equals("boolean")) {
-			return boolean.class;
-		}
-		if(className.equals("boolean[]")) {
-			return boolean[].class;
-		}
-		try {
-			return getClass().forName(className);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-	}
 	@Override
 	public T getValue() {
 		boolean wasEnable = CallChecker.isEnable();
