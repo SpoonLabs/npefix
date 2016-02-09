@@ -6,6 +6,7 @@ import fr.inria.spirals.npefix.resi.context.Laps;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -15,6 +16,13 @@ import java.util.Set;
 public class RandomSelector extends AbstractSelector {
 
 	private Set<Decision> decisions = new HashSet<>();
+	private Laps currentLaps = null;
+
+	@Override
+	public boolean startLaps(Laps laps) throws RemoteException {
+		currentLaps = laps;
+		return true;
+	}
 
 	@Override
 	public List<Strategy> getStrategies() {

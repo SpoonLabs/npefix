@@ -10,6 +10,7 @@ import org.junit.runner.Request;
 import org.junit.runner.Result;
 import utils.sacha.runner.main.TestRunner;
 
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.concurrent.Callable;
@@ -56,6 +57,14 @@ public class ExecutionClient {
 		final Laps laps = new Laps(selector);
 		laps.setTestClassName(classTestName);
 		laps.setTestName(testName);
+
+		try {
+			if(!selector.startLaps(laps)) {
+				return;
+			}
+		} catch (RemoteException e) {
+			throw new RuntimeException(e);
+		}
 		CallChecker.currentLaps = laps;
 		CallChecker.strategySelector = selector;
 		CallChecker.currentClassLoader = getClass().getClassLoader();

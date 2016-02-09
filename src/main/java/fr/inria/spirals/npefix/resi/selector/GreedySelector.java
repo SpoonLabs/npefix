@@ -8,6 +8,7 @@ import fr.inria.spirals.npefix.resi.context.Laps;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -24,9 +25,16 @@ public class GreedySelector extends AbstractSelector {
 	private Map<Decision<?>, Double> values = new HashMap<>();
 	private Set<Decision<?>> usedDecisions = new HashSet<>();
 	private List<Decision<?>> unusedDecisions  = new ArrayList<>();
+	private Laps currentLaps = null;
 
 	public GreedySelector() {
 		epsilon = Config.CONFIG.getGreedyEpsilon();
+	}
+
+	@Override
+	public boolean startLaps(Laps laps) throws RemoteException {
+		currentLaps = laps;
+		return true;
 	}
 
 	private <T> void initDecision(List<Decision<T>> decisions) {
