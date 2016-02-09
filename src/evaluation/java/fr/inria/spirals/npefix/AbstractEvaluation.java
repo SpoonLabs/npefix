@@ -68,13 +68,19 @@ public class AbstractEvaluation {
         if(test.isEmpty()) {
             throw new RuntimeException("No test found");
         }
+        int countError = 0;
         NPEOutput output = new NPEOutput();
         while (output.size() < nbIteration) {
+            if(countError > 5) {
+                break;
+            }
             try {
-                List<Laps> result =launcher.runCommandLine(selector, tests);
+                List<Laps> result = launcher.runCommandLine(selector, tests);
                 if(result.isEmpty()) {
-                    break;
+                    countError++;
+                    continue;
                 }
+                countError = 0;
                 if(output.size() + result.size() > nbIteration) {
                     output.addAll(result.subList(0, (nbIteration - output.size())));
                 } else {
@@ -82,13 +88,16 @@ public class AbstractEvaluation {
                 }
             } catch (OutOfMemoryError e) {
                 e.printStackTrace();
-                break;
+                countError++;
+                continue;
             } catch (Exception e) {
                 if(e.getCause() instanceof OutOfMemoryError) {
-                    break;
+                    countError++;
+                    continue;
                 }
                 e.printStackTrace();
-                break;
+                countError++;
+                continue;
             }
             System.out.println("Multirun " + output.size() + "/" + nbIteration + " " + ((int)(output.size()/(double)nbIteration * 100)) + "%");
         }
