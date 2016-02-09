@@ -13,6 +13,8 @@ public interface Selector extends Remote {
 
 	<T> Decision<T> select(List<Decision<T>> decisions) throws RemoteException;
 
+	boolean startLaps(Laps laps) throws RemoteException;
+
 	boolean restartTest(Laps laps) throws RemoteException;
 
 	List<Strategy> getStrategies() throws RemoteException;

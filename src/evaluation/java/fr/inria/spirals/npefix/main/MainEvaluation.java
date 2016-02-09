@@ -5,6 +5,7 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import fr.inria.spirals.npefix.config.Config;
+import fr.inria.spirals.npefix.resi.selector.ExplorationSelectorEvaluation;
 import fr.inria.spirals.npefix.resi.selector.GreedySelectorEvaluation;
 
 import java.lang.reflect.Method;
@@ -32,12 +33,21 @@ public abstract class MainEvaluation {
 			if (arguments == null) {
 				return;
 			}
-			GreedySelectorEvaluation evaluation = new GreedySelectorEvaluation();
-			evaluation.setup();
-			Method project = GreedySelectorEvaluation.class.getMethod(
-					arguments.getString("project").toLowerCase()
-							.replace("-", ""));
-			project.invoke(evaluation);
+			if(arguments.getString("mode").equals("normal")) {
+				GreedySelectorEvaluation evaluation = new GreedySelectorEvaluation();
+				evaluation.setup();
+				Method project = GreedySelectorEvaluation.class.getMethod(
+						arguments.getString("project").toLowerCase()
+								.replace("-", ""));
+				project.invoke(evaluation);
+			} else if(arguments.getString("mode").equals("exploration")) {
+				ExplorationSelectorEvaluation evaluation = new ExplorationSelectorEvaluation();
+				evaluation.setup();
+				Method project = ExplorationSelectorEvaluation.class.getMethod(
+						arguments.getString("project").toLowerCase()
+								.replace("-", ""));
+				project.invoke(evaluation);
+			}
 		} catch (NoSuchMethodException e) {
 			System.err.println("The project is not found");
 		} catch (Exception e) {
@@ -79,8 +89,7 @@ public abstract class MainEvaluation {
 			Config.CONFIG.setM2Repository(config.getString(M2_REPO));
 		}
 		if (config.contains(NB_LAPS)) {
-			Config.CONFIG
-					.setNbIteration(config.getInt(NB_LAPS));
+			Config.CONFIG.setNbIteration(config.getInt(NB_LAPS));
 		}
 		if (config.contains(TEST_TIMEOUT)) {
 			Config.CONFIG.setTimeoutIteration(
@@ -102,6 +111,17 @@ public abstract class MainEvaluation {
 		projectOpt.setHelp("The bug to execute.");
 		jsap.registerParameter(projectOpt);
 
+		FlaggedOption modeOpt = new FlaggedOption("mode");
+		modeOpt.setRequired(false);
+		modeOpt.setAllowMultipleDeclarations(false);
+		modeOpt.setLongFlag("mode");
+		modeOpt.setShortFlag('m');
+		modeOpt.setUsageName("mode");
+		modeOpt.setDefault("normal");
+		modeOpt.setStringParser(JSAP.STRING_PARSER);
+		modeOpt.setHelp("The execution mode.");
+		jsap.registerParameter(modeOpt);
+
 		FlaggedOption workingDirectoryOpt = new FlaggedOption(
 				WORKING_DIRECTORY);
 		workingDirectoryOpt.setRequired(false);
@@ -118,7 +138,7 @@ public abstract class MainEvaluation {
 		m2Opt.setRequired(false);
 		m2Opt.setAllowMultipleDeclarations(false);
 		m2Opt.setLongFlag("m2");
-		m2Opt.setShortFlag('m');
+		m2Opt.setShortFlag('k');
 		m2Opt.setUsageName("~/.m2");
 		m2Opt.setStringParser(JSAP.STRING_PARSER);
 		m2Opt.setDefault("~/.m2");

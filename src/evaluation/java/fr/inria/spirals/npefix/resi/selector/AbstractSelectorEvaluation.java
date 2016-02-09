@@ -16,7 +16,7 @@ public abstract class AbstractSelectorEvaluation extends AbstractEvaluation {
 
 	private Selector selector;
 
-	private int nbIteration = Config.CONFIG.getNbIteration();
+	protected int nbIteration = Config.CONFIG.getNbIteration();
 
 	public AbstractSelectorEvaluation() {
 	}
