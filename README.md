@@ -1,5 +1,21 @@
 # Bandit Repair [![Build Status](https://travis-ci.org/Spirals-Team/bandit-repair.svg?branch=master)](https://travis-ci.org/Spirals-Team/bandit-repair) [![Coverage Status](https://coveralls.io/repos/github/Spirals-Team/bandit-repair/badge.svg?branch=master)](https://coveralls.io/github/Spirals-Team/bandit-repair?branch=master)
 
+This is the repository of BanditRepair.
+
+BanditRepair is a system that systematically explores and assesses a set of possible runtime patches developed at Inria Lille.
+
+This code is research code, released under the GPL licence.
+
+If you use this code for academic research, please cite: BanditRepair: Speculative Exploration of Runtime Patches (Thomas Durieux, Youssef Hamadi, Martin Monperrus)
+```Bibtex
+@InProceedings{durieux2016banditrepair,
+    title={BanditRepair: Speculative Exploration of Runtime Patches},
+    author={Durieux, Thomas and Hamadi, Youssef and Monperrus, Martin},
+    journal={arXiv preprint arXiv:1603.07631},
+    year={2016}
+}
+```
+
 ## Getting Started
 
 ### Run the tests
@@ -14,7 +30,7 @@ mvn test
 2. Installs each bug on your system, in order to download the dependencies
 3. Configures the location of the dataset in src/main/resources/config.ini
 4. Creates the Bandit Repair jar with all dependencies: `mvn clean compile assembly:single`
-5. Executes Bandit Repair `java -jar target/npefix-0.2-jar-with-dependencies.jar` (see the execution usage below)
+5. Executes Bandit Repair `java -jar target/npefix-0.3-jar-with-dependencies.jar` (see the execution usage below)
 6. Checks the output of the execution in the folder `output/GreedySelector/<program_name>/<timestamp>.json`
 
 #### Execution usage
@@ -50,7 +66,7 @@ java -jar target/npefix-0.2-jar-with-dependencies.jar
 ```
 
 #### Execution output
-```JSON
+```js
 {
   "executions": [
     /* all laps */
