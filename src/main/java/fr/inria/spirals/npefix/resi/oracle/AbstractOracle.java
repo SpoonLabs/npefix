@@ -29,6 +29,10 @@ public class AbstractOracle implements Oracle {
 		this.error = error;
 	}
 
+	public String getError() {
+		return error;
+	}
+
 	@Override
 	public JSONObject toJSON() {
 		JSONObject resultJSON = new JSONObject();

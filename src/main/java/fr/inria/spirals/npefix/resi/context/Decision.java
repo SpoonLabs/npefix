@@ -11,8 +11,8 @@ public class Decision<T> implements Serializable {
 	private Location location;
 	private Instance<T> value;
 	private String valueType;
-	private String variableName;
 	private String decisionType;
+	private int nbUse = 0;
 	private boolean isUsed = false;
 	private double epsilon;
 
@@ -30,11 +30,6 @@ public class Decision<T> implements Serializable {
 	public Decision(Strategy strategy, Location location, Instance<T> value, Class<T> valueType) {
 		this(strategy, location, value);
 		this.valueType = valueType.getCanonicalName();
-	}
-
-	public Decision(Strategy strategy, Location location, Instance<T> value, Class<T> valueType, String variableName) {
-		this(strategy, location, value, valueType);
-		this.variableName = variableName;
 	}
 
 	public boolean isUsed() {
@@ -81,14 +76,6 @@ public class Decision<T> implements Serializable {
 		this.valueType = valueType.getCanonicalName();
 	}
 
-	public String getVariableName() {
-		return variableName;
-	}
-
-	public void setVariableName(String variableName) {
-		this.variableName = variableName;
-	}
-
 	public String getDecisionType() {
 		return decisionType;
 	}
@@ -103,6 +90,18 @@ public class Decision<T> implements Serializable {
 
 	public double getEpsilon() {
 		return epsilon;
+	}
+
+	public int getNbUse() {
+		return nbUse;
+	}
+
+	public void setNbUse(int nbUse) {
+		this.nbUse = nbUse;
+	}
+
+	public void increaseNbUse() {
+		nbUse ++;
 	}
 
 	@Override
@@ -124,17 +123,6 @@ public class Decision<T> implements Serializable {
 				decision.valueType != null)
 			return false;
 
-		if (variableName != null ?
-				!variableName.equals(decision.variableName) :
-				decision.variableName != null)
-			return false;
-		else if(variableName != null){
-			return true;
-		}
-
-		if(value == decision.value) {
-			return true;
-		}
 		if (value != null ?
 				!value.equals(decision.value) :
 				decision.value != null)
@@ -154,15 +142,15 @@ public class Decision<T> implements Serializable {
 		output.put("decisionType", decisionType);
 		output.put("used", isUsed);
 		output.put("epsilon", epsilon);
+		output.put("nbUse", nbUse);
 
 		JSONObject valueJSON = new JSONObject();
-		if(value!= null) {
+		if(value != null) {
 			valueJSON.put("value", value.toString());
 		} else {
 			valueJSON.put("value", "null");
 		}
 
-		valueJSON.put("variableName", variableName);
 		valueJSON.put("type", valueType);
 		output.put("value", valueJSON);
 

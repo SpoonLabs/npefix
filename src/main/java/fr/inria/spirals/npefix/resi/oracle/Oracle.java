@@ -7,5 +7,7 @@ import java.io.Serializable;
 public interface Oracle extends Serializable{
 	boolean isValid();
 
+	String getError();
+
 	JSONObject toJSON();
 }

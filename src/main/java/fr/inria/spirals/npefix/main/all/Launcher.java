@@ -6,6 +6,7 @@ import fr.inria.spirals.npefix.main.ExecutionClient;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Laps;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
+import fr.inria.spirals.npefix.resi.oracle.ExceptionOracle;
 import fr.inria.spirals.npefix.resi.oracle.TestOracle;
 import fr.inria.spirals.npefix.resi.selector.DomSelector;
 import fr.inria.spirals.npefix.resi.selector.RandomSelector;
@@ -316,7 +317,18 @@ public class Launcher {
                 // wait the end of the process
                 process.waitFor();
                 // adds all laps
-                output.addAll(selector.getLapses());
+                List<Laps> lapses = new ArrayList<>();
+                for (Laps laps : selector.getLapses()) {
+                    if (laps.getOracle() instanceof ExceptionOracle) {
+                        // removes laps that end because there is not more available decision (Full exploration strategy)
+                        if (!laps.getOracle().isValid()
+                                && laps.getOracle().getError().contains("No more available decision")) {
+                            continue;
+                        }
+                    }
+                    lapses.add(laps);
+                }
+                output.addAll(lapses);
                 selector.getLapses().clear();
                 // destroy the process
                 process.destroy();

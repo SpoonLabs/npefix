@@ -23,7 +23,7 @@ public class ExplorerSelector extends AbstractSelector {
 
 	private Set<List<Decision>> usedDecisionSeq = new HashSet<>();
 	private Map<Location, Set<Decision>> decisions = new HashMap<>();
-	private Map<String,Stack<Decision>> stackDecision  = new HashMap<>();
+	private Map<String, Stack<Decision>> stackDecision  = new HashMap<>();
 	private Laps currentLaps = null;
 	private String currentTestKey;
 
@@ -70,14 +70,11 @@ public class ExplorerSelector extends AbstractSelector {
 	}
 
 	@Override
-	public <T> Decision<T> select(List<Decision<T>> decisions) {
+	public synchronized <T> Decision<T> select(List<Decision<T>> decisions) {
 		try {
 			initDecision(decisions);
 
-			for (Iterator<Decision> iterator = stackDecision.get(currentTestKey)
-					.iterator(); iterator
-						 .hasNext(); ) {
-				Decision decision = iterator.next();
+			for (Decision decision : stackDecision.get(currentTestKey)) {
 				if (decisions.contains(decision)) {
 					return decision;
 				}
@@ -98,7 +95,7 @@ public class ExplorerSelector extends AbstractSelector {
 				}
 				otherDecision.remove(decision);
 			}
-			return null;
+			throw new RuntimeException("No more available decision");
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw  e;
@@ -112,8 +109,13 @@ public class ExplorerSelector extends AbstractSelector {
 			return false;
 		}
 		getLapses().add(laps);
-
 		usedDecisionSeq.add(laps.getDecisions());
+
+		stackDecision.put(currentTestKey, new Stack<Decision>());
+		for (int i = 0; i < laps.getDecisions().size(); i++) {
+			Decision decision = laps.getDecisions().get(i);
+			stackDecision.get(currentTestKey).add(decision);
+		}
 
 		Decision lastDecision = stackDecision.get(currentTestKey).pop();
 
@@ -128,7 +130,7 @@ public class ExplorerSelector extends AbstractSelector {
 			}
 			otherDecision.remove(decision);
 		}
-		if(!stackDecision.get(currentTestKey).isEmpty()) {
+		if (!stackDecision.get(currentTestKey).isEmpty()) {
 			stackDecision.get(currentTestKey).pop();
 		}
 		return false;

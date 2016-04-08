@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class MethodContext {
 
-	private static int idCount = 1;
+	public static int idCount = 1;
 	private final HashMap<String, Object> variables;
 	private final Class  methodType;
 	private final String methodName;

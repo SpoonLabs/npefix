@@ -7,7 +7,6 @@ import fr.inria.spirals.npefix.resi.context.instance.Instance;
 import fr.inria.spirals.npefix.resi.context.instance.PrimitiveInstance;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,10 +63,9 @@ public class Strat4 extends AbstractStrategy {
 		case VAR:
 			Map<String, Instance<T>> variables = obtain(clazz);
 			Set<String> strings = variables.keySet();
-			for (Iterator<String> iterator = strings.iterator(); iterator
-					.hasNext(); ) {
-				String key = iterator.next();
-				Decision<T> decision = new Decision<>(this, location, variables.get(key), clazz, key);
+			for (String key : strings) {
+				Decision<T> decision = new Decision<>(this, location,
+						variables.get(key), clazz);
 				output.add(decision);
 			}
 			break;

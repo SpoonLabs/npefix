@@ -126,7 +126,7 @@ public class AbstractEvaluation {
                 file.createNewFile();
             }
             FileWriter fileWriter = new FileWriter(file);
-            fileWriter.write(results.toString(2));
+            results.write(fileWriter);
             fileWriter.close();
         } catch (IOException e) {
             e.printStackTrace();

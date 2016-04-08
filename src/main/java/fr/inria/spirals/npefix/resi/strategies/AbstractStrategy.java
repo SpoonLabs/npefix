@@ -43,7 +43,7 @@ public abstract class AbstractStrategy implements Strategy {
 			for (int i = 0; i < 100; i++) {
 				values.add(initClass(clazz.getComponentType()));
 			}
-			ArrayInstance<T> instance = new ArrayInstance<>(clazz.getComponentType().getCanonicalName(), values);
+			ArrayInstance<T> instance = new ArrayInstance<>(clazz, values);
 			return instance;
 		}
 		if(clazz.isPrimitive()){
@@ -167,7 +167,7 @@ public abstract class AbstractStrategy implements Strategy {
 		List<Instance<T>> instances = new ArrayList<>();
 		if(clazz.isArray()) {
 			List<Instance<?>> values = new ArrayList<>();
-			ArrayInstance<T> instance = new ArrayInstance<>(clazz.getComponentType().getCanonicalName(), values);
+			ArrayInstance<T> instance = new ArrayInstance<>(clazz, values);
 			instances.add(instance);
 			return instances;
 		}
@@ -279,11 +279,11 @@ public abstract class AbstractStrategy implements Strategy {
 						newInstance.getValue();
 						instances.add(newInstance);
 					}catch (Throwable t){
-						System.err.println("Unable call constructor " + constructor);
+						//System.err.println("Unable call constructor " + constructor);
 					}
 				}
 			} catch (Throwable t){
-				System.err.println("Unable new instance " + clazz);
+				//System.err.println("Unable new instance " + clazz);
 			}
 		}
 		return instances;

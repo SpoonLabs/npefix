@@ -90,14 +90,19 @@ public class CallChecker {
 		Location location = getLocation(line, sourceStart, sourceEnd);
 
 		if(decisions.containsKey(location)) {
-			if(!decisions.get(location).getStrategy().isCompatibleAction(action)) {
+			Decision decision = decisions.get(location);
+			if(!decision.getStrategy().isCompatibleAction(action)) {
 				return o;
 			}
-			currentLaps.addApplication(decisions.get(location));
-			if(decisions.get(location).getStrategy() instanceof Strat4) {
-				throw new ForceReturn(decisions.get(location));
+			//System.out.println("Stack size: " + stack.size());
+			//System.out.println("Nb method calls" + MethodContext.idCount);
+			currentLaps.addApplication(decision);
+			decision.increaseNbUse();
+			decision.setUsed(true);
+			if(decision.getStrategy() instanceof Strat4) {
+				throw new ForceReturn(decision);
 			}
-			return (T) decisions.get(location).getValue();
+			return (T) decision.getValue();
 		}
 		if(!isEnable()) {
 			return o;
@@ -120,7 +125,7 @@ public class CallChecker {
 		}
 
 		Decision<?> decision = getDecision(searchSpace);
-		decision.setUsed(true);
+
 		//disable();
 
 		currentLaps.addDecision(decision);
@@ -130,7 +135,11 @@ public class CallChecker {
 		if(!decision.getStrategy().isCompatibleAction(action)) {
 			return o;
 		}
-		currentLaps.addApplication(decisions.get(location));
+		//System.out.println("Stack size: " + stack.size());
+		//System.out.println("Nb method calls: " + MethodContext.idCount);
+		currentLaps.addApplication(decision);
+		decision.increaseNbUse();
+		decision.setUsed(true);
 
 		if(decision.getStrategy() instanceof Strat4) {
 			throw new ForceReturn(decision);

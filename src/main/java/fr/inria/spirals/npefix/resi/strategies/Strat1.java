@@ -30,7 +30,7 @@ public abstract class Strat1 extends AbstractStrategy {
 		for (Iterator<String> iterator = strings.iterator(); iterator
 				.hasNext(); ) {
 			String key = iterator.next();
-			Decision<T> decision = new Decision<>(this, location, instances.get(key), clazz, key);
+			Decision<T> decision = new Decision<>(this, location, instances.get(key), clazz);
 			output.add(decision);
 		}
 		return output;

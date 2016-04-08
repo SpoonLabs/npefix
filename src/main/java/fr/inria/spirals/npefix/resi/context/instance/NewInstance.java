@@ -73,8 +73,7 @@ public class NewInstance<T> extends AbstractInstance<T> {
 	@Override
 	public int hashCode() {
 		int result = clazz != null ? clazz.hashCode() : 0;
-		result = 31 * result + Arrays.hashCode(parameterType);
-		result = 31 * result + (parameters != null ? parameters.hashCode() : 0);
+		result = 31 * result;
 		return result;
 	}
 
