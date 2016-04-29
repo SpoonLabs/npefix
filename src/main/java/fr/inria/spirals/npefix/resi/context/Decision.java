@@ -7,11 +7,16 @@ import org.json.JSONObject;
 import java.io.Serializable;
 
 public class Decision<T> implements Serializable {
+	public enum DecisionType {
+		RANDOM,
+		NEW,
+		BEST
+	}
 	private Strategy strategy;
 	private Location location;
 	private Instance<T> value;
 	private String valueType;
-	private String decisionType;
+	private DecisionType decisionType;
 	private int nbUse = 0;
 	private boolean isUsed = false;
 	private double epsilon;
@@ -19,7 +24,7 @@ public class Decision<T> implements Serializable {
 	public Decision(Strategy strategy, Location location) {
 		this.strategy = strategy;
 		this.location = location;
-		this.decisionType = "random";
+		this.decisionType = DecisionType.RANDOM;
 	}
 
 	public Decision(Strategy strategy, Location location, Instance<T> value) {
@@ -76,11 +81,11 @@ public class Decision<T> implements Serializable {
 		this.valueType = valueType.getCanonicalName();
 	}
 
-	public String getDecisionType() {
+	public DecisionType getDecisionType() {
 		return decisionType;
 	}
 
-	public void setDecisionType(String decisionType) {
+	public void setDecisionType(DecisionType decisionType) {
 		this.decisionType = decisionType;
 	}
 

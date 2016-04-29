@@ -89,7 +89,7 @@ public class ExplorerSelector extends AbstractSelector {
 				otherDecision.add(decision);
 				if (!usedDecisionSeq.contains(otherDecision)) {
 					decision.setUsed(true);
-					decision.setDecisionType("new");
+					decision.setDecisionType(Decision.DecisionType.NEW);
 					stackDecision.get(currentTestKey).push(decision);
 					return decision;
 				}

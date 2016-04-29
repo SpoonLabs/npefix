@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static fr.inria.spirals.npefix.resi.context.Decision.DecisionType.BEST;
+import static fr.inria.spirals.npefix.resi.context.Decision.DecisionType.NEW;
+import static fr.inria.spirals.npefix.resi.context.Decision.DecisionType.RANDOM;
+
 public class GreedySelector extends AbstractSelector {
 
 	private double epsilon;
@@ -92,7 +96,7 @@ public class GreedySelector extends AbstractSelector {
 				}
 			}
 			usedDecisions.add(bestDecision);
-			bestDecision.setDecisionType("best");
+			bestDecision.setDecisionType(BEST);
 			CallChecker.currentLaps.putMetadata("strategy_selection", "best");
 			bestDecision.setEpsilon(epsilon);
 			return bestDecision;
@@ -104,11 +108,11 @@ public class GreedySelector extends AbstractSelector {
 			int maxValue = decisions.size();
 			int index = RandomGenerator.nextInt(1, maxValue);
 			output = decisions.get(index);
-			output.setDecisionType("random");
+			output.setDecisionType(RANDOM);
 		} else {
 			output = localUnusedDecision.remove(0);
 			usedDecisions.add(output);
-			output.setDecisionType("new");
+			output.setDecisionType(NEW);
 		}
 		output.setEpsilon(epsilon);
 		return output;
