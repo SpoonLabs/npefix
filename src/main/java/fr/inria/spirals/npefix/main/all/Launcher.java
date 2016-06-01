@@ -322,11 +322,11 @@ public class Launcher {
                 inheritIO(process.getErrorStream(), System.err);
                 // wait the end of the process
                 process.waitFor();
-                // adds all laps
+                // adds all lapse
                 List<Lapse> lapses = new ArrayList<>();
                 for (Lapse lapse : selector.getLapses()) {
                     if (lapse.getOracle() instanceof ExceptionOracle) {
-                        // removes laps that end because there is not more available decision (Full exploration strategy)
+                        // removes lapse that end because there is not more available decision (Full exploration strategy)
                         if (!lapse.getOracle().isValid()
                                 && lapse.getOracle().getError().contains("No more available decision")) {
                             continue;
@@ -393,7 +393,7 @@ public class Launcher {
     public NPEOutput runStrategy(Strategy...strategies) {
         NPEOutput output = new NPEOutput();
 
-        Selector selector= new DomSelector();
+        Selector selector = new DomSelector();
         DecisionServer decisionServer = new DecisionServer(selector);
         decisionServer.startServer();
 

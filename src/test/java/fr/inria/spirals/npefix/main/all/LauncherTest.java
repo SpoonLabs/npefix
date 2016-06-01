@@ -42,54 +42,38 @@ public class LauncherTest {
                 rootPath.getFile() + "/../instrumented",
                 rootPath.getFile() + "",
                 classpath);
-        launcher.instrument();
-        NPEOutput results = launcher.runStrategy(new NoStrat(),
-                new Strat1A(),
-                new Strat1B(),
-                new Strat2A(),
-                new Strat2B(),
-                new Strat3(),
-                new Strat4(ReturnType.NULL),
-                new Strat4(ReturnType.VAR),
-                new Strat4(ReturnType.NEW),
-                new Strat4(ReturnType.VOID));
-        Assert.assertEquals("Nb test", 7, results.size());
 
-        /*Assert.assertEquals("NoStrat failing", 7, results.get(0).getOracle().getNbFailedTests());
+        launcher.instrument();
+
+        NPEOutput results = launcher.runStrategy(new NoStrat());
+        Assert.assertEquals("Nb test", 7, results.size());
+        Assert.assertEquals("NoStrat failing", 7, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat1A());
-        Assert.assertEquals("Strat1A failing", 6,results.get(0).getOracle().getNbFailedTests());
-
+        Assert.assertEquals("Strat1A failing", 6, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat1B());
-        Assert.assertEquals("Strat1B failing", 6,results.get(0).getOracle().getNbFailedTests());
-
+        Assert.assertEquals("Strat1B failing", 6, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat2A());
-        Assert.assertEquals("Strat2A failing", 4,results.get(0).getOracle().getNbFailedTests());
-
+        Assert.assertEquals("Strat2A failing", 4, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat2B());
-        Assert.assertEquals("Strat2B failing", 4,results.get(0).getOracle().getNbFailedTests());
-
+        Assert.assertEquals("Strat2B failing", 4, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat3());
-        Assert.assertEquals("Strat3 failing", 2,results.get(0).getOracle().getNbFailedTests());
-
+        Assert.assertEquals("Strat3 failing", 2, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat4(ReturnType.NULL));
-        Assert.assertEquals("Strat4 Null failing", 4,results.get(0).getOracle().getNbFailedTests());
-
+        Assert.assertEquals("Strat4 Null failing", 6, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat4(ReturnType.VAR));
-        Assert.assertEquals("Strat4 var failing", 4,results.get(0).getOracle().getNbFailedTests());
+        Assert.assertEquals("Strat4 var failing", 6, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat4(ReturnType.NEW));
-        Assert.assertEquals("Strat4 new failing", 3,results.get(0).getOracle().getNbFailedTests());
-
+        Assert.assertEquals("Strat4 new failing", 5, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat4(ReturnType.VOID));
-        Assert.assertEquals("Strat4 void failing", 5,results.get(0).getOracle().getNbFailedTests());*/
-
+        Assert.assertEquals("Strat4 void failing", 5, results.getFailureCount());
     }
 }
