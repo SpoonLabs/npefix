@@ -1,7 +1,7 @@
 package fr.inria.spirals.npefix.resi;
 
 import fr.inria.spirals.npefix.AbstractEvaluation;
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 import fr.inria.spirals.npefix.transformer.processors.RemoveNullCheckProcessor;
@@ -25,7 +25,7 @@ public class PaperProjects extends AbstractEvaluation {
         };
 
         Strategy strat = new NoStrat();
-        List<Laps> results = runProject("math", source, test, deps, true, strat);
+        List<Lapse> results = runProject("math", source, test, deps, true, strat);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class PaperProjects extends AbstractEvaluation {
         };
 
         Strategy strat = new NoStrat();
-        List<Laps> results = runProject("lang", source, test, deps, true, strat);
+        List<Lapse> results = runProject("lang", source, test, deps, true, strat);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class PaperProjects extends AbstractEvaluation {
         };
 
         Strategy strat = new NoStrat();
-        List<Laps> results = runProject("spojo", source, test, deps, true, strat);
+        List<Lapse> results = runProject("spojo", source, test, deps, true, strat);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class PaperProjects extends AbstractEvaluation {
         };
 
         Strategy strat = new NoStrat();
-        List<Laps> results = runProject(name, source, test, deps, true, strat);
+        List<Lapse> results = runProject(name, source, test, deps, true, strat);
     }
 
     @Test
@@ -153,7 +153,7 @@ public class PaperProjects extends AbstractEvaluation {
         };
 
         Strategy strat = new NoStrat();
-        List<Laps> results = runProject(name, source, test, deps, true, strat);
+        List<Lapse> results = runProject(name, source, test, deps, true, strat);
     }
 
     @Test
@@ -191,6 +191,6 @@ public class PaperProjects extends AbstractEvaluation {
         };
 
         Strategy strat = new NoStrat();
-        List<Laps> results = runProject("junit", source, test, deps, false, strat);
+        List<Lapse> results = runProject("junit", source, test, deps, false, strat);
     }
 }

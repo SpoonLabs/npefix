@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public class NPEOutput extends ArrayList<Laps>{
+public class NPEOutput extends ArrayList<Lapse>{
 
 	public NPEOutput() {
 
@@ -17,18 +17,18 @@ public class NPEOutput extends ArrayList<Laps>{
 	public Set<String> getTests() {
 		Set<String> output = new HashSet<>();
 		for (int i = 0; i < this.size(); i++) {
-			Laps laps = this.get(i);
-			output.add(laps.getTestClassName() + "#" + laps.getTestName());
+			Lapse lapse = this.get(i);
+			output.add(lapse.getTestClassName() + "#" + lapse.getTestName());
 		}
 		return output;
 	}
 
-	public Set<Strategy> getRunnedStrategies() {
+	public Set<Strategy> getRanStrategies() {
 		Set<Strategy> output = new HashSet<>();
 		for (int i = 0; i < this.size(); i++) {
-			Laps laps = this.get(i);
-			for (int j = 0; j < laps.getDecisions().size(); j++) {
-				Decision decision = laps.getDecisions().get(j);
+			Lapse lapse = this.get(i);
+			for (int j = 0; j < lapse.getDecisions().size(); j++) {
+				Decision decision = lapse.getDecisions().get(j);
 				output.add(decision.getStrategy());
 			}
 		}
@@ -38,11 +38,11 @@ public class NPEOutput extends ArrayList<Laps>{
 	public NPEOutput getExecutionsForStrategy(Strategy strategy) {
 		NPEOutput output = new NPEOutput();
 		for (int i = 0; i < this.size(); i++) {
-			Laps laps = this.get(i);
-			for (int j = 0; j < laps.getDecisions().size(); j++) {
-				Decision decision = laps.getDecisions().get(j);
+			Lapse lapse = this.get(i);
+			for (int j = 0; j < lapse.getDecisions().size(); j++) {
+				Decision decision = lapse.getDecisions().get(j);
 				if(decision.getStrategy().equals(strategy)) {
-					output.add(laps);
+					output.add(lapse);
 				}
 			}
 		}
@@ -52,8 +52,8 @@ public class NPEOutput extends ArrayList<Laps>{
 	public int getFailureCount() {
 		int output = 0;
 		for (int i = 0; i < this.size(); i++) {
-			Laps laps = this.get(i);
-			if(!laps.getOracle().isValid()) {
+			Lapse lapse = this.get(i);
+			if(!lapse.getOracle().isValid()) {
 				output += 1;
 			}
 		}
@@ -64,8 +64,8 @@ public class NPEOutput extends ArrayList<Laps>{
 		int output = 0;
 		NPEOutput executionsForStrategy = getExecutionsForStrategy(strategy);
 		for (int i = 0; i < executionsForStrategy.size(); i++) {
-			Laps laps = executionsForStrategy.get(i);
-			if(!laps.getOracle().isValid()) {
+			Lapse lapse = executionsForStrategy.get(i);
+			if(!lapse.getOracle().isValid()) {
 				output += 1;
 			}
 		}
@@ -75,9 +75,9 @@ public class NPEOutput extends ArrayList<Laps>{
 	public NPEOutput getExecutionsForLocation(Location location) {
 		NPEOutput output = new NPEOutput();
 		for (int i = 0; i < this.size(); i++) {
-			Laps laps = this.get(i);
-			if(laps.getLocations().contains(location)) {
-				output.add(laps);
+			Lapse lapse = this.get(i);
+			if(lapse.getLocations().contains(location)) {
+				output.add(lapse);
 			}
 		}
 		return output;
@@ -87,8 +87,8 @@ public class NPEOutput extends ArrayList<Laps>{
 		JSONObject output = new JSONObject();
 		output.put("date", new Date());
 		for (int i = 0; i < this.size(); i++) {
-			Laps laps = this.get(i);
-			output.append("executions", laps.toJSON(spoon));
+			Lapse lapse = this.get(i);
+			output.append("executions", lapse.toJSON(spoon));
 		}
 		return output;
 	}

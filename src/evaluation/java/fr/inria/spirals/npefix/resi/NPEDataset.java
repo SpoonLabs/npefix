@@ -41,7 +41,7 @@ public class NPEDataset extends AbstractEvaluation {
     private void eval(NPEOutput results) {
         int minFailing = Integer.MAX_VALUE;
         List<Strategy> bestStrats = new ArrayList<>();
-        Set<Strategy> runnedStrategies = results.getRunnedStrategies();
+        Set<Strategy> runnedStrategies = results.getRanStrategies();
         for (Iterator<Strategy> iterator = runnedStrategies.iterator(); iterator
                 .hasNext(); ) {
             Strategy strategy = iterator.next();

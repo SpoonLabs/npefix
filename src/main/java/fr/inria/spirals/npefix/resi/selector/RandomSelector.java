@@ -2,7 +2,7 @@ package fr.inria.spirals.npefix.resi.selector;
 
 import fr.inria.spirals.npefix.resi.RandomGenerator;
 import fr.inria.spirals.npefix.resi.context.Decision;
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
@@ -16,11 +16,11 @@ import java.util.Set;
 public class RandomSelector extends AbstractSelector {
 
 	private Set<Decision> decisions = new HashSet<>();
-	private Laps currentLaps = null;
+	private Lapse currentLapse = null;
 
 	@Override
-	public boolean startLaps(Laps laps) throws RemoteException {
-		currentLaps = laps;
+	public boolean startLaps(Lapse lapse) throws RemoteException {
+		currentLapse = lapse;
 		return true;
 	}
 
@@ -44,9 +44,9 @@ public class RandomSelector extends AbstractSelector {
 	}
 
 	@Override
-	public boolean restartTest(Laps laps) {
-		getLapses().add(laps);
-		laps.setEndDate(new Date());
+	public boolean restartTest(Lapse lapse) {
+		getLapses().add(lapse);
+		lapse.setEndDate(new Date());
 		return false;
 		//return !laps.getOracle().wasSuccessful();
 	}

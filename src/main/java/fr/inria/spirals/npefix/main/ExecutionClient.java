@@ -2,7 +2,7 @@ package fr.inria.spirals.npefix.main;
 
 import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.CallChecker;
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.oracle.ExceptionOracle;
 import fr.inria.spirals.npefix.resi.oracle.TestOracle;
 import fr.inria.spirals.npefix.resi.selector.Selector;
@@ -54,18 +54,18 @@ public class ExecutionClient {
 
 	private void run() {
 		Selector selector = getSelector();
-		final Laps laps = new Laps(selector);
-		laps.setTestClassName(classTestName);
-		laps.setTestName(testName);
+		final Lapse lapse = new Lapse(selector);
+		lapse.setTestClassName(classTestName);
+		lapse.setTestName(testName);
 
 		try {
-			if(!selector.startLaps(laps)) {
+			if(!selector.startLaps(lapse)) {
 				return;
 			}
 		} catch (RemoteException e) {
 			throw new RuntimeException(e);
 		}
-		CallChecker.currentLaps = laps;
+		CallChecker.currentLapse = lapse;
 		CallChecker.strategySelector = selector;
 		CallChecker.currentClassLoader = getClass().getClassLoader();
 		final TestRunner testRunner = new TestRunner();
@@ -79,7 +79,7 @@ public class ExecutionClient {
 				@Override
 				public Result call() throws Exception {
 					Result result = testRunner.run(request);
-					laps.setOracle(new TestOracle(result));
+					lapse.setOracle(new TestOracle(result));
 					return result;
 				}
 			});
@@ -87,18 +87,18 @@ public class ExecutionClient {
 			try {
 				handler.get(25, TimeUnit.SECONDS);
 			} catch (TimeoutException e) {
-				laps.setOracle(new ExceptionOracle(e));
+				lapse.setOracle(new ExceptionOracle(e));
 				e.printStackTrace();
 				handler.cancel(true);
 			} catch (ExecutionException e) {
-				laps.setOracle(new ExceptionOracle(e));
+				lapse.setOracle(new ExceptionOracle(e));
 				e.printStackTrace();
 				handler.cancel(true);
 			}
 			executor.shutdownNow();
 
-			System.out.println(laps);
-			selector.restartTest(laps);
+			System.out.println(lapse);
+			selector.restartTest(lapse);
 			System.exit(0);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

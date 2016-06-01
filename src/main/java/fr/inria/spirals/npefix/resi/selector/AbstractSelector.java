@@ -1,6 +1,6 @@
 package fr.inria.spirals.npefix.resi.selector;
 
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.ReturnType;
 import fr.inria.spirals.npefix.resi.strategies.Strat1A;
@@ -20,7 +20,7 @@ import java.util.List;
  */
 public abstract class AbstractSelector implements Selector {
 
-	private List<Laps> lapses = new ArrayList<>();
+	private List<Lapse> lapses = new ArrayList<>();
 
 	private static final Strategy[] strategies = new Strategy[]{
 			new NoStrat(),
@@ -40,12 +40,12 @@ public abstract class AbstractSelector implements Selector {
 	}
 
 	@Override
-	public List<Laps> getLapses() {
+	public List<Lapse> getLapses() {
 		return lapses;
 	}
 
 	@Override
-	public boolean restartTest(Laps laps) {
+	public boolean restartTest(Lapse lapse) {
 		return false;
 	}
 

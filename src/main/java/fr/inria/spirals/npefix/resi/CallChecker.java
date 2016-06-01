@@ -1,7 +1,7 @@
 package fr.inria.spirals.npefix.resi;
 
 import fr.inria.spirals.npefix.resi.context.Decision;
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.Location;
 import fr.inria.spirals.npefix.resi.context.MethodContext;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
@@ -25,7 +25,7 @@ public class CallChecker {
 
 	public static Selector strategySelector = new DomSelector();
 
-	public static Laps currentLaps = new Laps(strategySelector);
+	public static Lapse currentLapse = new Lapse(strategySelector);
 
 	private static Stack<MethodContext> stack = new Stack<>();
 
@@ -40,7 +40,7 @@ public class CallChecker {
 		strategyBackup = null;
 		selectorBackup = null;
 		stack = new Stack<>();
-		currentLaps = new Laps(strategySelector);
+		currentLapse = new Lapse(strategySelector);
 		isEnable = true;
 		decisions.clear();
 		cache.clear();
@@ -96,7 +96,7 @@ public class CallChecker {
 			}
 			//System.out.println("Stack size: " + stack.size());
 			//System.out.println("Nb method calls" + MethodContext.idCount);
-			currentLaps.addApplication(decision);
+			currentLapse.addApplication(decision);
 			decision.increaseNbUse();
 			decision.setUsed(true);
 			if(decision.getStrategy() instanceof Strat4) {
@@ -128,7 +128,7 @@ public class CallChecker {
 
 		//disable();
 
-		currentLaps.addDecision(decision);
+		currentLapse.addDecision(decision);
 
 		decisions.put(location, decision);
 
@@ -137,7 +137,7 @@ public class CallChecker {
 		}
 		//System.out.println("Stack size: " + stack.size());
 		//System.out.println("Nb method calls: " + MethodContext.idCount);
-		currentLaps.addApplication(decision);
+		currentLapse.addApplication(decision);
 		decision.increaseNbUse();
 		decision.setUsed(true);
 

@@ -1,7 +1,7 @@
 package fr.inria.spirals.npefix.patch;
 
 import fr.inria.spirals.npefix.resi.context.Decision;
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.Location;
 import fr.inria.spirals.npefix.resi.context.instance.ArrayInstance;
 import fr.inria.spirals.npefix.resi.context.instance.NewInstance;
@@ -33,10 +33,10 @@ public class PatchesGeneratorTest {
 		foo.setValue(new NewInstance(Object.class.getCanonicalName(), new String[0], Collections
 				.emptyList()));
 
-		Laps laps = new Laps(new DomSelector());
-		laps.addDecision(foo);
+		Lapse lapse = new Lapse(new DomSelector());
+		lapse.addDecision(foo);
 
-		String s = laps.toDiff(launcher);
+		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
@@ -61,11 +61,11 @@ public class PatchesGeneratorTest {
 		field.setValueType(Object.class);
 		field.setValue(new VariableInstance("element"));
 
-		Laps laps = new Laps(new DomSelector());
-		laps.addDecision(foo);
-		laps.addDecision(field);
+		Lapse lapse = new Lapse(new DomSelector());
+		lapse.addDecision(foo);
+		lapse.addDecision(field);
 
-		String s = laps.toDiff(launcher);
+		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
@@ -94,10 +94,10 @@ public class PatchesGeneratorTest {
 		foo.setValueType(Object.class);
 		foo.setValue(new VariableInstance("result"));
 
-		Laps laps = new Laps(new DomSelector());
-		laps.addDecision(foo);
+		Lapse lapse = new Lapse(new DomSelector());
+		lapse.addDecision(foo);
 
-		String s = laps.toDiff(launcher);
+		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
@@ -126,10 +126,10 @@ public class PatchesGeneratorTest {
 		foo.setValueType(String[].class);
 		foo.setValue(new ArrayInstance(String[].class, Collections.EMPTY_LIST));
 
-		Laps laps = new Laps(new DomSelector());
-		laps.addDecision(foo);
+		Lapse lapse = new Lapse(new DomSelector());
+		lapse.addDecision(foo);
 
-		String s = laps.toDiff(launcher);
+		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
@@ -152,10 +152,10 @@ public class PatchesGeneratorTest {
 		foo.setValueType(Object.class);
 		foo.setValue(new VariableInstance("result"));
 
-		Laps laps = new Laps(new DomSelector());
-		laps.addDecision(foo);
+		Lapse lapse = new Lapse(new DomSelector());
+		lapse.addDecision(foo);
 
-		String s = laps.toDiff(launcher);
+		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
@@ -192,10 +192,10 @@ public class PatchesGeneratorTest {
 		foo.setValueType(Object.class);
 		foo.setValue(new ArrayInstance(String[].class, Collections.EMPTY_LIST));
 
-		Laps laps = new Laps(new DomSelector());
-		laps.addDecision(foo);
+		Lapse lapse = new Lapse(new DomSelector());
+		lapse.addDecision(foo);
 
-		String s = laps.toDiff(launcher);
+		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"

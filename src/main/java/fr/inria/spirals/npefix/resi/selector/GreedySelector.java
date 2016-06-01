@@ -4,7 +4,7 @@ import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.RandomGenerator;
 import fr.inria.spirals.npefix.resi.context.Decision;
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
@@ -29,15 +29,15 @@ public class GreedySelector extends AbstractSelector {
 	private Map<Decision<?>, Double> values = new HashMap<>();
 	private Set<Decision<?>> usedDecisions = new HashSet<>();
 	private List<Decision<?>> unusedDecisions  = new ArrayList<>();
-	private Laps currentLaps = null;
+	private Lapse currentLapse = null;
 
 	public GreedySelector() {
 		epsilon = Config.CONFIG.getGreedyEpsilon();
 	}
 
 	@Override
-	public boolean startLaps(Laps laps) throws RemoteException {
-		currentLaps = laps;
+	public boolean startLaps(Lapse lapse) throws RemoteException {
+		currentLapse = lapse;
 		return true;
 	}
 
@@ -97,12 +97,12 @@ public class GreedySelector extends AbstractSelector {
 			}
 			usedDecisions.add(bestDecision);
 			bestDecision.setDecisionType(BEST);
-			CallChecker.currentLaps.putMetadata("strategy_selection", "best");
+			CallChecker.currentLapse.putMetadata("strategy_selection", "best");
 			bestDecision.setEpsilon(epsilon);
 			return bestDecision;
 		}
 		// return a random strategy
-		CallChecker.currentLaps.putMetadata("strategy_selection", "random");
+		CallChecker.currentLapse.putMetadata("strategy_selection", "random");
 		Decision output;
 		if(localUnusedDecision.isEmpty()) {
 			int maxValue = decisions.size();
@@ -119,23 +119,23 @@ public class GreedySelector extends AbstractSelector {
 	}
 
 	@Override
-	public boolean restartTest(Laps laps) {
-		laps.setEndDate(new Date());
-		if(laps.getDecisions().isEmpty()) {
+	public boolean restartTest(Lapse lapse) {
+		lapse.setEndDate(new Date());
+		if(lapse.getDecisions().isEmpty()) {
 			return false;
 			//return !laps.getOracle().wasSuccessful();
 		}
-		getLapses().add(laps);
+		getLapses().add(lapse);
 
-		for (int i = 0; i < laps.getDecisions().size(); i++) {
-			Decision decision =  laps.getDecisions().get(i);
+		for (int i = 0; i < lapse.getDecisions().size(); i++) {
+			Decision decision =  lapse.getDecisions().get(i);
 
 			int count = counts.get(decision) + 1;
 			counts.put(decision, count);
 			double value = values.get(decision);
 			int reward = 0;
-			if(laps.getOracle() != null &&
-					laps.getOracle().isValid()) {
+			if(lapse.getOracle() != null &&
+					lapse.getOracle().isValid()) {
 				reward = 1;
 			}
 

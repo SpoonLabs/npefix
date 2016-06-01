@@ -4,7 +4,7 @@ import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.main.DecisionServer;
 import fr.inria.spirals.npefix.main.ExecutionClient;
 import fr.inria.spirals.npefix.resi.CallChecker;
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
 import fr.inria.spirals.npefix.resi.oracle.ExceptionOracle;
 import fr.inria.spirals.npefix.resi.oracle.TestOracle;
@@ -219,27 +219,27 @@ public class Launcher {
 
         NPEOutput output = new NPEOutput();
 
-        Laps laps = new Laps(selector);
+        Lapse lapse = new Lapse(selector);
 
         final TestRunner testRunner = new TestRunner();
         for (int i = 0; i < methodTests.size(); i++) {
             Method method = methodTests.get(i);
             final Request request = Request.method(method.getDeclaringClass(), method.getName());
 
-            laps.setTestClassName(method.getDeclaringClass().getCanonicalName());
-            laps.setTestName(method.getName());
-            CallChecker.currentLaps = laps;
+            lapse.setTestClassName(method.getDeclaringClass().getCanonicalName());
+            lapse.setTestName(method.getName());
+            CallChecker.currentLapse = lapse;
             Result result = testRunner.run(request);
 
-            laps.setOracle(new TestOracle(result));
+            lapse.setOracle(new TestOracle(result));
 
-            System.out.println(laps);
+            System.out.println(lapse);
             if(true)
             break;
             if(result.getRunCount() > 0) {
-                output.add(laps);
+                output.add(lapse);
                 try {
-                    if (selector.restartTest(laps)) {
+                    if (selector.restartTest(lapse)) {
 						/*Map<Location, Integer> currentIndex = new HashMap<>(laps.getCurrentIndex());
 						Map<Location, Map<String, Object>> possibleVariables = laps
 								.getPossibleVariables();
@@ -262,19 +262,19 @@ public class Launcher {
 							}
 						}*/
 
-                        laps = new Laps(selector);
+                        lapse = new Lapse(selector);
 						/*laps.setCurrentIndex(currentIndex);
 						laps.setPossibleValues(possibleValues);
 						laps.setPossibleVariables(possibleVariables);
 						i--;*/
                     } else {
-                        laps = new Laps(selector);
+                        lapse = new Lapse(selector);
                     }
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
             } else {
-                laps = new Laps(selector);
+                lapse = new Lapse(selector);
             }
             CallChecker.enable();
             //CallChecker.cache.clear();
@@ -323,16 +323,16 @@ public class Launcher {
                 // wait the end of the process
                 process.waitFor();
                 // adds all laps
-                List<Laps> lapses = new ArrayList<>();
-                for (Laps laps : selector.getLapses()) {
-                    if (laps.getOracle() instanceof ExceptionOracle) {
+                List<Lapse> lapses = new ArrayList<>();
+                for (Lapse lapse : selector.getLapses()) {
+                    if (lapse.getOracle() instanceof ExceptionOracle) {
                         // removes laps that end because there is not more available decision (Full exploration strategy)
-                        if (!laps.getOracle().isValid()
-                                && laps.getOracle().getError().contains("No more available decision")) {
+                        if (!lapse.getOracle().isValid()
+                                && lapse.getOracle().getError().contains("No more available decision")) {
                             continue;
                         }
                     }
-                    lapses.add(laps);
+                    lapses.add(lapse);
                 }
                 output.addAll(lapses);
                 selector.getLapses().clear();

@@ -2,7 +2,7 @@ package fr.inria.spirals.npefix.resi.selector;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Decision;
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.Location;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
@@ -24,13 +24,14 @@ public class ExplorerSelector extends AbstractSelector {
 	private Set<List<Decision>> usedDecisionSeq = new HashSet<>();
 	private Map<Location, Set<Decision>> decisions = new HashMap<>();
 	private Map<String, Stack<Decision>> stackDecision  = new HashMap<>();
-	private Laps currentLaps = null;
+	private Lapse currentLapse = null;
 	private String currentTestKey;
 
 	@Override
-	public boolean startLaps(Laps laps) throws RemoteException {
-		currentLaps = laps;
-		this.currentTestKey = currentLaps.getTestClassName() + "#" + currentLaps.getTestName();
+	public boolean startLaps(Lapse lapse) throws RemoteException {
+		currentLapse = lapse;
+		this.currentTestKey = currentLapse.getTestClassName() + "#" + currentLapse
+				.getTestName();
 		if(!stackDecision.containsKey(currentTestKey)) {
 			stackDecision.put(currentTestKey, new Stack<Decision>());
 		}
@@ -80,7 +81,8 @@ public class ExplorerSelector extends AbstractSelector {
 				}
 			}
 
-			CallChecker.currentLaps.putMetadata("strategy_selection", "exploration");
+			CallChecker.currentLapse
+					.putMetadata("strategy_selection", "exploration");
 
 			List<Decision> otherDecision = new ArrayList<>();
 			otherDecision.addAll(stackDecision.get(currentTestKey));
@@ -103,17 +105,17 @@ public class ExplorerSelector extends AbstractSelector {
 	}
 
 	@Override
-	public boolean restartTest(Laps laps) {
-		laps.setEndDate(new Date());
-		if(laps.getDecisions().isEmpty()) {
+	public boolean restartTest(Lapse lapse) {
+		lapse.setEndDate(new Date());
+		if(lapse.getDecisions().isEmpty()) {
 			return false;
 		}
-		getLapses().add(laps);
-		usedDecisionSeq.add(laps.getDecisions());
+		getLapses().add(lapse);
+		usedDecisionSeq.add(lapse.getDecisions());
 
 		stackDecision.put(currentTestKey, new Stack<Decision>());
-		for (int i = 0; i < laps.getDecisions().size(); i++) {
-			Decision decision = laps.getDecisions().get(i);
+		for (int i = 0; i < lapse.getDecisions().size(); i++) {
+			Decision decision = lapse.getDecisions().get(i);
 			stackDecision.get(currentTestKey).add(decision);
 		}
 

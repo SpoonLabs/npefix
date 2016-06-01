@@ -4,7 +4,7 @@ import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.main.DecisionServer;
 import fr.inria.spirals.npefix.main.all.Launcher;
 import fr.inria.spirals.npefix.resi.context.Decision;
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
@@ -80,7 +80,7 @@ public class AbstractEvaluation {
                 break;
             }
             try {
-                List<Laps> result = launcher.runCommandLine(selector, tests);
+                List<Lapse> result = launcher.runCommandLine(selector, tests);
                 if(result.isEmpty()) {
                     countError++;
                     continue;
@@ -159,7 +159,7 @@ public class AbstractEvaluation {
 
     public void printResults(NPEOutput results,
             boolean printException) {
-        /*List<Decision> strats = new ArrayList<>(results.getRunnedStrategies());
+        /*List<Decision> strats = new ArrayList<>(results.getRanStrategies());
 
         Set<String> passedTest = new HashSet<>();
 

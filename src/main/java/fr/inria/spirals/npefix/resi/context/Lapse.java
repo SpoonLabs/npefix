@@ -16,8 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Laps implements Comparable<Laps>,
-		Serializable {
+public class Lapse implements Comparable<Lapse>, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -29,11 +28,11 @@ public class Laps implements Comparable<Laps>,
 	private String testClassName;
 	private String testName;
 	private List<Decision> decisions = null;
-	private Map<String, Object> metadata = new HashMap();
+	private Map<String, Object> metadata = new HashMap<>();
 	private Date startDate;
 	private Date endDate;
 
-	public Laps(Selector strategySelector) {
+	public Lapse(Selector strategySelector) {
 		this.locations = new HashSet<>();
 		nbApplication = new HashMap<>();
 		currentIndex = new HashMap<>();
@@ -193,7 +192,7 @@ public class Laps implements Comparable<Laps>,
 	}
 
 	@Override
-	public int compareTo(Laps o) {
+	public int compareTo(Lapse o) {
 		Decision thisDecision = null;
 		if(!decisions.isEmpty()) {
 			thisDecision = decisions.get(0);
