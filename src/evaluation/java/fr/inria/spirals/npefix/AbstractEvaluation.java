@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 public class AbstractEvaluation {
@@ -60,8 +59,14 @@ public class AbstractEvaluation {
             launcher.instrument();
         } else {
             launcher = initNPEFix(name, Config.CONFIG.getEvaluationWorkingDirectory() + "/" + name + "/instrumented", null, deps);
-            //launcher.getCompiler().compile();
+            launcher.getCompiler().compile();
         }
+        spoon.Launcher spoon = new spoon.Launcher();
+        System.out.println(source);
+        spoon.addInputResource(new File(source).getAbsolutePath());
+        spoon.getModelBuilder().setSourceClasspath(launcher.getSpoon().getModelBuilder().getSourceClasspath());
+        spoon.buildModel();
+        System.out.println("nb type: " + spoon.getFactory().Type().getAll().size());
         DecisionServer decisionServer = new DecisionServer(selector);
         decisionServer.startServer();
         List<Method> tests = launcher.getTests();
@@ -101,20 +106,18 @@ public class AbstractEvaluation {
             }
             System.out.println("Multirun " + output.size() + "/" + nbIteration + " " + ((int)(output.size()/(double)nbIteration * 100)) + "%");
         }
-        JSONObject jsonObject = output.toJSON();
+        JSONObject jsonObject = output.toJSON(spoon);
         try {
-            for (Iterator<Decision> iterator = selector.getSearchSpace()
-					.iterator(); iterator
-						 .hasNext(); ) {
-				Decision decision = iterator.next();
-				jsonObject.append("searchSpace", decision.toJSON());
-			}
+            for (Decision decision : selector.getSearchSpace()) {
+                jsonObject.append("searchSpace", decision.toJSON());
+            }
+            serializeResult(jsonObject, name, selector.toString());
+            printResults(output, printException);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
+        } finally {
+            decisionServer.stopServer();
         }
-        serializeResult(jsonObject, name, selector.toString());
-        printResults(output, printException);
-        decisionServer.stopServer();
         return output;
     }
 
@@ -143,8 +146,13 @@ public class AbstractEvaluation {
             launcher.getCompiler().compile();
         }
 
+        spoon.Launcher spoon = new spoon.Launcher();
+        spoon.addInputResource(source);
+        spoon.getModelBuilder().setSourceClasspath(launcher.getSpoon().getModelBuilder().getSourceClasspath());
+        spoon.buildModel();
+
         NPEOutput results = runStrategy(launcher, strats);
-        serializeResult(results.toJSON(), name, "DomSelector");
+        serializeResult(results.toJSON(spoon), name, "DomSelector");
         printResults(results, printException);
         return results;
     }
@@ -349,7 +357,7 @@ public class AbstractEvaluation {
 
     }
 
-    protected String depArrayToClassPath(String[] deps) {
+    protected static String depArrayToClassPath(String...deps) {
         String classpath = "";
         for (int i = 0; i < deps.length; i++) {
             String dep = deps[i];

@@ -2,6 +2,7 @@ package fr.inria.spirals.npefix.resi.context;
 
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 import org.json.JSONObject;
+import spoon.Launcher;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -82,12 +83,12 @@ public class NPEOutput extends ArrayList<Laps>{
 		return output;
 	}
 
-	public JSONObject toJSON() {
+	public JSONObject toJSON(Launcher spoon) {
 		JSONObject output = new JSONObject();
 		output.put("date", new Date());
 		for (int i = 0; i < this.size(); i++) {
 			Laps laps = this.get(i);
-			output.append("executions", laps.toJSON());
+			output.append("executions", laps.toJSON(spoon));
 		}
 		return output;
 	}

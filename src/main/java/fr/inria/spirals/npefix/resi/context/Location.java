@@ -1,15 +1,17 @@
 package fr.inria.spirals.npefix.resi.context;
 
+import org.json.JSONObject;
+
 import java.io.Serializable;
 
 public class Location implements Comparable<Location>, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	String className;
-	int line;
-	int sourceStart;
-	int sourceEnd;
+	private String className;
+	private int line;
+	private int sourceStart;
+	private int sourceEnd;
 
 	public Location(String className, int line, int sourceStart, int sourceEnd) {
 		this.className = className;
@@ -20,6 +22,34 @@ public class Location implements Comparable<Location>, Serializable {
 
 	public void setLine(int line) {
 		this.line = line;
+	}
+
+	public String getClassName() {
+		return className;
+	}
+
+	public void setClassName(String className) {
+		this.className = className;
+	}
+
+	public int getLine() {
+		return line;
+	}
+
+	public int getSourceStart() {
+		return sourceStart;
+	}
+
+	public void setSourceStart(int sourceStart) {
+		this.sourceStart = sourceStart;
+	}
+
+	public int getSourceEnd() {
+		return sourceEnd;
+	}
+
+	public void setSourceEnd(int sourceEnd) {
+		this.sourceEnd = sourceEnd;
 	}
 
 	@Override
@@ -73,6 +103,15 @@ public class Location implements Comparable<Location>, Serializable {
 	@Override
 	public String toString() {
 		return className.replace("org.apache.commons.", "") + ":" + line;
+	}
+
+	public JSONObject toJSON() {
+		JSONObject locationJSON = new JSONObject();
+		locationJSON.put("class", this.getClassName());
+		locationJSON.put("line", this.getLine());
+		locationJSON.put("sourceStart", this.getSourceStart());
+		locationJSON.put("sourceEnd", this.getSourceEnd());
+		return locationJSON;
 	}
 
 }

@@ -1,6 +1,7 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
+import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.MethodContext;
 import fr.inria.spirals.npefix.resi.context.instance.ArrayInstance;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
@@ -369,6 +370,11 @@ public abstract class AbstractStrategy implements Strategy {
 	}
 
 	@Override
+	public String getPatch(Decision decision) {
+		return "";
+	}
+
+	@Override
 	public int hashCode() {
 		return  this.getClass().getSimpleName().hashCode();
 	}
@@ -392,6 +398,11 @@ public abstract class AbstractStrategy implements Strategy {
 
 	@Override
 	public String toString() {
+		return getName();
+	}
+
+	@Override
+	public String getName() {
 		return this.getClass().getSimpleName();
 	}
 }

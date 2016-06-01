@@ -4,6 +4,13 @@ import java.util.List;
 public class Foo {
     public String field = null;
     public String[] array = null;
+
+    public Foo() {
+        super();
+        field = null;
+        array = null;
+    }
+
     public void foo() {
         field.toString();
     }
@@ -59,6 +66,15 @@ public class Foo {
         field = field.concat("expectedOutput");
         if(field == null) {
             return;
+        }
+        return;
+    }
+
+    public void notnull() {
+        if(field == null) {
+            return;
+        } else {
+            field = field.concat("expectedOutput");
         }
         return;
     }

@@ -14,7 +14,6 @@ import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.code.CtVariableAccessImpl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +37,7 @@ public class TryRegister extends AbstractProcessor<CtTry> {
 		element.insertBefore(tryVar);
 		tryVar.setParent(element.getParent());
 
-		mainContextVar = new CtVariableAccessImpl(){};
+		mainContextVar = element.getFactory().Core().createVariableRead();
 		mainContextVar.setVariable(tryVar.getReference());
 		
 		for (CtCatch catchArg : element.getCatchers()) {

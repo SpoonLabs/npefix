@@ -73,6 +73,9 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 		if(element.getPosition() == null) {
 			return false;
 		}
+		if (target.getMetadata("notnull") != null) {
+			return false;
+		}
 		return true;
 	}
 
@@ -110,9 +113,9 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 				return;
 			}
 
-			CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
-			CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
-			CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
+			CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(target.getPosition().getLine());
+			CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(target.getPosition().getSourceStart());
+			CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(target.getPosition().getSourceEnd());
 
 			CtInvocation invoc = ProcessorUtility.createStaticCall(getFactory(),
 					CallChecker.class,
@@ -135,10 +138,9 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 	}
 
 	private boolean createBeforeCall(CtTargetedExpression element, CtExpression target, CtVariableReference variable, CtExpression arg) {
-		CtLiteral<Integer> lineNumber = getFactory().Code()
-				.createLiteral(element.getPosition().getLine());
-		CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
-		CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
+		CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(target.getPosition().getLine());
+		CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(target.getPosition().getSourceStart());
+		CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(target.getPosition().getSourceEnd());
 
 		if(target instanceof CtArrayRead) {
             target = getFactory().Core().clone(target);

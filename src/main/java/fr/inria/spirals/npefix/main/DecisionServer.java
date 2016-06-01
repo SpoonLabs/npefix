@@ -4,6 +4,7 @@ import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.selector.GreedySelector;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -33,14 +34,29 @@ public class DecisionServer {
 
 	public void startServer() {
 		this.thread = new Thread(new Runnable() {
+			Registry registry;
+
 			@Override
 			public void run() {
+				Selector skeleton = null;
 				try {
-					System.out.println("Start selector " + selector);
-					Selector skeleton = (Selector) UnicastRemoteObject.exportObject(selector, port);
-					Registry registry = LocateRegistry.createRegistry(port);
+					skeleton = (Selector) UnicastRemoteObject.exportObject(selector, port);
+				} catch (RemoteException e) {
+					throw new RuntimeException(e);
+				}
+				try{
+					LocateRegistry.getRegistry(port).list();
+					registry = LocateRegistry.getRegistry(port);
+				}catch(Exception ex){
+					try{
+						registry = LocateRegistry.createRegistry(port);
+					} catch(Exception e){
+						throw new RuntimeException(e);
+					}
+				}
+				try {
 					registry.rebind("Selector", skeleton);
-				} catch (Exception e) {
+				} catch (RemoteException e) {
 					throw new RuntimeException(e);
 				}
 			}

@@ -33,16 +33,26 @@ public class IfSplitter extends AbstractProcessor<CtIf>{
         BinaryOperatorKind kind = condition.getKind();
 
         CtIf anIf = getFactory().Core().createIf();
-        ctIf.replace(anIf);
+        anIf.setPosition(ctIf.getPosition());
         anIf.setParent(ctIf.getParent());
+        ctIf.replace(anIf);
         anIf.setCondition(leftHandOperand);
         ctIf.setCondition(rightHandOperand);
+        CtStatement wrappedIf = wrapBlock(ctIf);
         if(kind.equals(BinaryOperatorKind.AND)) {
-            anIf.setThenStatement(wrapBlock(ctIf));
-            anIf.setElseStatement(wrapBlock(getFactory().Core().clone(ctIf.getElseStatement())));
+            CtStatement ctStatement = wrapBlock(getFactory().Core().clone(ctIf.getElseStatement()));
+            if (ctStatement != null) {
+                ctStatement.setParent(anIf);
+            }
+            anIf.setThenStatement(wrappedIf);
+            anIf.setElseStatement(ctStatement);
         } else {
-            anIf.setThenStatement(wrapBlock(getFactory().Core().clone(ctIf.getThenStatement())));
-            anIf.setElseStatement(wrapBlock(ctIf));
+            CtStatement ctStatement = wrapBlock(getFactory().Core().clone(ctIf.getThenStatement()));
+            if (ctStatement != null) {
+                ctStatement.setParent(anIf);
+            }
+            anIf.setThenStatement(ctStatement);
+            anIf.setElseStatement(wrappedIf);
         }
 
 
@@ -59,6 +69,7 @@ public class IfSplitter extends AbstractProcessor<CtIf>{
             return element;
         }
         CtBlock<?> ctBlock = getFactory().Code().createCtBlock(element);
+        ctBlock.setPosition(element.getPosition());
         ctBlock.setParent(element.getParent());
         element.setParent(ctBlock);
         return ctBlock;

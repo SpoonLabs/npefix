@@ -2,7 +2,8 @@ package fr.inria.spirals.npefix.resi.selector;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.RandomGenerator;
-import fr.inria.spirals.npefix.resi.strategies.Strat2B;
+import fr.inria.spirals.npefix.resi.strategies.ReturnType;
+import fr.inria.spirals.npefix.resi.strategies.Strat4;
 import org.junit.Before;
 
 public class DomSelectorEvaluation extends AbstractSelectorEvaluation {
@@ -12,6 +13,6 @@ public class DomSelectorEvaluation extends AbstractSelectorEvaluation {
         RandomGenerator.reset();
         CallChecker.clear();
         setSelector(new DomSelector());
-        DomSelector.strategy = new Strat2B();
+        DomSelector.strategy = new Strat4(ReturnType.VAR);
     }
 }

@@ -107,10 +107,9 @@ public class ProcessorUtility {
             return null;
         }
         CtExpression ctType;
-        if (targetType == null ||
-                targetType.isAnonymous() ||
-                targetType.getSimpleName() == null ||
-                (targetType.getPackage() == null && targetType.getSimpleName().length() == 1)) {
+        if (targetType.isAnonymous() || targetType.getSimpleName() == null
+                || targetType.getPackage() == null
+                && targetType.getSimpleName().length() == 1) {
             ctType = targetType.getFactory().Core().createLiteral();
             ctType.setType(targetType.getFactory().Type().nullType());
         } else {

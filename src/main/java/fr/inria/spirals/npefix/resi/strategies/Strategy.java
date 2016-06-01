@@ -22,4 +22,8 @@ public interface Strategy extends Comparable<Strategy>, Serializable{
 	boolean collectData();
 
 	<T> List<Decision<T>> getSearchSpace(Class<T> clazz, Location location);
+
+	String getPatch (Decision decision);
+
+	String getName();
 }

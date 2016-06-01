@@ -8,6 +8,7 @@ import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.selector.ExplorationSelectorEvaluation;
 import fr.inria.spirals.npefix.resi.selector.GreedySelectorEvaluation;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 
@@ -18,6 +19,7 @@ public abstract class MainEvaluation {
 	private static final String M2_REPO = "m2Repo";
 	private static final String NB_LAPS = "nbLaps";
 	private static final String TEST_TIMEOUT = "testTimeout";
+	private static final String NPEDATASET = "npedataset";
 	private static JSAP jsap = new JSAP();
 
 	public static void main(String[] args) {
@@ -95,12 +97,14 @@ public abstract class MainEvaluation {
 			Config.CONFIG.setTimeoutIteration(
 					config.getInt(TEST_TIMEOUT));
 		}
+		if (config.contains(NPEDATASET)) {
+			Config.CONFIG.setDatasetRoot(new File(config.getString(NPEDATASET)).getAbsolutePath() + "/");
+		}
 
 		return config;
 	}
 
 	private static void initJSAP() throws JSAPException {
-
 		FlaggedOption projectOpt = new FlaggedOption("project");
 		projectOpt.setRequired(true);
 		projectOpt.setAllowMultipleDeclarations(false);
@@ -122,17 +126,25 @@ public abstract class MainEvaluation {
 		modeOpt.setHelp("The execution mode.");
 		jsap.registerParameter(modeOpt);
 
-		FlaggedOption workingDirectoryOpt = new FlaggedOption(
-				WORKING_DIRECTORY);
+		FlaggedOption workingDirectoryOpt = new FlaggedOption(WORKING_DIRECTORY);
 		workingDirectoryOpt.setRequired(false);
 		workingDirectoryOpt.setAllowMultipleDeclarations(false);
 		workingDirectoryOpt.setLongFlag("working");
 		workingDirectoryOpt.setShortFlag('x');
 		workingDirectoryOpt.setUsageName(WORKING_DIRECTORY);
 		workingDirectoryOpt.setStringParser(JSAP.STRING_PARSER);
-		workingDirectoryOpt
-				.setHelp("The path to the evaluation working directory.");
+		workingDirectoryOpt.setHelp("The path to the evaluation working directory.");
 		jsap.registerParameter(workingDirectoryOpt);
+
+		FlaggedOption npeDataset = new FlaggedOption(NPEDATASET);
+		npeDataset.setRequired(false);
+		npeDataset.setAllowMultipleDeclarations(false);
+		npeDataset.setLongFlag(NPEDATASET);
+		npeDataset.setShortFlag('d');
+		npeDataset.setUsageName(NPEDATASET);
+		npeDataset.setStringParser(JSAP.STRING_PARSER);
+		npeDataset.setHelp("The path to the npe dataset.");
+		jsap.registerParameter(npeDataset);
 
 		FlaggedOption m2Opt = new FlaggedOption(M2_REPO);
 		m2Opt.setRequired(false);

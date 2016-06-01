@@ -18,8 +18,8 @@ import spoon.reflect.declaration.ParentNotInitializedException;
 
 public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 
-	int i=0;
-	int j=0;
+	int nbError = 0;
+	int nbAssignment = 0;
 
 	@Override
 	public boolean isToBeProcessed(CtAssignment element) {
@@ -49,7 +49,7 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 	@Override
 	public void process(CtAssignment element) {
 		try{
-			j++;
+			nbAssignment++;
 
 			CtExpression assigned = element.getAssigned();
 			/*if(element.getAssignment().getElements(new AbstractFilter<CtInvocation>(CtInvocation.class) {}).size() == 0) {
@@ -94,7 +94,7 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 			}
 
 		}catch(Throwable t){
-			i++;
+			nbError++;
 			t.printStackTrace();
 		}
 	}
@@ -116,7 +116,7 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 
 	@Override
 	public void processingDone() {
-		System.out.println("Assign --> "+j+" (failed: "+i+")");
+		System.out.println("Assign --> " + nbAssignment + " (failed: "+ nbError +")");
 	}
 
 }

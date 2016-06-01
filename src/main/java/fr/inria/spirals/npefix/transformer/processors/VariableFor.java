@@ -37,6 +37,9 @@ public class VariableFor extends AbstractProcessor<CtVariableRead<?>> {
 		if(element.getVariable().getDeclaration().getParent().equals(element.getParent())) {
 			return false;
 		}
+		if (element.getMetadata("notnull") != null) {
+			return false;
+		}
 		return true;
 	}
 

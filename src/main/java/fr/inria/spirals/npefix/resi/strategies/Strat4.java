@@ -18,15 +18,15 @@ import java.util.Set;
  */
 public class Strat4 extends AbstractStrategy {
 
-	private ReturnType rt;
+	private ReturnType returnType;
 	
-	public Strat4(ReturnType rt) {
-		this.rt = rt;
+	public Strat4(ReturnType returnType) {
+		this.returnType = returnType;
 	}
 
 	@Override
 	public boolean collectData() {
-		return rt.equals(ReturnType.VAR);
+		return returnType.equals(ReturnType.VAR);
 	}
 
 
@@ -41,7 +41,10 @@ public class Strat4 extends AbstractStrategy {
 		clazz = CallChecker.getCurrentMethodContext().getMethodType();
 
 		List<Decision<T>> output = new ArrayList<>();
-		switch (rt) {
+		if (clazz == null) {
+			return output;
+		}
+		switch (returnType) {
 		case VOID:
 			if(void.class.equals(clazz)) {
 				output.add(new Decision(this, location, new PrimitiveInstance(null), void.class));
@@ -74,7 +77,7 @@ public class Strat4 extends AbstractStrategy {
 	}
 
 	public ReturnType getReturnType() {
-		return rt;
+		return returnType;
 	}
 
 	@Override
@@ -84,11 +87,11 @@ public class Strat4 extends AbstractStrategy {
 
 	@Override
 	public boolean equals(Object obj) {
-		return super.equals(obj) && rt.equals(((Strat4)obj).rt);
+		return super.equals(obj) && returnType.equals(((Strat4)obj).returnType);
 	}
 
 	@Override
 	public String toString() {
-		return super.toString() + " " + rt.name();
+		return super.toString() + " " + returnType.name();
 	}
 }

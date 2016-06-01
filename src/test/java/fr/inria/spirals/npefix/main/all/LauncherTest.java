@@ -1,6 +1,6 @@
 package fr.inria.spirals.npefix.main.all;
 
-import fr.inria.spirals.npefix.resi.context.Laps;
+import fr.inria.spirals.npefix.resi.context.NPEOutput;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.ReturnType;
 import fr.inria.spirals.npefix.resi.strategies.Strat1A;
@@ -13,7 +13,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.URL;
-import java.util.List;
 
 public class LauncherTest {
 
@@ -44,7 +43,7 @@ public class LauncherTest {
                 rootPath.getFile() + "",
                 classpath);
         launcher.instrument();
-        List<Laps> results = launcher.runStrategy(new NoStrat(),
+        NPEOutput results = launcher.runStrategy(new NoStrat(),
                 new Strat1A(),
                 new Strat1B(),
                 new Strat2A(),
@@ -54,8 +53,7 @@ public class LauncherTest {
                 new Strat4(ReturnType.VAR),
                 new Strat4(ReturnType.NEW),
                 new Strat4(ReturnType.VOID));
-
-        Assert.assertEquals("Nb test", 7, 7);
+        Assert.assertEquals("Nb test", 7, results.size());
 
         /*Assert.assertEquals("NoStrat failing", 7, results.get(0).getOracle().getNbFailedTests());
 

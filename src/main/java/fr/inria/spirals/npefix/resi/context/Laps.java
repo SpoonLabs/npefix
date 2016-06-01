@@ -1,16 +1,17 @@
 package fr.inria.spirals.npefix.resi.context;
 
 import fr.inria.spirals.npefix.config.Config;
+import fr.inria.spirals.npefix.patch.PatchesGenerator;
 import fr.inria.spirals.npefix.resi.oracle.Oracle;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 import org.json.JSONObject;
+import spoon.Launcher;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,13 +127,21 @@ public class Laps implements Comparable<Laps>,
 		return metadata.get(key);
 	}
 
-	public JSONObject toJSON() {
+	public String toDiff(Launcher spoon) {
+		PatchesGenerator patchesGenerator = new PatchesGenerator(decisions, spoon);
+		return patchesGenerator.getPatch();
+	}
+
+	public JSONObject toJSON(Launcher spoon) {
 		JSONObject output = new JSONObject();
 		// strategy
 		for (int i = 0; i < decisions.size(); i++) {
 			Decision decision = decisions.get(i);
 			output.append("decisions", decision.toJSON());
 		}
+
+		output.put("diff", toDiff(spoon));
+
 		output.put("startDate", startDate.getTime());
 		output.put("endDate", endDate.getTime());
 
@@ -144,16 +153,11 @@ public class Laps implements Comparable<Laps>,
 		output.put("metadata", metadata);
 		output.put("result", oracle.toJSON());
 
-		for (Iterator<Location> iterator = locations.iterator(); iterator.hasNext(); ) {
-			Location location = iterator.next();
-			JSONObject locationJSON = new JSONObject();
-			locationJSON.put("class", location.className);
-			locationJSON.put("line", location.line);
-			locationJSON.put("sourceStart", location.sourceStart);
-			locationJSON.put("sourceEnd", location.sourceEnd);
+		for (Location location : locations) {
+			JSONObject locationJSON = location.toJSON();
 
 			Integer executionCount = nbApplication.get(location);
-			if(executionCount == null) {
+			if (executionCount == null) {
 				executionCount = 0;
 			}
 			locationJSON.put("executionCount", executionCount);

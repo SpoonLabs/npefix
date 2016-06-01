@@ -14,6 +14,8 @@ import fr.inria.spirals.npefix.resi.selector.Selector;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 import fr.inria.spirals.npefix.transformer.processors.AddImplicitCastChecker;
 import fr.inria.spirals.npefix.transformer.processors.BeforeDerefAdder;
+import fr.inria.spirals.npefix.transformer.processors.CheckNotNull;
+import fr.inria.spirals.npefix.transformer.processors.ConstructorEncapsulation;
 import fr.inria.spirals.npefix.transformer.processors.ForceNullInit;
 import fr.inria.spirals.npefix.transformer.processors.MethodEncapsulation;
 import fr.inria.spirals.npefix.transformer.processors.TargetModifier;
@@ -92,16 +94,18 @@ public class Launcher {
         ProcessingManager p = new QueueProcessingManager(spoon.getFactory());
 
         //p.addProcessor(TernarySplitter.class.getCanonicalName());
-        //p.addProcessor(IfSplitter.class.getCanonicalName());
-        p.addProcessor(ForceNullInit.class.getCanonicalName());
-        p.addProcessor(AddImplicitCastChecker.class.getCanonicalName());
-        p.addProcessor(BeforeDerefAdder.class.getCanonicalName());
-        p.addProcessor(TargetModifier.class.getCanonicalName());
-        p.addProcessor(TryRegister.class.getCanonicalName());
-        p.addProcessor(VarRetrieveAssign.class.getCanonicalName());
-        p.addProcessor(VarRetrieveInit.class.getCanonicalName());
-        p.addProcessor(MethodEncapsulation.class.getCanonicalName());
-        p.addProcessor(VariableFor.class.getCanonicalName());
+        //p.addProcessor(new IfSplitter());
+        p.addProcessor(new CheckNotNull());
+        p.addProcessor(new ForceNullInit());
+        p.addProcessor(new AddImplicitCastChecker());
+        p.addProcessor(new BeforeDerefAdder());
+        p.addProcessor(new TargetModifier());
+        p.addProcessor(new TryRegister());
+        p.addProcessor(new VarRetrieveAssign());
+        p.addProcessor(new VarRetrieveInit());
+        p.addProcessor(new MethodEncapsulation());
+        p.addProcessor(new ConstructorEncapsulation());
+        p.addProcessor(new VariableFor());
 
         logger.debug("Start code instrumentation");
 
@@ -230,6 +234,8 @@ public class Launcher {
             laps.setOracle(new TestOracle(result));
 
             System.out.println(laps);
+            if(true)
+            break;
             if(result.getRunCount() > 0) {
                 output.add(laps);
                 try {
@@ -435,6 +441,10 @@ public class Launcher {
 
     private boolean isValidTest(String testName) {
         return spoon.getFactory().Class().get(testName) != null;
+    }
+
+    public spoon.Launcher getSpoon() {
+        return spoon;
     }
 
     public SpoonModelBuilder getCompiler() {

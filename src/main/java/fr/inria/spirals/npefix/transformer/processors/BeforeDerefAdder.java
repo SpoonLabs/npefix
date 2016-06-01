@@ -87,6 +87,9 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 				return false;
 			}
 		}
+		if (target.getMetadata("notnull") != null) {
+			return false;
+		}
 		return true;
 	}
 
@@ -168,9 +171,9 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 				ctTargetType = getFactory().Code().createLiteral(null);
 			}
 
-			CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
-			CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
-			CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
+			CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(target.getPosition().getLine());
+			CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(target.getPosition().getSourceStart());
+			CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(target.getPosition().getSourceEnd());
 
 			CtInvocation beforeDerefInvocation = ProcessorUtility.createStaticCall(getFactory(),
 					CallChecker.class,
@@ -335,12 +338,16 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 				type = getFactory().Code().createCtTypeReference(Object.class);
 			}
 			CtLocalVariable localVariable = getFactory().Code().createLocalVariable(type, variableName, localTarget);
+			localVariable.setPosition(target.getPosition());
 			localVariable.addModifier(ModifierKind.FINAL);
 			if(line instanceof CtStatement) {
 				((CtStatement)line).insertBefore(localVariable);
 				localVariable.setParent(line.getParent());
 			}
-			target = getFactory().Code().createVariableRead(localVariable.getReference(), false);
+			CtVariableAccess variableRead = getFactory().Code()
+					.createVariableRead(localVariable.getReference(), false);
+			variableRead.setPosition(target.getPosition());
+			target = variableRead;
 			element.setTarget(target);
 			invocationVariables.put(target.toString(), variableName);
 		}

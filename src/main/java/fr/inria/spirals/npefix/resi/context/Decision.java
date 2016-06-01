@@ -65,6 +65,9 @@ public class Decision<T> implements Serializable {
 		return value.getValue();
 	}
 
+	public Instance getInstance() {
+		return value;
+	}
 	public void setValue(Instance<T> value) {
 		this.value = value;
 	}
@@ -159,13 +162,7 @@ public class Decision<T> implements Serializable {
 		valueJSON.put("type", valueType);
 		output.put("value", valueJSON);
 
-		JSONObject locationJSON = new JSONObject();
-		locationJSON.put("class", location.className);
-		locationJSON.put("line", location.line);
-		locationJSON.put("sourceStart", location.sourceStart);
-		locationJSON.put("sourceEnd", location.sourceEnd);
-
-		output.put("location", locationJSON);
+		output.put("location", location.toJSON());
 		return output;
 	}
 

@@ -84,7 +84,8 @@ public class ArrayInstance<T> extends AbstractInstance<T> {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append(clazz);
 		for (int j = 0; j < level; j++) {
-			stringBuilder.append("[");
+			stringBuilder.append("[]");
+			stringBuilder.append("{");
 			for (int i = 0; i < values.size(); i++) {
 				Instance<?> instance = values.get(i);
 				stringBuilder.append(instance.toString());
@@ -92,7 +93,7 @@ public class ArrayInstance<T> extends AbstractInstance<T> {
 					stringBuilder.append(", ");
 				}
 			}
-			stringBuilder.append("]");
+			stringBuilder.append("}");
 		}
 		return stringBuilder.toString();
 	}

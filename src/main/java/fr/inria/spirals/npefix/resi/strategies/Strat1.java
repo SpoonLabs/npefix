@@ -35,4 +35,6 @@ public abstract class Strat1 extends AbstractStrategy {
 		}
 		return output;
 	}
+
+
 }
