@@ -234,8 +234,6 @@ public class Launcher {
             lapse.setOracle(new TestOracle(result));
 
             System.out.println(lapse);
-            if(true)
-            break;
             if(result.getRunCount() > 0) {
                 output.add(lapse);
                 try {
@@ -277,7 +275,7 @@ public class Launcher {
                 lapse = new Lapse(selector);
             }
             CallChecker.enable();
-            //CallChecker.cache.clear();
+            CallChecker.cache.clear();
             CallChecker.getDecisions().clear();
         }
         Collections.sort(output);
@@ -402,7 +400,8 @@ public class Launcher {
             Strategy strategy = strategies[i];
             System.out.println(strategy);
             DomSelector.strategy = strategy;
-            NPEOutput run = runCommandLine(selector, tests);
+            NPEOutput run = run(selector, tests);
+            // NPEOutput run = runCommandLine(selector, tests);
             output.addAll(run);
         }
         Collections.sort(output);
