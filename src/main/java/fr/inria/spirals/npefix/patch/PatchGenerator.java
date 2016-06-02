@@ -15,14 +15,15 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.visitor.filter.LineFilter;
 
+import java.util.List;
+
 class PatchGenerator {
-	private DecisionElement decisionElement;
+	private List<DecisionElement> decisionElement;
 	private Launcher spoon;
 	private int offset = 0;
 	private int offsetLine = 0;
 
-	public PatchGenerator(
-			DecisionElement decisionElement, Launcher spoon, int offset, int offsetLine) {
+	public PatchGenerator(List<DecisionElement> decisionElement, Launcher spoon, int offset, int offsetLine) {
 		this.decisionElement = decisionElement;
 		this.spoon = spoon;
 		this.offset = offset;
@@ -32,8 +33,8 @@ class PatchGenerator {
 	public String getPatch() {
 		String patch = getPatch(decisionElement);
 
-		CtStatement parentLine = getParentLine(decisionElement.getElement());
-		String classContent = decisionElement.getClassContent();
+		CtStatement parentLine = getParentLine(decisionElement.get(0).getElement());
+		String classContent = decisionElement.get(0).getClassContent();
 
 		int tmpOffsetLine = 0;
 		int tmpOffset = 0;
@@ -61,10 +62,10 @@ class PatchGenerator {
 		return output.toString();
 	}
 
-	private String getPatch(DecisionElement element) {
-		Decision decision = element.getDecision();
+	private String getPatch(List<DecisionElement> elements) {
+		Decision decision = elements.get(0).getDecision();
 
-		String line = getLine(element);
+		String line = getLine(elements.get(0));
 		String currentIndentation = "";
 
 		for (int i = 0; i < line.length(); i++) {
@@ -77,11 +78,11 @@ class PatchGenerator {
 		}
 		line = line.trim();
 
-		final String indentation = getIndentation(element);
+		final String indentation = getIndentation(elements.get(0));
 		Writer writer = new Writer(currentIndentation, indentation);
 
 		writer.write("if (");
-		writer.write(element.getElement());
+		writer.write(elements.get(0).getElement());
 		if (decision.getStrategy() instanceof Strat3) {
 			writer.write(" != ");
 		} else {
@@ -114,7 +115,7 @@ class PatchGenerator {
 			writer.write(line);
 		} else if (decision.getStrategy() instanceof Strat1B
 				|| decision.getStrategy() instanceof Strat2B) {
-			writer.write(element.getElement());
+			writer.write(elements.get(0).getElement());
 			writer.write(" = ");
 			if (decision.getStrategy() instanceof Strat2B) {
 				if (!(decision.getInstance() instanceof PrimitiveInstance)) {
@@ -127,27 +128,41 @@ class PatchGenerator {
 			writer.write(line);
 		} else if (decision.getStrategy() instanceof Strat1A
 				|| decision.getStrategy() instanceof Strat2A) {
-			CtStatement parentLine = getParentLine(element.getElement());
+			CtStatement parentLine = getParentLine(elements.get(0).getElement());
 			int sourceStart = parentLine.getPosition().getSourceStart() + offset;
-			for (int i = 0; i < line.length(); i++) {
-				char s = line.charAt(i);
+			for (int j = 0; j < line.length(); j++) {
+				char s = line.charAt(j);
 				if (s == ' ' || s == '\t') {
 					sourceStart--;
 					continue;
 				}
 				break;
 			}
-			int start = element.getElement().getPosition().getSourceStart() - sourceStart + offset;
-			int end = element.getElement().getPosition().getSourceEnd() - sourceStart + offset;
-			writer.write(writer.addIndentationToString(line.substring(0, start)));
-			writer.write(" ");
-			if (decision.getStrategy() instanceof Strat2A) {
-				if (!(decision.getInstance() instanceof PrimitiveInstance)) {
-					writer.write("new ");
+
+			for (int i = 0; i < elements.size(); i++) {
+				DecisionElement element = elements.get(i);
+				decision = element.getDecision();
+
+				int start = element.getElement().getPosition().getSourceStart() - sourceStart + offset;
+				int nextStart = line.length();
+				if (i < elements.size() - 1) {
+					nextStart = elements.get(i + 1).getElement().getPosition().getSourceStart() - sourceStart + offset;
 				}
+				int end = element.getElement().getPosition().getSourceEnd() - sourceStart + offset;
+				if (i == 0) {
+					writer.write(writer.addIndentationToString(line.substring(0, start)));
+				}
+				writer.write(" ");
+				if (decision.getStrategy() instanceof Strat2A) {
+					if (!(decision.getInstance() instanceof PrimitiveInstance)) {
+						writer.write("new ");
+					}
+				}
+				writer.write(decision.getInstance().toString());
+				writer.write(writer.addIndentationToString(line.substring(end + 1, nextStart)));
 			}
-			writer.write(decision.getInstance().toString());
-			writer.write(writer.addIndentationToString(line.substring(end + 1))).untab();
+			writer.untab();
+
 			writer.write("} else {").tab();
 			writer.write(writer.addIndentationToString(line)).untab();
 			writer.write("}");

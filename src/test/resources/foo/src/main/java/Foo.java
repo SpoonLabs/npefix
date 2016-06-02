@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Foo {
@@ -99,5 +100,9 @@ public class Foo {
         if(var.get(0).toString().equals("")) {
 
         }
+    }
+
+    public void  multiDecisionLine() {
+        Arrays.asList(field.toString(), field.toString());
     }
 }

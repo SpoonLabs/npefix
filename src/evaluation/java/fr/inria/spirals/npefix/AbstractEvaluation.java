@@ -59,7 +59,7 @@ public class AbstractEvaluation {
             launcher.instrument();
         } else {
             launcher = initNPEFix(name, Config.CONFIG.getEvaluationWorkingDirectory() + "/" + name + "/instrumented", null, deps);
-            launcher.getCompiler().compile();
+            //launcher.getCompiler().compile();
         }
         spoon.Launcher spoon = new spoon.Launcher();
         System.out.println(source);

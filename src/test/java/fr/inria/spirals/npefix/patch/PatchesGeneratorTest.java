@@ -28,7 +28,7 @@ public class PatchesGeneratorTest {
 		spoon.Launcher launcher = getSpoonLauncher();
 
 		Decision foo = new Decision(new Strat4(ReturnType.NEW),
-				new Location("Foo", 20, 367, 371));
+				new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
 		foo.setValue(new NewInstance(Object.class.getCanonicalName(), new String[0], Collections
 				.emptyList()));
@@ -41,7 +41,7 @@ public class PatchesGeneratorTest {
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
 				+ "+++ main/java/Foo.java\n"
-				+ "@@ -19,2 +19,5 @@\n"
+				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
 				+ "+            return new java.lang.Object();\n"
@@ -53,11 +53,11 @@ public class PatchesGeneratorTest {
 	public void testGeneratePatchStrat4Var() throws Exception {
 		spoon.Launcher launcher = getSpoonLauncher();
 
-		Decision foo = new Decision(new Strat4(ReturnType.VAR), new Location("Foo", 20, 367, 371));
+		Decision foo = new Decision(new Strat4(ReturnType.VAR), new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
 		foo.setValue(new VariableInstance("result"));
 
-		Decision field = new Decision(new Strat3(), new Location("Foo", 30, 591, 595));
+		Decision field = new Decision(new Strat3(), new Location("Foo", 31, 616, 620));
 		field.setValueType(Object.class);
 		field.setValue(new VariableInstance("element"));
 
@@ -70,13 +70,13 @@ public class PatchesGeneratorTest {
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
 				+ "+++ main/java/Foo.java\n"
-				+ "@@ -19,2 +19,5 @@\n"
+				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
 				+ "+            return result;\n"
 				+ "+        }\n"
 				+ "         for (String element : array) {\n"
-				+ "@@ -29,3 +32,5 @@\n"
+				+ "@@ -30,3 +33,5 @@\n"
 				+ "     public String fooLocal() {\n"
 				+ "-        System.out.print(field.toLowerCase());\n"
 				+ "+        if (field != null) {\n"
@@ -90,7 +90,7 @@ public class PatchesGeneratorTest {
 		spoon.Launcher launcher = getSpoonLauncher();
 
 		Decision foo = new Decision(new Strat3(),
-				new Location("Foo", 20, 367, 371));
+				new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
 		foo.setValue(new VariableInstance("result"));
 
@@ -102,7 +102,7 @@ public class PatchesGeneratorTest {
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
 				+ "+++ main/java/Foo.java\n"
-				+ "@@ -19,6 +19,8 @@\n"
+				+ "@@ -20,6 +20,8 @@\n"
 				+ "         String result = \"\";\n"
 				+ "-        for (String element : array) {\n"
 				+ "-            result += element.toString();\n"
@@ -122,7 +122,7 @@ public class PatchesGeneratorTest {
 		spoon.Launcher launcher = getSpoonLauncher();
 
 		Decision foo = new Decision(new Strat2B(),
-				new Location("Foo", 20, 367, 371));
+				new Location("Foo", 21, 392, 396));
 		foo.setValueType(String[].class);
 		foo.setValue(new ArrayInstance(String[].class, Collections.EMPTY_LIST));
 
@@ -134,7 +134,7 @@ public class PatchesGeneratorTest {
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
 				+ "+++ main/java/Foo.java\n"
-				+ "@@ -19,2 +19,5 @@\n"
+				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
 				+ "+            array = new java.lang.String[]{};\n"
@@ -148,7 +148,7 @@ public class PatchesGeneratorTest {
 		spoon.Launcher launcher = getSpoonLauncher();
 
 		Decision foo = new Decision(new Strat1A(),
-				new Location("Foo", 20, 367, 371));
+				new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
 		foo.setValue(new VariableInstance("result"));
 
@@ -160,7 +160,7 @@ public class PatchesGeneratorTest {
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
 				+ "+++ main/java/Foo.java\n"
-				+ "@@ -19,7 +19,16 @@\n"
+				+ "@@ -20,7 +20,16 @@\n"
 				+ "         String result = \"\";\n"
 				+ "-        for (String element : array) {\n"
 				+ "-            result += element.toString();\n"
@@ -188,7 +188,7 @@ public class PatchesGeneratorTest {
 		spoon.Launcher launcher = getSpoonLauncher();
 
 		Decision foo = new Decision(new Strat2A(),
-				new Location("Foo", 20, 367, 371));
+				new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
 		foo.setValue(new ArrayInstance(String[].class, Collections.EMPTY_LIST));
 
@@ -200,7 +200,7 @@ public class PatchesGeneratorTest {
 		Assert.assertEquals(""
 				+ "--- main/java/Foo.java\n"
 				+ "+++ main/java/Foo.java\n"
-				+ "@@ -19,7 +19,16 @@\n"
+				+ "@@ -20,7 +20,16 @@\n"
 				+ "         String result = \"\";\n"
 				+ "-        for (String element : array) {\n"
 				+ "-            result += element.toString();\n"
@@ -221,6 +221,38 @@ public class PatchesGeneratorTest {
 				+ "+                }\n"
 				+ "+            }\n"
 				+ "         }\n", s);
+	}
+
+	@Test
+	public void testMutliPatch() throws Exception {
+		spoon.Launcher launcher = getSpoonLauncher();
+
+		Decision foo = new Decision(new Strat2A(), new Location("Foo", 106, 2258, 2262));
+		foo.setValueType(String.class);
+		foo.setValue(new NewInstance(String.class.getCanonicalName(), new String[0], Collections.EMPTY_LIST));
+
+		Decision field = new Decision(new Strat2A(), new Location("Foo", 106, 2276, 2280));
+		field.setValueType(String.class);
+		field.setValue(new NewInstance(String.class.getCanonicalName(), new String[0], Collections.EMPTY_LIST));
+
+		Lapse lapse = new Lapse(new DomSelector());
+		lapse.addDecision(foo);
+		lapse.addDecision(field);
+
+		String s = lapse.toDiff(launcher);
+		System.out.println(s);
+		Assert.assertEquals(""
+				+ "--- main/java/Foo.java\n"
+				+ "+++ main/java/Foo.java\n"
+				+ "@@ -105,3 +105,7 @@\n"
+				+ "     public void  multiDecisionLine() {\n"
+				+ "-        Arrays.asList(field.toString(), field.toString());\n"
+				+ "+        if (field == null) {\n"
+				+ "+            Arrays.asList( new java.lang.String().toString(), new java.lang.String().toString());\n"
+				+ "+        } else {\n"
+				+ "+            Arrays.asList(field.toString(), field.toString());\n"
+				+ "+        }\n"
+				+ "     }\n", s);
 	}
 
 	public spoon.Launcher getSpoonLauncher() {

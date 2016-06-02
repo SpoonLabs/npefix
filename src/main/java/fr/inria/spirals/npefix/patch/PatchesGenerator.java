@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -79,9 +80,10 @@ public class PatchesGenerator {
 
 		int offset = 0;
 		int offsetLine = 0;
-		Set<Integer> lines = elementsPerLine.keySet();
-		for (Iterator<Integer> iterator = lines.iterator(); iterator.hasNext(); ) {
-			Integer line =  iterator.next();
+		List<Integer> lines = new ArrayList<>(elementsPerLine.keySet());
+		Collections.sort(lines);
+		for (int j = 0; j < lines.size(); j++) {
+			Integer line =  lines.get(j);
 			List<DecisionElement> decisionElements = elementsPerLine.get(line);
 
 			if (decisionElements.size() > 1) {
@@ -106,7 +108,7 @@ public class PatchesGenerator {
 					}
 				}
 				if (isSameDecision) {
-					PatchGenerator patchGenerator = new PatchGenerator(decisionElements.get(0), spoon, offset, offsetLine);
+					PatchGenerator patchGenerator = new PatchGenerator(decisionElements, spoon, offset, offsetLine);
 					classContent = patchGenerator.getPatch();
 
 					offset = patchGenerator.getOffset();
@@ -117,7 +119,7 @@ public class PatchesGenerator {
 			} else {
 				DecisionElement decisionElement = decisionElements.get(0);
 				decisionElement.setClassContent(classContent);
-				PatchGenerator patchGenerator = new PatchGenerator(decisionElement, spoon, offset, offsetLine);
+				PatchGenerator patchGenerator = new PatchGenerator(decisionElements, spoon, offset, offsetLine);
 				classContent = patchGenerator.getPatch();
 
 				offset = patchGenerator.getOffset();
