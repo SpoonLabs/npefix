@@ -1,4 +1,4 @@
-package fr.inria.spirals.npefix.patch;
+package fr.inria.spirals.npefix.patch.generator;
 
 import spoon.reflect.declaration.CtElement;
 
@@ -44,11 +44,22 @@ public class Writer {
 	}
 
 	public String addIndentationToString(String content) {
-		Writer sb = new Writer(indentation, indentation);
+		Writer sb = new Writer(currentIndentation, indentation);
 		String[] split = content.split("\n");
 		for (int i = 0; i < split.length; i++) {
-			String s = split[i];
-			sb.write(s).line();
+			String s = split[i].trim();
+			String next = null;
+			if (i < split.length - 1) {
+				next = split[i + 1].trim();
+			}
+			sb.write(s);
+			if (s.endsWith("{")) {
+				sb.tab();
+			} else if (next != null && next.startsWith("}")) {
+				sb.untab();
+			} else if (next != null) {
+				sb.line();
+			}
 		}
 		return sb.toString().trim();
 	}

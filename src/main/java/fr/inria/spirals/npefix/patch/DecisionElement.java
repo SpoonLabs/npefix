@@ -8,8 +8,7 @@ public class DecisionElement {
 	private Decision decision;
 	private String classContent;
 
-	public DecisionElement(CtElement element,
-			Decision decision) {
+	public DecisionElement(CtElement element, Decision decision) {
 		this.element = element;
 		this.decision = decision;
 	}

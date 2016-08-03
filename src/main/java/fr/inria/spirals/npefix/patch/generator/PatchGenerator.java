@@ -1,7 +1,7 @@
-package fr.inria.spirals.npefix.patch;
+package fr.inria.spirals.npefix.patch.generator;
 
+import fr.inria.spirals.npefix.patch.DecisionElement;
 import fr.inria.spirals.npefix.resi.context.Decision;
-import fr.inria.spirals.npefix.resi.context.instance.PrimitiveInstance;
 import fr.inria.spirals.npefix.resi.strategies.Strat1A;
 import fr.inria.spirals.npefix.resi.strategies.Strat1B;
 import fr.inria.spirals.npefix.resi.strategies.Strat2A;
@@ -9,10 +9,14 @@ import fr.inria.spirals.npefix.resi.strategies.Strat2B;
 import fr.inria.spirals.npefix.resi.strategies.Strat3;
 import fr.inria.spirals.npefix.resi.strategies.Strat4;
 import spoon.Launcher;
+import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtStatement;
+import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtType;
+import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.filter.LineFilter;
 
 import java.util.List;
@@ -20,14 +24,30 @@ import java.util.List;
 class PatchGenerator {
 	private List<DecisionElement> decisionElement;
 	private Launcher spoon;
-	private int offset = 0;
-	private int offsetLine = 0;
+	private int[] offset;
+	private int[] offsetLine;
 
-	public PatchGenerator(List<DecisionElement> decisionElement, Launcher spoon, int offset, int offsetLine) {
+	public PatchGenerator(List<DecisionElement> decisionElement, Launcher spoon, int[] offset, int[] offsetLine) {
 		this.decisionElement = decisionElement;
 		this.spoon = spoon;
 		this.offset = offset;
 		this.offsetLine = offsetLine;
+	}
+
+	private int getOffsetedLine(int line) {
+		int output = line;
+		for (int i = 0; i < line; i++) {
+			output += offsetLine[i];
+		}
+		return output;
+	}
+
+	private int getOffset(int line, int current) {
+		int output = current;
+		for (int i = 0; i < line; i++) {
+			output += offset[i];
+		}
+		return output;
 	}
 
 	public String getPatch() {
@@ -42,10 +62,11 @@ class PatchGenerator {
 		Writer output = new Writer("", "");
 		for (int i = 0; i < split.length; i++) {
 			String s = split[i];
-			if (i >= parentLine.getPosition().getLine() + offsetLine - 1 && i <= parentLine.getPosition().getEndLine() + offsetLine - 1) {
-				tmpOffset += s.length();
+			if (i >= getOffsetedLine(parentLine.getPosition().getLine()) - 1
+					&& i <= getOffsetedLine(parentLine.getPosition().getEndLine()) - 1) {
+				tmpOffset += s.length() + 1;
 				tmpOffsetLine ++;
-				if (i == parentLine.getPosition().getLine() + offsetLine - 1) {
+				if (i == getOffsetedLine(parentLine.getPosition().getLine()) - 1) {
 					output.write(patch).line();
 				}
 			} else {
@@ -56,16 +77,20 @@ class PatchGenerator {
 			}
 		}
 
-		offset += patch.length() - tmpOffset;
-		offsetLine += patch.split("\n").length - tmpOffsetLine;
+		offset[parentLine.getPosition().getLine() - 1] += patch.length() - tmpOffset + 1;
+		offsetLine[parentLine.getPosition().getLine() - 1] += patch.split("\n").length - tmpOffsetLine;
 
 		return output.toString();
 	}
 
 	private String getPatch(List<DecisionElement> elements) {
-		Decision decision = elements.get(0).getDecision();
+		DecisionElement firstDecisionElement = elements.get(0);
+		Decision decision = firstDecisionElement.getDecision();
+		CtElement firstElement = firstDecisionElement.getElement();
+		String classContent = firstDecisionElement.getClassContent();
 
-		String line = getLine(elements.get(0));
+		String line = getLine(firstDecisionElement);
+		CtStatement parentLine = getParentLine(firstDecisionElement.getElement());
 		String currentIndentation = "";
 
 		for (int i = 0; i < line.length(); i++) {
@@ -78,11 +103,20 @@ class PatchGenerator {
 		}
 		line = line.trim();
 
-		final String indentation = getIndentation(elements.get(0));
+		final String indentation = getIndentation(firstDecisionElement);
 		Writer writer = new Writer(currentIndentation, indentation);
+		if (parentLine.getParent() instanceof CtIf) {
+			writer.write("} else {").tab();
+			line = getSubstring(classContent, parentLine);
+		}
 
 		writer.write("if (");
-		writer.write(elements.get(0).getElement());
+
+		Factory factory = firstElement.getFactory();
+		factory.getEnvironment().setAutoImports(true);
+		String nullElement = getSubstring(classContent, firstElement);
+		writer.write(nullElement);
+
 		if (decision.getStrategy() instanceof Strat3) {
 			writer.write(" != ");
 		} else {
@@ -94,42 +128,21 @@ class PatchGenerator {
 			writer.write("}");
 		} else if (decision.getStrategy() instanceof Strat4) {
 			writer.write("return ");
-			switch (((Strat4) decision.getStrategy()).getReturnType()) {
-			case VOID:
-				break;
-			case NULL:
-				writer.write("null");
-				break;
-			case NEW:
-				if (!(decision.getInstance() instanceof PrimitiveInstance)) {
-					writer.write("new ");
-				}
-				writer.write(decision.getInstance().toString());
-				break;
-			case VAR:
-				writer.write(decision.getInstance().toString());
-				break;
-			}
+			writer.write(decision.getInstance().toCtExpression(factory).toString());
 			writer.write(";").untab();
 			writer.write("}").line();
 			writer.write(line);
 		} else if (decision.getStrategy() instanceof Strat1B
 				|| decision.getStrategy() instanceof Strat2B) {
-			writer.write(elements.get(0).getElement());
+			writer.write(nullElement);
 			writer.write(" = ");
-			if (decision.getStrategy() instanceof Strat2B) {
-				if (!(decision.getInstance() instanceof PrimitiveInstance)) {
-					writer.write("new ");
-				}
-			}
-			writer.write(decision.getInstance().toString());
+			writer.write(decision.getInstance().toCtExpression(factory).toString());
 			writer.write(";").untab();
 			writer.write("}").line();
 			writer.write(line);
 		} else if (decision.getStrategy() instanceof Strat1A
 				|| decision.getStrategy() instanceof Strat2A) {
-			CtStatement parentLine = getParentLine(elements.get(0).getElement());
-			int sourceStart = parentLine.getPosition().getSourceStart() + offset;
+			int sourceStart = getOffset(parentLine.getPosition().getLine(), parentLine.getPosition().getSourceStart());
 			for (int j = 0; j < line.length(); j++) {
 				char s = line.charAt(j);
 				if (s == ' ' || s == '\t') {
@@ -142,23 +155,21 @@ class PatchGenerator {
 			for (int i = 0; i < elements.size(); i++) {
 				DecisionElement element = elements.get(i);
 				decision = element.getDecision();
-
-				int start = element.getElement().getPosition().getSourceStart() - sourceStart + offset;
+				int start = getOffset(element.getElement().getPosition().getLine(), element.getElement().getPosition().getSourceStart()) - sourceStart;
 				int nextStart = line.length();
 				if (i < elements.size() - 1) {
-					nextStart = elements.get(i + 1).getElement().getPosition().getSourceStart() - sourceStart + offset;
+					nextStart = getOffset(elements.get(i + 1).getElement().getPosition().getLine(), elements.get(i + 1).getElement().getPosition().getSourceStart()) - sourceStart;
 				}
-				int end = element.getElement().getPosition().getSourceEnd() - sourceStart + offset;
+				int end = getOffset(element.getElement().getPosition().getLine(), element.getElement().getPosition().getSourceEnd()) - sourceStart;
 				if (i == 0) {
+					if (start >= line.length()) {
+						System.out.println(line);
+						System.out.println(nextStart);
+					}
 					writer.write(writer.addIndentationToString(line.substring(0, start)));
 				}
 				writer.write(" ");
-				if (decision.getStrategy() instanceof Strat2A) {
-					if (!(decision.getInstance() instanceof PrimitiveInstance)) {
-						writer.write("new ");
-					}
-				}
-				writer.write(decision.getInstance().toString());
+				writer.write(decision.getInstance().toCtExpression(factory).toString());
 				writer.write(writer.addIndentationToString(line.substring(end + 1, nextStart)));
 			}
 			writer.untab();
@@ -167,23 +178,30 @@ class PatchGenerator {
 			writer.write(writer.addIndentationToString(line)).untab();
 			writer.write("}");
 		}
+		if (parentLine.getParent() instanceof CtIf) {
+			writer.untab().write("}");
+		}
 		return writer.toString();
+	}
+
+	private String getSubstring(String classContent, CtElement element) {
+		SourcePosition position = element.getPosition();
+		return classContent.substring(
+				getOffset(position.getLine(), position.getSourceStart()),
+				getOffset(position.getLine(), position.getSourceEnd() + 1));
 	}
 
 	private String getIndentation(DecisionElement element) {
 		StringBuilder indentation = new StringBuilder();
-		CtStatement parentLine = getParentLine(element.getElement());
-		CtElement supParentLine = getParentLine(parentLine.getParent());
-		if (supParentLine == null) {
-			supParentLine = parentLine.getParent(CtMethod.class);
+		CtElement parentLine = element.getElement().getParent(CtMethod.class);
+		if (parentLine == null) {
+			parentLine = element.getElement().getParent(CtConstructor.class);
 		}
-		if (supParentLine == null) {
-			supParentLine = parentLine.getParent(CtConstructor.class);
-		}
+		CtElement supParentLine = parentLine.getParent(CtType.class);
 
 		String[] split = element.getClassContent().split("\n");
-		String parentFirstLine = split[parentLine.getPosition().getLine() + offsetLine - 1];
-		String supParentFirstLine = split[supParentLine.getPosition().getLine() + offsetLine - 1];
+		String parentFirstLine = split[getOffsetedLine(parentLine.getPosition().getLine()) - 1];
+		String supParentFirstLine = split[getOffsetedLine(supParentLine.getPosition().getLine()) - 1];
 
 		for (int i = 0; i < parentFirstLine.length(); i++) {
 			char s = parentFirstLine.charAt(i);
@@ -210,7 +228,7 @@ class PatchGenerator {
 		String[] split = element.getClassContent().split("\n");
 		StringBuilder output = new StringBuilder();
 
-		for (int i = parent.getPosition().getLine() + offsetLine -1; i < parent.getPosition().getEndLine() + offsetLine; i++) {
+		for (int i = getOffsetedLine(parent.getPosition().getLine()) - 1; i < getOffsetedLine(parent.getPosition().getEndLine()); i++) {
 			String s = split[i];
 			output.append(s);
 			output.append("\n");
@@ -229,11 +247,11 @@ class PatchGenerator {
 		return element.getParent(lineFilter);
 	}
 
-	public int getOffset() {
+	public int[] getOffset() {
 		return offset;
 	}
 
-	public int getOffsetLine() {
+	public int[] getOffsetLine() {
 		return offsetLine;
 	}
 }

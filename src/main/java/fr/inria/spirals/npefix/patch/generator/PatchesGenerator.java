@@ -1,6 +1,8 @@
-package fr.inria.spirals.npefix.patch;
+package fr.inria.spirals.npefix.patch.generator;
 
 import com.cloudbees.diff.Diff;
+import fr.inria.spirals.npefix.patch.DecisionElement;
+import fr.inria.spirals.npefix.patch.PositionScanner;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Location;
 import org.apache.commons.io.FileUtils;
@@ -28,8 +30,7 @@ public class PatchesGenerator {
 		this.spoon = spoon;
 	}
 
-
-	public String getPatch() {
+	public String getDiff() {
 		StringBuilder output = new StringBuilder();
 
 		// group decision per file
@@ -48,7 +49,7 @@ public class PatchesGenerator {
 			String className = iterator.next();
 			List<Decision> decisions = classes.get(className);
 
-			String patch = createPatch(className, decisions);
+			String patch = createPatchDiff(className, decisions);
 
 			output.append(patch);
 		}
@@ -57,7 +58,7 @@ public class PatchesGenerator {
 		return output.toString();
 	}
 
-	private String createPatch(String className, List<Decision> decisions) {
+	private String createPatchDiff(String className, List<Decision> decisions) {
 		CtType type = getCtType(className);
 
 		// get the content of the class
@@ -78,8 +79,8 @@ public class PatchesGenerator {
 			}
 		}
 
-		int offset = 0;
-		int offsetLine = 0;
+		int[] offset = new int[classContent.split("\n").length];
+		int[] offsetLine = new int[offset.length];
 		List<Integer> lines = new ArrayList<>(elementsPerLine.keySet());
 		Collections.sort(lines);
 		for (int j = 0; j < lines.size(); j++) {
@@ -107,7 +108,7 @@ public class PatchesGenerator {
 						}
 					}
 				}
-				if (isSameDecision) {
+				if (true  || isSameDecision) {
 					PatchGenerator patchGenerator = new PatchGenerator(decisionElements, spoon, offset, offsetLine);
 					classContent = patchGenerator.getPatch();
 
