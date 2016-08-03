@@ -7,12 +7,73 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+
 /**
  * Abstract selector evaluation
  */
 public abstract class AbstractSelectorEvaluation extends AbstractEvaluation {
 
-	private String rootNPEDataset = Config.CONFIG.getDatasetRoot();
+	private static final String rootNPEDataset = Config.CONFIG.getDatasetRoot();
+
+	public static final String classpathCollections360 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathLang304 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathLang587 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathLang703 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathMath290 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathMath305 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathMath369 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathMath988a =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathMath988b =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathMath1115 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathMath1117 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
+	public static final String classpathPdfbox2812 =  depArrayToClassPath("org/apache/pdfbox/fontbox/1.8.10/fontbox-1.8.10.jar",
+			"commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar",
+			"org/apache/pdfbox/jempbox/1.8.10/jempbox-1.8.10.jar",
+			"org/bouncycastle/bcmail-jdk15/1.44/bcmail-jdk15-1.44.jar",
+			"org/bouncycastle/bcprov-jdk15/1.44/bcprov-jdk15-1.44.jar",
+			"com/ibm/icu/icu4j/3.8/icu4j-3.8.jar",
+			"junit/junit/4.8.1/junit-4.8.1.jar",
+			"com/levigo/jbig2/levigo-jbig2-imageio/1.6.2/levigo-jbig2-imageio-1.6.2.jar",
+			"net/java/dev/jai-imageio/jai-imageio-core-standalone/1.2-pre-dr-b04-2011-07-04/jai-imageio-core-standalone-1.2-pre-dr-b04-2011-07-04.jar");
+	public static final String classpathPdfbox2995 =  depArrayToClassPath("org/apache/pdfbox/fontbox/2.0.0-RC1/fontbox-2.0.0-RC1.jar",
+			"commons-logging/commons-logging/1.2/commons-logging-1.2.jar",
+			"org/bouncycastle/bcpkix-jdk15on/1.50/bcpkix-jdk15on-1.50.jar",
+			"org/bouncycastle/bcprov-jdk15on/1.50/bcprov-jdk15on-1.50.jar",
+			"junit/junit/4.12/junit-4.12.jar",
+			"org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar");
+	public static final String classpathPdfbox2965 =  depArrayToClassPath("org/apache/pdfbox/fontbox/2.0.0-RC1/fontbox-2.0.0-RC1.jar",
+			"commons-logging/commons-logging/1.2/commons-logging-1.2.jar",
+			"org/bouncycastle/bcpkix-jdk15on/1.50/bcpkix-jdk15on-1.50.jar",
+			"org/bouncycastle/bcprov-jdk15on/1.50/bcprov-jdk15on-1.50.jar",
+			"junit/junit/4.12/junit-4.12.jar",
+			"org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar");
+	public static final String classpathFelix4960 =  depArrayToClassPath("org/osgi/org.osgi.annotation/6.0.0/org.osgi.annotation-6.0.0.jar",
+			"org/apache/felix/org.apache.felix.resolver/1.5.0-SNAPSHOT/org.apache.felix.resolver-1.5.0-SNAPSHOT.jar",
+			"org/osgi/org.osgi.core/5.0.0/org.osgi.core-5.0.0.jar",
+			"org/ow2/asm/asm-all/4.2/asm-all-4.2.jar",
+			"org/mockito/mockito-all/1.10.19/mockito-all-1.10.19.jar",
+			"junit/junit/4.7/junit-4.7.jar",
+			"org/easymock/easymock/2.4/easymock-2.4.jar");
+	public static final String classpathSling4982 =  depArrayToClassPath("javax/servlet/servlet-api/2.4/servlet-api-2.4.jar",
+			"org/apache/sling/org.apache.sling.api/2.1.0/org.apache.sling.api-2.1.0.jar",
+			"org/apache/sling/org.apache.sling.commons.osgi/2.1.0/org.apache.sling.commons.osgi-2.1.0.jar",
+			"org/apache/felix/org.apache.felix.scr.annotations/1.9.12/org.apache.felix.scr.annotations-1.9.12.jar",
+			"org/osgi/org.osgi.core/4.1.0/org.osgi.core-4.1.0.jar",
+			"org/osgi/org.osgi.compendium/4.1.0/org.osgi.compendium-4.1.0.jar",
+			"org/slf4j/slf4j-api/1.5.2/slf4j-api-1.5.2.jar",
+			"org/slf4j/slf4j-simple/1.5.2/slf4j-simple-1.5.2.jar",
+			"org/mockito/mockito-all/1.8.2/mockito-all-1.8.2.jar",
+			"junit/junit/4.11/junit-4.11.jar",
+			"org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+			"org/jmock/jmock-junit4/2.5.1/jmock-junit4-2.5.1.jar",
+			"org/jmock/jmock/2.5.1/jmock-2.5.1.jar",
+			"org/hamcrest/hamcrest-library/1.1/hamcrest-library-1.1.jar",
+			"junit/junit-dep/4.4/junit-dep-4.4.jar",
+			"junit-addons/junit-addons/1.4/junit-addons-1.4.jar",
+			"xerces/xercesImpl/2.6.2/xercesImpl-2.6.2.jar",
+			"xerces/xmlParserAPIs/2.6.2/xmlParserAPIs-2.6.2.jar",
+			"biz/aQute/bndlib/1.50.0/bndlib-1.50.0.jar");
 
 	private Selector selector;
 
@@ -287,5 +348,117 @@ public abstract class AbstractSelectorEvaluation extends AbstractEvaluation {
 				"biz/aQute/bndlib/1.50.0/bndlib-1.50.0.jar"
 		};
 		runProject("sling-4982", source, test, deps);
+	}
+
+	public static String getClasspathProject(String projectName) {
+		projectName = Character.toUpperCase(projectName.charAt(0)) + projectName.substring(1);
+		Class<AbstractSelectorEvaluation> evaluationClass = AbstractSelectorEvaluation.class;
+		try {
+			Field field = evaluationClass.getField("classpath" + projectName);
+			Object o = field.get(null);
+			return (String) o;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static String getSourcePathProject(String projectName) {
+		if ("felix4960".equals(projectName)) {
+			String root = rootNPEDataset + "felix-4960/";
+			String source = root + "src/main/";
+			String test = root + "src/test/";
+			return source;
+		}
+		if ("sling4982".equals(projectName)) {
+			String root = rootNPEDataset + "sling_4982/";
+			String source = root + "src/main/";
+			String test = root + "src/test/";
+			return source;
+		}
+		if ("collections360".equals(projectName)) {
+			String root = rootNPEDataset + "collections-360/";
+			String source = root + "src";
+			String test = root + "test";
+			return source;
+		}
+		if ("lang304".equals(projectName)) {
+			String root = rootNPEDataset + "lang-304/";
+			String source = root + "src";
+			String test = root + "test";
+			return source;
+		}
+		if ("lang587".equals(projectName)) {
+			String root = rootNPEDataset + "lang-587/";
+			String source = root + "src/main";
+			String test = root + "src/test";
+			return source;
+		}
+		if ("lang703".equals(projectName)) {
+			String root = rootNPEDataset + "lang-703/";
+			String source = root + "src";
+			String test = root + "test";
+			return source;
+		}
+		if ("math290".equals(projectName)) {
+			String root = rootNPEDataset + "math-290/";
+			String source = root + "src";
+			String test = root + "test";
+			return source;
+		}
+		if ("math305".equals(projectName)) {
+			String root = rootNPEDataset + "math-305/";
+			String source = root + "src";
+			String test = root + "test";
+			return source;
+		}
+		if ("math369".equals(projectName)) {
+			String root = rootNPEDataset + "math-369/";
+			String source = root + "src";
+			String test = root + "test";
+			return source;
+		}
+		if ("math988a".equals(projectName)) {
+			String root = rootNPEDataset + "math-988a/";
+			String source = root + "src";
+			String test = root + "test";
+			return source;
+		}
+		if ("math988b".equals(projectName)) {
+			String root = rootNPEDataset + "math-988b/";
+			String source = root + "src";
+			String test = root + "test";
+			return source;
+		}
+		if ("math1115".equals(projectName)) {
+			String root = rootNPEDataset +  "math-1115/";
+			String source = root + "src";
+			String test = root + "test";
+			return source;
+		}
+		if ("math1117".equals(projectName)) {
+			String root = rootNPEDataset +  "math-1117/";
+			String source = root + "src";
+			String test = root + "test";
+			return source;
+		}
+		if ("pdfbox2995".equals(projectName)) {
+			String root = rootNPEDataset + "pdfbox_2995/";
+			String source = root + "src/main/";
+			String test = root + "src/test/";
+			return source;
+		}
+		if ("pdfbox2812".equals(projectName)) {
+			String root = rootNPEDataset + "pdfbox_2812/";
+			String source = root + "src/main/";
+			String test = root + "src/test/";
+			return source;
+		}
+		if ("pdfbox2965".equals(projectName)) {
+			String root = rootNPEDataset + "pdfbox_2965/";
+			String source = root + "src/main/";
+			String test = root + "src/test/";
+			return source;
+		}
+		throw new RuntimeException("Project not found: " + projectName);
 	}
 }

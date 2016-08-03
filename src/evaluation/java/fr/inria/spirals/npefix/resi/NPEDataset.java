@@ -24,19 +24,7 @@ import java.util.Set;
  */
 public class NPEDataset extends AbstractEvaluation {
 
-    public static final String classpathCollections360 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-    public static final String classpathLang304 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-    public static final String classpathLang587 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-    public static final String classpathLang703 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-    public static final String classpathMath290 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-    public static final String classpathMath305 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-    public static final String classpathMath369 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-    public static final String classpathMath988a =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-    public static final String classpathMath988b =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-    public static final String classpathMath1115 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-    public static final String classpathMath1117 =  depArrayToClassPath("junit/junit/4.7/junit-4.7.jar");
-
-    private String rootNPEDataset = "/home/thomas/git/npedataset/";
+    private static final String rootNPEDataset = "/home/thomas/git/npedataset/";
 
     private void eval(NPEOutput results) {
         int minFailing = Integer.MAX_VALUE;
