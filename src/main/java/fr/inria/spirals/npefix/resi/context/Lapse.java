@@ -1,7 +1,7 @@
 package fr.inria.spirals.npefix.resi.context;
 
 import fr.inria.spirals.npefix.config.Config;
-import fr.inria.spirals.npefix.patch.PatchesGenerator;
+import fr.inria.spirals.npefix.patch.generator.PatchesGenerator;
 import fr.inria.spirals.npefix.resi.oracle.Oracle;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 import org.json.JSONObject;
@@ -128,7 +128,7 @@ public class Lapse implements Comparable<Lapse>, Serializable {
 
 	public String toDiff(Launcher spoon) {
 		PatchesGenerator patchesGenerator = new PatchesGenerator(decisions, spoon);
-		return patchesGenerator.getPatch();
+		return patchesGenerator.getDiff();
 	}
 
 	public JSONObject toJSON(Launcher spoon) {
