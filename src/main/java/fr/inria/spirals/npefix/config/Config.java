@@ -11,6 +11,7 @@ public class Config  {
 	private double greedyEpsilon;
 	private int randomSeed;
 	private int serverPort;
+	private String serverHost;
 	private int nbIteration;
 	private int timeoutIteration;
 	private Properties properties = new Properties();
@@ -23,6 +24,7 @@ public class Config  {
 			timeoutIteration = Integer.parseInt(properties.getProperty("iteration.timeout"));
 			this.nbIteration = Integer.parseInt(properties.getProperty("iteration.count"));
 			this.serverPort = Integer.parseInt(properties.getProperty("server.port"));
+			this.serverHost = properties.getProperty("server.host");
 			this.randomSeed = Integer.parseInt(properties.getProperty("random.seed"));
 			this.greedyEpsilon = Double.parseDouble(properties.getProperty("selector.greedy.epsilon"));
 			this.datasetRoot = properties.getProperty("evaluation.datasetRoot");
@@ -55,6 +57,14 @@ public class Config  {
 
 	public void setServerPort(int serverPort) {
 		this.serverPort = serverPort;
+	}
+
+	public String getServerHost() {
+		return serverHost;
+	}
+
+	public void setServerHost(String serverHost) {
+		this.serverHost = serverHost;
 	}
 
 	public int getRandomSeed() {
@@ -96,5 +106,9 @@ public class Config  {
 
 	public void setM2Repository(String m2Repository) {
 		this.m2Repository = (m2Repository + "/").replaceFirst("^~", System.getProperty("user.home")) + "repository/";
+	}
+
+	public boolean extractInvocation() {
+		return true;
 	}
 }

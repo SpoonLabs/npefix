@@ -1,5 +1,6 @@
 package fr.inria.spirals.npefix.resi;
 
+import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.Location;
@@ -7,6 +8,7 @@ import fr.inria.spirals.npefix.resi.context.MethodContext;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
 import fr.inria.spirals.npefix.resi.exception.ForceReturn;
 import fr.inria.spirals.npefix.resi.selector.DomSelector;
+import fr.inria.spirals.npefix.resi.selector.GreedySelector;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 import fr.inria.spirals.npefix.resi.strategies.AbstractStrategy;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
@@ -14,6 +16,8 @@ import fr.inria.spirals.npefix.resi.strategies.Strat4;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +27,16 @@ import java.util.Stack;
 @SuppressWarnings("all")
 public class CallChecker {
 
-	public static Selector strategySelector = new DomSelector();
+	public static Selector strategySelector;
+
+	static {
+		try {
+			Registry registry = LocateRegistry.getRegistry(Config.CONFIG.getServerHost(), Config.CONFIG.getServerPort());
+			strategySelector =  (Selector) registry.lookup("Selector");
+		} catch (Exception e) {
+			strategySelector = new GreedySelector();
+		}
+	}
 
 	public static Lapse currentLapse = new Lapse(strategySelector);
 
@@ -99,6 +112,7 @@ public class CallChecker {
 			currentLapse.addApplication(decision);
 			decision.increaseNbUse();
 			decision.setUsed(true);
+			enable();
 			if(decision.getStrategy() instanceof Strat4) {
 				throw new ForceReturn(decision);
 			}
@@ -126,13 +140,12 @@ public class CallChecker {
 
 		Decision<?> decision = getDecision(searchSpace);
 
-		//disable();
-
 		currentLapse.addDecision(decision);
 
 		decisions.put(location, decision);
 
 		if(!decision.getStrategy().isCompatibleAction(action)) {
+			disable();
 			return o;
 		}
 		//System.out.println("Stack size: " + stack.size());

@@ -32,6 +32,7 @@ public class ExecutionClient {
 	private String classTestName;
 	private String testName;
 	private int port = Config.CONFIG.getServerPort();
+	private String host = Config.CONFIG.getServerHost();
 
 	public ExecutionClient(String classTestName, String testName) {
 		this.classTestName = classTestName;
@@ -44,7 +45,7 @@ public class ExecutionClient {
 	 */
 	private Selector getSelector() {
 		try {
-			Registry registry = LocateRegistry.getRegistry(port);
+			Registry registry = LocateRegistry.getRegistry(host, port);
 			return  (Selector) registry.lookup("Selector");
 		} catch (Exception e) {
 			// if the decision server is not available exit the execution
