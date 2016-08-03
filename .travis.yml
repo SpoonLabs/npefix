@@ -8,7 +8,7 @@ cache:
   - "$HOME/.m2"
 env:
   global:
-  - GITHUB_LOGIN=tdurieux
-  - secure: fQi+jZ/1lPpGvmrlAVIY9A8AN8iQBn/ZbvjfT39qB8Ey4Y9sIwuwHVtCnh5f3QPgYWInHCzgu/VS6IZZmhbXpVAzI3m7n2YnCi6dy6vDS6btLxGRCtRX9CWFD31tEJdvSzSMtgDjOqkt9rkvHZ9En8O9WCRomKYsYKu2cnZdxobPLABoW5LVLxrLQwTz3ZtJIQe3DH1HIFV4qNAKRZO3/osT9oCG/Xvw6gJtY1WqxIfQ1QPkNFQHNTSRgHIRMuT0K62erDRUnwZMAOWCXrbykxxjVgN8kQnCZdw7jXnk2RkHbS8CoK6AbxMs4vxr4IrddhjgDWEIruIUK+tY01blcKl0SGOgnP/UqLKcUU0ORWU0uF6R1snHdTdl2JnBtU9j26dUat2OPaKcLKQekXyWDNUQpObuluwnqYE0k8gXC4m6aHsW8640bvNXBuzA6THTk3VSJtMWKZsBQCzklyr9Lia2x1KP/r6RGt8bhhZdgqWQ3XG6PW1q8bHdKLBDqcrOFOdFcOuuEna4BB1S7//TL/ZL7McdfPAX3nXmRFJJxnRmIbircLRaDCc7Vxsf4VJGyLNbuIEHq0hKmUH1UnT29R/p+tggJMxu8mNIU1Ito6khdsb9/vLsrRP0ESuV5o06fOSBhTnwTv++zqPuTsBP25XMvgfzGFnhiT19QdNt44A=
+    secure: JIObGWMPCNPWMT6vGJzjS7cfbwLsbNuK+TLigRUD2dbYrNgg6sC7SESEL5ZxXOdF8Tr9eyryhVDnzU1YkrL2FX1P5xPx++5AGqGR0gmsK5o5qFTReIQOVDvvb31N60VTQJUHEVgx1Y3N71MvtxPVTLAft8dhU22ft7b3/tKHO6j0Pyt3ki32grGWct/RdTr9UuO5M0nN+BqATe0WFO7nIEKVgEgZglI6RrSOUfz1EI07R+8C0UDUACtbIGuRoOYf7AOy6hiQdvwbGj85cR3Ul+dEBb/6te+xZbV1hn6V8zOfWyswk9rNToNpJnsD1dR3WwmECUY54LGZncW4z9mcdvz94llAsWFBX6cKgAxujR9rLMNOPHfrdwlYWc6bjtgq+VZw6WAVZrTtZhMycxWYKdHSUuUqKLBlRfZRKgCP3sGLlU+GI2QCVks6Tm03O6ZHJ1O2D7SWZlJ09NVeiPv61PRi5hSUa05D/yoqeTvyHcXNgCpJnjddgMyC0mux+ICDmLUo43S3ty6rIcQAze4BUKr8wQsxBXye+FKXusORkiuX6a1AGa3GDR3atSxnPbyBBAhuQRZSa6DVaeixXIQeTHKuiKlCUB/bjXR9pB6Dv/8D0nt8dahlKIzDkmPmF8m2hnRemD+oAOlv6YBsBazf4cJvRgfYQoWft/2PGUbsFIo=
 after_success:
-- "[[ $TRAVIS_BRANCH == \"master\" ]] && { mvn deploy --settings .travis-settings.xml -DskipTests=true -B; };"
+- '[[ $TRAVIS_BRANCH == "master" ]] && { mvn deploy --settings .travis-settings.xml
+  -DskipTests=true -B; };'
