@@ -1,17 +1,18 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import spoon.Launcher;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtLocalVariable;
-import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtClass;
 
 public class BeforeDerefAdderTest {
 
 	@Test
+	@Ignore
 	public void genericTypeInInvocationType() {
 		Launcher spoon = new Launcher();
 		spoon.addInputResource("src/test/resources/foo/src/main/java/");

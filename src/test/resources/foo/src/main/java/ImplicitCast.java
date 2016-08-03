@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ImplicitCast {
 
@@ -23,7 +24,9 @@ public class ImplicitCast {
     }
 
     public void implicitInvocation() {
-        List<Integer> list = new ArrayList<>();
-        field =  list.get(0);
+        List<List<List<? extends Objects>>> list = new ArrayList<>();
+        if(!list.get(0).isEmpty()) {
+            List objects = list.get(0);
+        }
     }
 }

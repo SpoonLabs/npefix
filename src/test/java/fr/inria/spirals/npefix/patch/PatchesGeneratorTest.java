@@ -3,7 +3,7 @@ package fr.inria.spirals.npefix.patch;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.Location;
-import fr.inria.spirals.npefix.resi.context.instance.ArrayInstance;
+import fr.inria.spirals.npefix.resi.context.instance.NewArrayInstance;
 import fr.inria.spirals.npefix.resi.context.instance.NewInstance;
 import fr.inria.spirals.npefix.resi.context.instance.VariableInstance;
 import fr.inria.spirals.npefix.resi.selector.DomSelector;
@@ -44,7 +44,7 @@ public class PatchesGeneratorTest {
 				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
-				+ "+            return new java.lang.Object();\n"
+				+ "+            return new Object();\n"
 				+ "+        }\n"
 				+ "         for (String element : array) {\n", s);
 	}
@@ -124,7 +124,7 @@ public class PatchesGeneratorTest {
 		Decision foo = new Decision(new Strat2B(),
 				new Location("Foo", 21, 392, 396));
 		foo.setValueType(String[].class);
-		foo.setValue(new ArrayInstance(String[].class, Collections.EMPTY_LIST));
+		foo.setValue(new NewArrayInstance(String[].class, Collections.EMPTY_LIST));
 
 		Lapse lapse = new Lapse(new DomSelector());
 		lapse.addDecision(foo);
@@ -137,7 +137,7 @@ public class PatchesGeneratorTest {
 				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
-				+ "+            array = new java.lang.String[]{};\n"
+				+ "+            array = new String[0];\n"
 				+ "+        }\n"
 				+ "         for (String element : array) {\n", s);
 	}
@@ -190,7 +190,7 @@ public class PatchesGeneratorTest {
 		Decision foo = new Decision(new Strat2A(),
 				new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
-		foo.setValue(new ArrayInstance(String[].class, Collections.EMPTY_LIST));
+		foo.setValue(new NewArrayInstance(String[].class, Collections.EMPTY_LIST));
 
 		Lapse lapse = new Lapse(new DomSelector());
 		lapse.addDecision(foo);
@@ -207,7 +207,7 @@ public class PatchesGeneratorTest {
 				+ "-            if(element == null) {\n"
 				+ "-                return null;\n"
 				+ "+        if (array == null) {\n"
-				+ "+            for (String element : new java.lang.String[]{}) {\n"
+				+ "+            for (String element : new String[0]) {\n"
 				+ "+                result += element.toString();\n"
 				+ "+                if(element == null) {\n"
 				+ "+                    return null;\n"
@@ -248,11 +248,44 @@ public class PatchesGeneratorTest {
 				+ "     public void  multiDecisionLine() {\n"
 				+ "-        Arrays.asList(field.toString(), field.toString());\n"
 				+ "+        if (field == null) {\n"
-				+ "+            Arrays.asList( new java.lang.String().toString(), new java.lang.String().toString());\n"
+				+ "+            Arrays.asList( new String().toString(), new String().toString());\n"
 				+ "+        } else {\n"
 				+ "+            Arrays.asList(field.toString(), field.toString());\n"
 				+ "+        }\n"
 				+ "     }\n", s);
+	}
+
+	@Test
+	public void testElseIfPatch() throws Exception {
+		spoon.Launcher launcher = getSpoonLauncher();
+
+		Decision foo = new Decision(new Strat2A(), new Location("Foo", 112, 2383, 2390));
+		foo.setValueType(String.class);
+		foo.setValue(new NewInstance(String.class.getCanonicalName(), new String[0], Collections.EMPTY_LIST));
+
+		Lapse lapse = new Lapse(new DomSelector());
+		lapse.addDecision(foo);
+
+		String s = lapse.toDiff(launcher);
+		System.out.println(s);
+		Assert.assertEquals(""
+				+ "--- main/java/Foo.java\n"
+				+ "+++ main/java/Foo.java\n"
+				+ "@@ -111,4 +111,12 @@\n"
+				+ " \n"
+				+ "-        } else if (array[0].isEmpty()) {\n"
+				+ "-\n"
+				+ "+        } else {\n"
+				+ "+            if (array[0] == null) {\n"
+				+ "+                if ( new String().isEmpty()) {\n"
+				+ "+                    \n"
+				+ "+                }\n"
+				+ "+            } else {\n"
+				+ "+                if (array[0].isEmpty()) {\n"
+				+ "+                    \n"
+				+ "+                }\n"
+				+ "+            }\n"
+				+ "         }\n", s);
 	}
 
 	public spoon.Launcher getSpoonLauncher() {

@@ -105,4 +105,12 @@ public class Foo {
     public void  multiDecisionLine() {
         Arrays.asList(field.toString(), field.toString());
     }
+
+    public void  elseIf() {
+        if (field == array[0]) {
+
+        } else if (array[0].isEmpty()) {
+
+        }
+    }
 }
