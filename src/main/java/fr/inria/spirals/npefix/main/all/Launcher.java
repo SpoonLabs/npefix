@@ -195,7 +195,7 @@ public class Launcher {
         spoon.getEnvironment().setCopyResources(true);
         spoon.getEnvironment().setAutoImports(true);
         spoon.getEnvironment().setShouldCompile(true);
-        spoon.getEnvironment().setGenerateJavadoc(false);
+        spoon.getEnvironment().setCommentEnabled(false);
         spoon.getEnvironment().setComplianceLevel(7);
         spoon.getEnvironment().setLevel("DEBUG");
         spoon.buildModel();
