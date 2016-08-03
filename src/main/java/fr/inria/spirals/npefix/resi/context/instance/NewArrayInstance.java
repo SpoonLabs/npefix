@@ -1,21 +1,27 @@
 package fr.inria.spirals.npefix.resi.context.instance;
 
+import org.json.JSONObject;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtNewArray;
+import spoon.reflect.factory.Factory;
+
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
-public class ArrayInstance<T> extends AbstractInstance<T> {
+public class NewArrayInstance<T> extends AbstractInstance<T> {
 
 	private final String clazz;
 	private final int level;
 	private List<Instance<?>> values;
 
-	public ArrayInstance(String clazz, List<Instance<?>> values) {
+	public NewArrayInstance(String clazz, List<Instance<?>> values) {
 		this.clazz = clazz;
 		this.values = values;
 		this.level = 1;
 	}
 
-	public ArrayInstance(Class<T> clazz, List<Instance<?>> values) {
+	public NewArrayInstance(Class<T> clazz, List<Instance<?>> values) {
 		if(!clazz.isArray()) {
 			throw new IllegalArgumentException(clazz + " is not an array");
 		}
@@ -51,7 +57,7 @@ public class ArrayInstance<T> extends AbstractInstance<T> {
 		if (o == null || getClass() != o.getClass())
 			return false;
 
-		ArrayInstance<?> that = (ArrayInstance<?>) o;
+		NewArrayInstance<?> that = (NewArrayInstance<?>) o;
 
 		if (clazz != null ? !clazz.equals(that.clazz) : that.clazz != null)
 			return false;
@@ -96,5 +102,35 @@ public class ArrayInstance<T> extends AbstractInstance<T> {
 			stringBuilder.append("}");
 		}
 		return stringBuilder.toString();
+	}
+
+	@Override
+	public JSONObject toJSON() {
+		JSONObject output = new JSONObject();
+		output.put("instanceType", getClass().getSimpleName().replace("Instance", ""));
+		output.put("class", clazz);
+		output.put("level", level);
+		for (int i = 0; i < values.size(); i++) {
+			Instance<?> instance = values.get(i);
+			output.append("values", instance.toJSON());
+		}
+		return output;
+	}
+
+	public CtExpression toCtExpression(Factory factory) {
+		CtNewArray<Object> newArray = factory.Core().createNewArray();
+		List<CtExpression<Integer>> dimensions = new ArrayList<>(level);
+		for (int i = 0; i < level; i++) {
+			dimensions.add(factory.Code().createLiteral(values.size()));
+		}
+		newArray.setDimensionExpressions(dimensions);
+		List<CtExpression<?>> elements = new ArrayList<>();
+		for (int i = 0; i < values.size(); i++) {
+			Instance<?> instance = values.get(i);
+			elements.add(instance.toCtExpression(factory));
+		}
+		newArray.setType(factory.Class().createArrayReference(clazz));
+		newArray.setElements(elements);
+		return newArray;
 	}
 }

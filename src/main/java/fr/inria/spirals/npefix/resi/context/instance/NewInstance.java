@@ -2,6 +2,11 @@ package fr.inria.spirals.npefix.resi.context.instance;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.exception.ErrorInitClass;
+import org.json.JSONObject;
+import spoon.reflect.code.CtConstructorCall;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtTypeReference;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -18,6 +23,18 @@ public class NewInstance<T> extends AbstractInstance<T> {
 		this.clazz = clazz;
 		this.parameterType = parameterType;
 		this.parameters = parameters;
+	}
+
+	public String getClazz() {
+		return clazz;
+	}
+
+	public String[] getParameterType() {
+		return parameterType;
+	}
+
+	public List<Instance<?>> getParameters() {
+		return parameters;
 	}
 
 	@Override
@@ -91,5 +108,31 @@ public class NewInstance<T> extends AbstractInstance<T> {
 		}
 		stringBuilder.append(")");
 		return stringBuilder.toString();
+	}
+
+	@Override
+	public JSONObject toJSON() {
+		JSONObject output = new JSONObject();
+		output.put("instanceType", getClass().getSimpleName().replace("Instance", ""));
+		output.put("class", clazz);
+		for (int i = 0; i < parameterType.length; i++) {
+			String s = parameterType[i];
+			output.append("parameterTypes", s);
+		}
+		for (int i = 0; i < parameters.size(); i++) {
+			Instance<?> instance =  parameters.get(i);
+			output.append("parameters", instance.toJSON());
+		}
+		return output;
+	}
+
+	public CtConstructorCall toCtExpression(Factory factory) {
+		CtTypeReference reference = factory.Class().createReference(getClazz());
+		CtExpression[] constructorParameters = new CtExpression[parameters.size()];
+		for (int i = 0; i < parameters.size(); i++) {
+			Instance<?> instance = parameters.get(i);
+			constructorParameters[i] = instance.toCtExpression(factory);
+		}
+		return factory.Code().createConstructorCall(reference, constructorParameters);
 	}
 }

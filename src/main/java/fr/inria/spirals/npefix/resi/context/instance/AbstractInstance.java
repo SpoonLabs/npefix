@@ -1,8 +1,10 @@
 package fr.inria.spirals.npefix.resi.context.instance;
 
+import org.json.JSONObject;
+
 public abstract class AbstractInstance<T> implements Instance<T> {
 
-	protected Class getClassFromString (String className) {
+	public Class getClassFromString (String className) {
 		if(className.equals("int")) {
 			return int.class;
 		}
@@ -51,4 +53,6 @@ public abstract class AbstractInstance<T> implements Instance<T> {
 			throw new RuntimeException(e);
 		}
 	}
+
+	public abstract JSONObject toJSON();
 }

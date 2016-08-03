@@ -3,7 +3,7 @@ package fr.inria.spirals.npefix.resi.strategies;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.MethodContext;
-import fr.inria.spirals.npefix.resi.context.instance.ArrayInstance;
+import fr.inria.spirals.npefix.resi.context.instance.NewArrayInstance;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
 import fr.inria.spirals.npefix.resi.context.instance.NewInstance;
 import fr.inria.spirals.npefix.resi.context.instance.PrimitiveInstance;
@@ -44,7 +44,7 @@ public abstract class AbstractStrategy implements Strategy {
 			for (int i = 0; i < 100; i++) {
 				values.add(initClass(clazz.getComponentType()));
 			}
-			ArrayInstance<T> instance = new ArrayInstance<>(clazz, values);
+			NewArrayInstance<T> instance = new NewArrayInstance<>(clazz, values);
 			return instance;
 		}
 		if(clazz.isPrimitive()){
@@ -168,7 +168,7 @@ public abstract class AbstractStrategy implements Strategy {
 		List<Instance<T>> instances = new ArrayList<>();
 		if(clazz.isArray()) {
 			List<Instance<?>> values = new ArrayList<>();
-			ArrayInstance<T> instance = new ArrayInstance<>(clazz, values);
+			NewArrayInstance<T> instance = new NewArrayInstance<>(clazz, values);
 			instances.add(instance);
 			return instances;
 		}
