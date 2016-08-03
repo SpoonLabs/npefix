@@ -1,5 +1,6 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
+import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.exception.AbnormalExecutionError;
 import fr.inria.spirals.npefix.resi.exception.NPEFixError;
@@ -14,6 +15,7 @@ import spoon.reflect.code.CtConditional;
 import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFieldAccess;
+import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtFieldWrite;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
@@ -34,6 +36,7 @@ import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.code.UnaryOperatorKind;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtTypedElement;
 import spoon.reflect.declaration.ModifierKind;
@@ -82,6 +85,9 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 				element.getParent(CtReturn.class) != null ) {
 			return false;
 		}
+		if (element.getParent(CtField.class) != null) {
+			return false;
+		}
 		if(target instanceof CtVariableRead) {
 			if (((CtVariableRead)target).getVariable() instanceof CtCatchVariableReference) {
 				return false;
@@ -90,12 +96,17 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 		if (target.getMetadata("notnull") != null) {
 			return false;
 		}
+		if (target instanceof CtFieldRead) {
+			if (((CtFieldRead) target).getVariable().getSimpleName().equals("class")) {
+				return false;
+			}
+		}
 		return true;
 	}
 
 	@Override
 	public void process(CtTargetedExpression element) {
-		CtExpression target = getFactory().Core().clone(element.getTarget());
+		CtExpression target = element.getTarget().clone();
 
 		CtElement line = element;
 		try{
@@ -183,23 +194,23 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 					lineNumber,
 					sourceStart,
 					sourceEnd);
-			
+
 			final CtIf encaps = getFactory().Core().createIf();
 			CtElement directParent = element.getParent();
 			encaps.setParent(line.getParent());
-			encaps.setPosition(element.getPosition());
+			encaps.setPosition(target.getPosition());
 
 			// handle ternary operator
 			if(directParent instanceof CtConditional) {
 				if(element.equals(((CtConditional)directParent).getElseExpression())) {
 					CtBinaryOperator binaryOperator = getFactory().Code().createBinaryOperator(((CtConditional) directParent).getCondition(), beforeDerefInvocation, BinaryOperatorKind.OR);
 					encaps.setCondition(binaryOperator);
-					binaryOperator.setPosition(element.getPosition());
+					binaryOperator.setPosition(target.getPosition());
 				} else {
 					CtUnaryOperator<Object> unaryOperator1 = getFactory().Core().createUnaryOperator();
 					unaryOperator1.setKind(UnaryOperatorKind.NOT);
 					unaryOperator1.setOperand(((CtConditional) directParent).getCondition());
-					unaryOperator1.setPosition(element.getPosition());
+					unaryOperator1.setPosition(((CtConditional) directParent).getCondition().getPosition());
 					CtBinaryOperator binaryOperator = getFactory().Code().createBinaryOperator(unaryOperator1, beforeDerefInvocation, BinaryOperatorKind.OR);
 					encaps.setCondition(binaryOperator);
 				}
@@ -208,14 +219,14 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 			}
 
 			CtBlock thenBloc = getFactory().Core().createBlock();
-			thenBloc.setPosition(element.getPosition());
+			thenBloc.setPosition(target.getPosition());
 
 			// split local variable declaration into two statements (declaration and initialization)
 			if(line instanceof CtLocalVariable){
 				CtLocalVariable localVar = (CtLocalVariable) line;
 				
 				CtAssignment variableInitialization = getFactory().Code().createVariableAssignment(localVar.getReference(), false, localVar.getDefaultExpression());
-				variableInitialization.setPosition(element.getPosition());
+				variableInitialization.setPosition(target.getPosition());
 
 				CtExpression arg = createCtTypeElement(localVar.getType());
 				if(arg == null) {
@@ -229,8 +240,8 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 				localVar.insertBefore(variableDeclaration);
 				variableDeclaration.setParent(line.getParent());
 
-				initializationExpression.setPosition(element.getPosition());
-				variableDeclaration.setPosition(element.getPosition());
+				initializationExpression.setPosition(target.getPosition());
+				variableDeclaration.setPosition(target.getPosition());
 
 				variableInitialization.setParent(thenBloc);
 				initializationExpression.setParent(variableDeclaration);
@@ -255,11 +266,11 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 			// throw an exception after the condition
 			if(needElse){
 				CtConstructorCall npe = getFactory().Code().createConstructorCall(getFactory().Type().createReference(AbnormalExecutionError.class));
-				npe.setPosition(element.getPosition());
+				npe.setPosition(target.getPosition());
 
 				CtThrow thrower = getFactory().Core().createThrow();
 				thrower.setThrownExpression(npe);
-				thrower.setPosition(element.getPosition());
+				thrower.setPosition(target.getPosition());
 				
 				encaps.setElseStatement(thrower);
 			}
@@ -315,17 +326,15 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 
 	private CtExpression extractInvocations(CtTargetedExpression element,
 			CtExpression target, CtElement line) {
-		if(target instanceof CtInvocation) {
+		if(target instanceof CtInvocation && Config.CONFIG.extractInvocation()) {
 			int id = invocationVariables.size();
 			String variableName = "npe_invocation_var" + id;
-			CtExpression localTarget = getFactory().Core().clone(target);
+			CtExpression localTarget = target.clone();
 
 			CtTypeReference type = localTarget.getType();
 			if(type instanceof CtTypeParameterReference) {
-				List<CtTypeReference<?>> bounds = ((CtTypeParameterReference) type)
-						.getBounds();
-				if(!bounds.isEmpty()) {
-					type = bounds.get(0);
+				if(((CtTypeParameterReference) type).getBoundingType() != null) {
+					type = ((CtTypeParameterReference) type).getBoundingType();
 				}
 			}
 			List<CtTypeReference> typeCasts = localTarget.getTypeCasts();
@@ -355,16 +364,39 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 	}
 
 	private void removeGenType(CtTypeReference type) {
-		if(type instanceof CtArrayTypeReference) {
-			removeGenType(((CtArrayTypeReference) type).getComponentType());
-		} else {
-			List<CtTypeReference<?>> actualTypeArguments = new ArrayList<>(type
-					.getActualTypeArguments());
+		//removeGenType_rec(type);
+		if (type.toString().contains("?")) {
+			List<CtTypeReference<?>> actualTypeArguments = type.getActualTypeArguments();
 			for (int i = 0; i < actualTypeArguments.size(); i++) {
-				CtTypeReference<?> ctTypeReference = actualTypeArguments
-						.get(i);
-				if(ctTypeReference.toString().contains("?") && !(ctTypeReference.toString().contains("? extends") || ctTypeReference.toString().contains("? super"))) {
+				CtTypeReference<?> ctTypeReference = actualTypeArguments.get(i);
+				if (ctTypeReference.toString().contains("? extends") && !ctTypeReference.toString().startsWith("?")) {
+					CtTypeParameterReference typeParameterReference = type.getFactory().Core().createTypeParameterReference();
+					typeParameterReference.setBoundingType(ctTypeReference);
+					typeParameterReference.setSimpleName("?");
+					actualTypeArguments.set(i, typeParameterReference);
+				}
+			}
+
+			System.out.println(type);
+		}
+	}
+
+	private void removeGenType_rec(CtTypeReference type) {
+		if(type instanceof CtArrayTypeReference) {
+			removeGenType_rec(((CtArrayTypeReference) type).getComponentType());
+		} else {
+			List<CtTypeReference<?>> actualTypeArguments = new ArrayList<>(type.getActualTypeArguments());
+			for (int i = 0; i < actualTypeArguments.size(); i++) {
+				CtTypeReference<?> ctTypeReference = actualTypeArguments.get(i);
+				if(ctTypeReference.toString().equals("?")) {
+					//type.getActualTypeArguments().remove(ctTypeReference);
+				}
+				/*if(ctTypeReference.toString().contains("?") && !(ctTypeReference.toString().contains("? extends") || ctTypeReference.toString().contains("? super"))) {
 					type.getActualTypeArguments().remove(ctTypeReference);
+				}*/
+				removeGenType_rec(ctTypeReference);
+				if (ctTypeReference.getSuperclass() != null) {
+					removeGenType_rec(ctTypeReference.getSuperclass());
 				}
 			}
 		}

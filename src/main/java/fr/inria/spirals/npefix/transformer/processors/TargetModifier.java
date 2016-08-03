@@ -20,6 +20,7 @@ import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtCatchVariableReference;
 import spoon.reflect.reference.CtFieldReference;
@@ -138,12 +139,15 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 	}
 
 	private boolean createBeforeCall(CtTargetedExpression element, CtExpression target, CtVariableReference variable, CtExpression arg) {
+		if (element.getParent(CtField.class) != null) {
+			return false;
+		}
 		CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(target.getPosition().getLine());
 		CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(target.getPosition().getSourceStart());
 		CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(target.getPosition().getSourceEnd());
 
 		if(target instanceof CtArrayRead) {
-            target = getFactory().Core().clone(target);
+            target = target.clone();
             target.getTypeCasts().clear();
 
 			CtInvocation beforeCall = ProcessorUtility.createStaticCall(getFactory(),

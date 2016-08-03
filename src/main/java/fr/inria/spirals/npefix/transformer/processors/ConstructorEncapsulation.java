@@ -35,6 +35,9 @@ public class ConstructorEncapsulation extends AbstractProcessor<CtConstructor> {
 		return contructor;
 	}
 
+	public ConstructorEncapsulation() {
+		contructor = 0;
+	}
 
 	@Override
 	public boolean isToBeProcessed(CtConstructor ctConstructor) {

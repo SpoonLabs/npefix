@@ -43,7 +43,7 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 	public void process(CtLocalVariable element) {
 		nbVarInit++;
 
-		CtExpression defaultExpression = element.getDefaultExpression();
+		CtExpression defaultExpression = element.getDefaultExpression().clone();
 
 		CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
 		CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());

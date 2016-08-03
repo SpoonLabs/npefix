@@ -56,7 +56,7 @@ public class ProcessorUtility {
     }
 
     public static CtExpression removeUnaryOperator(CtExpression assigned, boolean beforeStatement) {
-        assigned = assigned.getFactory().Core().clone(assigned);
+        assigned = assigned.clone();
         List<CtUnaryOperator> elements = assigned.getElements(new AbstractFilter<CtUnaryOperator>(CtUnaryOperator.class) {
             @Override
             public boolean matches(CtUnaryOperator element) {
@@ -94,6 +94,7 @@ public class ProcessorUtility {
                 operand = assigned.getFactory().Code().createBinaryOperator(operand,
                         assigned.getFactory().Code().createLiteral(1),
                         operator);
+                operand.setTypeCasts(ctUnaryOperator.getTypeCasts());
             }
             operand.setParent(ctUnaryOperator.getParent());
             ctUnaryOperator.replace(operand);
