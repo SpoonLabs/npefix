@@ -2,10 +2,21 @@ package fr.inria.spirals.npefix.config;
 
 import fr.inria.spirals.npefix.resi.RandomGenerator;
 
-import java.io.IOException;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Properties;
 
 public class Config  {
+	private static final String ITERATION_COUNT = "iteration.count";
+	private static final String SERVER_PORT = "server.port";
+	private static final String SERVER_HOST = "server.host";
+	private static final String RANDOM_SEED = "random.seed";
+	private static final String SELECTOR_GREEDY_EPSILON = "selector.greedy.epsilon";
+	private static final String EVALUATION_DATASET_ROOT = "evaluation.datasetRoot";
+	private static final String EVALUATION_WORKING_DIRECTORY = "evaluation.workingDirectory";
+	private static final String EVALUATION_M2_ROOT = "evaluation.m2Root";
+	private static final String ITERATION_TIMEOUT = "iteration.timeout";
+
 	public static Config CONFIG = new Config();
 	private String datasetRoot;
 	private double greedyEpsilon;
@@ -21,18 +32,36 @@ public class Config  {
 	private Config() {
 		try {
 			properties.load(getClass().getResource("/config.ini").openStream());
-			timeoutIteration = Integer.parseInt(properties.getProperty("iteration.timeout"));
-			this.nbIteration = Integer.parseInt(properties.getProperty("iteration.count"));
-			this.serverPort = Integer.parseInt(properties.getProperty("server.port"));
-			this.serverHost = properties.getProperty("server.host");
-			this.randomSeed = Integer.parseInt(properties.getProperty("random.seed"));
-			this.greedyEpsilon = Double.parseDouble(properties.getProperty("selector.greedy.epsilon"));
-			this.datasetRoot = properties.getProperty("evaluation.datasetRoot");
-			this.workingDirectory = properties.getProperty("evaluation.workingDirectory");
-			this.m2Repository = properties.getProperty("evaluation.m2Root").replaceFirst("^~", System.getProperty("user.home")) + "repository/";
-		} catch (IOException e) {
+
+			this.timeoutIteration = Integer.parseInt(properties.getProperty(ITERATION_TIMEOUT));
+			this.nbIteration = Integer.parseInt(properties.getProperty(ITERATION_COUNT));
+			this.serverPort = Integer.parseInt(properties.getProperty(SERVER_PORT));
+			this.serverHost = properties.getProperty(SERVER_HOST);
+			this.randomSeed = Integer.parseInt(properties.getProperty(RANDOM_SEED));
+			this.greedyEpsilon = Double.parseDouble(properties.getProperty(SELECTOR_GREEDY_EPSILON));
+			this.datasetRoot = properties.getProperty(EVALUATION_DATASET_ROOT);
+			this.workingDirectory = properties.getProperty(EVALUATION_WORKING_DIRECTORY);
+			setM2Repository(properties.getProperty(EVALUATION_M2_ROOT));
+
+			File currentDir = new File(System.getProperty("user.dir") + "/config.ini");
+			if (currentDir.exists()) {
+				Properties userProperties = new Properties();
+				userProperties.load(new FileReader(currentDir));
+
+				this.timeoutIteration = Integer.parseInt(properties.getProperty(ITERATION_TIMEOUT, timeoutIteration + ""));
+				this.nbIteration = Integer.parseInt(userProperties.getProperty(ITERATION_COUNT, nbIteration + ""));
+				this.serverPort = Integer.parseInt(userProperties.getProperty(SERVER_PORT, serverPort + ""));
+				this.serverHost = userProperties.getProperty(SERVER_HOST, serverHost);
+				this.randomSeed = Integer.parseInt(userProperties.getProperty(RANDOM_SEED, randomSeed + ""));
+				this.greedyEpsilon = Double.parseDouble(userProperties.getProperty(SELECTOR_GREEDY_EPSILON, greedyEpsilon + ""));
+				this.datasetRoot = userProperties.getProperty(EVALUATION_DATASET_ROOT, datasetRoot);
+				this.workingDirectory = userProperties.getProperty(EVALUATION_WORKING_DIRECTORY, workingDirectory);
+				setM2Repository(properties.getProperty(EVALUATION_M2_ROOT, m2Repository));
+			}
+		} catch (Exception e) {
 			throw new RuntimeException("Unable to open the configuration.", e);
 		}
+
 	}
 
 	public int getTimeoutIteration() {
