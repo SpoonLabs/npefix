@@ -52,10 +52,18 @@ public class NewInstance<T> extends AbstractInstance<T> {
 				String s = parameterType[i];
 				parameterTypes[i] = getClassFromString(s);
 			}
-			Constructor<?> constructor = getClass().forName(clazz)
-					.getConstructor(parameterTypes);
-			constructor.setAccessible(true);
-			return (T) constructor.newInstance(objectParam);
+			try {
+				Constructor<?> constructor = getClass().forName(clazz).getConstructor(parameterTypes);
+
+				constructor.setAccessible(true);
+				return (T) constructor.newInstance(objectParam);
+			} catch (ClassNotFoundException e) {
+				Constructor<?> constructor = CallChecker.currentClassLoader
+						.loadClass(clazz).getConstructor(parameterTypes);
+
+				constructor.setAccessible(true);
+				return (T) constructor.newInstance(objectParam);
+			}
 		} catch (Exception e) {
 			throw new ErrorInitClass("Unable to create the new instance of " + parameterType, e);
 		} finally {
@@ -92,6 +100,15 @@ public class NewInstance<T> extends AbstractInstance<T> {
 		int result = clazz != null ? clazz.hashCode() : 0;
 		result = 31 * result;
 		return result;
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		if (o instanceof NewInstance) {
+			return this.getParameters().size() - ((NewInstance) o).getParameters().size();
+		} else {
+			return super.compareTo(o);
+		}
 	}
 
 	@Override
