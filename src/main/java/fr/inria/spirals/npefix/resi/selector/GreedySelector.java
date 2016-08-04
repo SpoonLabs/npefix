@@ -29,7 +29,6 @@ public class GreedySelector extends AbstractSelector {
 	private Map<Decision<?>, Double> values = new HashMap<>();
 	private Set<Decision<?>> usedDecisions = new HashSet<>();
 	private List<Decision<?>> unusedDecisions  = new ArrayList<>();
-	private Lapse currentLapse = null;
 
 	public GreedySelector() {
 		epsilon = Config.CONFIG.getGreedyEpsilon();
@@ -37,7 +36,7 @@ public class GreedySelector extends AbstractSelector {
 
 	@Override
 	public boolean startLaps(Lapse lapse) throws RemoteException {
-		currentLapse = lapse;
+		super.startLaps(lapse);
 		return true;
 	}
 

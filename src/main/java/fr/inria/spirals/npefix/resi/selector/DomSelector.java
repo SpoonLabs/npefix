@@ -17,11 +17,10 @@ public class DomSelector extends AbstractSelector {
 	public static Strategy strategy = new NoStrat();
 	public int currentIndex = 0;
 	private Set<Decision> decisions = new HashSet<>();
-	private Lapse currentLapse = null;
 
 	@Override
 	public boolean startLaps(Lapse lapse) throws RemoteException {
-		currentLapse = lapse;
+		super.startLaps(lapse);
 		return true;
 	}
 

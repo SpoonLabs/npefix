@@ -24,14 +24,12 @@ public class ExplorerSelector extends AbstractSelector {
 	private Set<List<Decision>> usedDecisionSeq = new HashSet<>();
 	private Map<Location, Set<Decision>> decisions = new HashMap<>();
 	private Map<String, Stack<Decision>> stackDecision  = new HashMap<>();
-	private Lapse currentLapse = null;
 	private String currentTestKey;
 
 	@Override
 	public boolean startLaps(Lapse lapse) throws RemoteException {
-		currentLapse = lapse;
-		this.currentTestKey = currentLapse.getTestClassName() + "#" + currentLapse
-				.getTestName();
+		super.startLaps(lapse);
+		this.currentTestKey = getCurrentLapse().getTestClassName() + "#" + getCurrentLapse().getTestName();
 		if(!stackDecision.containsKey(currentTestKey)) {
 			stackDecision.put(currentTestKey, new Stack<Decision>());
 		}

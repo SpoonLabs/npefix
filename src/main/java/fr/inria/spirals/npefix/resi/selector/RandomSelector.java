@@ -16,11 +16,10 @@ import java.util.Set;
 public class RandomSelector extends AbstractSelector {
 
 	private Set<Decision> decisions = new HashSet<>();
-	private Lapse currentLapse = null;
 
 	@Override
 	public boolean startLaps(Lapse lapse) throws RemoteException {
-		currentLapse = lapse;
+		super.startLaps(lapse);
 		return true;
 	}
 
