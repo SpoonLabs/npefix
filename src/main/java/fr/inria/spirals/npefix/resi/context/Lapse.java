@@ -20,7 +20,10 @@ public class Lapse implements Comparable<Lapse>, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	private static int currentUniqueId = 0;
+
 	private final Selector strategySelector;
+	private final int uniqueId;
 	private Set<Location> locations;
 	private Map<Decision, Integer> nbApplication;
 	private Map<Decision, Integer> currentIndex;
@@ -31,8 +34,10 @@ public class Lapse implements Comparable<Lapse>, Serializable {
 	private Map<String, Object> metadata = new HashMap<>();
 	private Date startDate;
 	private Date endDate;
+	private boolean isFinished = false;
 
 	public Lapse(Selector strategySelector) {
+		this.uniqueId = currentUniqueId++;
 		this.locations = new HashSet<>();
 		nbApplication = new HashMap<>();
 		currentIndex = new HashMap<>();
@@ -116,6 +121,14 @@ public class Lapse implements Comparable<Lapse>, Serializable {
 
 	public void addDecision(Decision mainDecision) {
 		this.decisions.add(mainDecision);
+	}
+
+	public boolean isFinished() {
+		return isFinished;
+	}
+
+	public void setFinished(boolean finished) {
+		isFinished = finished;
 	}
 
 	public Object putMetadata(String key, Object value) {
@@ -202,5 +215,23 @@ public class Lapse implements Comparable<Lapse>, Serializable {
 			oDecision = o.decisions.get(0);
 		}
 		return (testClassName + testName + thisDecision).compareTo(o.testClassName + o.testName + oDecision);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Lapse lapse = (Lapse) o;
+
+		return uniqueId == lapse.uniqueId;
+
+	}
+
+	@Override
+	public int hashCode() {
+		return uniqueId;
 	}
 }

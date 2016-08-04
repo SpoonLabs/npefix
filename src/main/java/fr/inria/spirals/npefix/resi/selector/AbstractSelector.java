@@ -1,9 +1,6 @@
 package fr.inria.spirals.npefix.resi.selector;
 
-import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Lapse;
-import fr.inria.spirals.npefix.resi.oracle.AbstractOracle;
-import fr.inria.spirals.npefix.resi.oracle.Oracle;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.ReturnType;
 import fr.inria.spirals.npefix.resi.strategies.Strat1A;
@@ -17,6 +14,7 @@ import fr.inria.spirals.npefix.resi.strategies.Strategy;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -43,10 +41,11 @@ public abstract class AbstractSelector implements Selector {
 	@Override
 	public boolean startLaps(Lapse lapse) throws RemoteException {
 		this.currentLapse = lapse;
-		CallChecker.currentLapse = lapse;
+		lapse.setFinished(false);
 		return false;
 	}
 
+	@Override
 	public Lapse getCurrentLapse() {
 		return currentLapse;
 	}
@@ -62,11 +61,12 @@ public abstract class AbstractSelector implements Selector {
 
 	@Override
 	public boolean restartTest(Lapse lapse) {
+		lapse.setFinished(true);
+		if (!lapse.getDecisions().isEmpty()) {
+			lapses.add(lapse);
+		}
+		lapse.setEndDate(new Date());
 		return false;
-	}
-
-	public Oracle createOracle(String m, boolean isValid) throws RemoteException {
-		return new AbstractOracle(m, isValid);
 	}
 
 	@Override

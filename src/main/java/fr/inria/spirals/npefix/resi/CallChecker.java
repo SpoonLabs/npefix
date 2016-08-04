@@ -40,13 +40,13 @@ public class CallChecker {
 		}
 	}
 
-	public static Lapse currentLapse = new Lapse(strategySelector);
-
 	private static Stack<MethodContext> stack = new Stack<>();
 
 	private static boolean isEnable = true;
 	private static Strategy strategyBackup;
 	private static Selector selectorBackup;
+
+	private static Lapse lastLapse;
 
 	public static Location currentLocation;
 	public static ClassLoader currentClassLoader = CallChecker.class.getClassLoader();
@@ -55,7 +55,6 @@ public class CallChecker {
 		strategyBackup = null;
 		selectorBackup = null;
 		stack = new Stack<>();
-		currentLapse = new Lapse(strategySelector);
 		isEnable = true;
 		decisions.clear();
 		cache.clear();
@@ -102,6 +101,21 @@ public class CallChecker {
 			return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
 		}
 
+		Lapse currentLapse;
+		try {
+			currentLapse = getCurrentLapse();
+			if (currentLapse == null) {
+				return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
+			}
+			if (!currentLapse.equals(lastLapse)) {
+				decisions.clear();
+				enable();
+			}
+			lastLapse = currentLapse;
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
+		}
 		Location location = getLocation(line, sourceStart, sourceEnd);
 
 		if(decisions.containsKey(location)) {
@@ -111,10 +125,14 @@ public class CallChecker {
 			}
 			//System.out.println("Stack size: " + stack.size());
 			//System.out.println("Nb method calls" + MethodContext.idCount);
-			currentLapse.addApplication(decision);
 			decision.increaseNbUse();
 			decision.setUsed(true);
 			enable();
+			try {
+				currentLapse.addApplication(decision);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			if(decision.getStrategy() instanceof Strat4) {
 				throw new ForceReturn(decision);
 			}
@@ -142,7 +160,11 @@ public class CallChecker {
 
 		Decision<?> decision = getDecision(searchSpace);
 
-		currentLapse.addDecision(decision);
+		try {
+			currentLapse.addDecision(decision);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		decisions.put(location, decision);
 
@@ -152,7 +174,11 @@ public class CallChecker {
 		}
 		//System.out.println("Stack size: " + stack.size());
 		//System.out.println("Nb method calls: " + MethodContext.idCount);
-		currentLapse.addApplication(decision);
+		try {
+			currentLapse.addApplication(decision);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		decision.increaseNbUse();
 		decision.setUsed(true);
 
@@ -161,6 +187,13 @@ public class CallChecker {
 		}
 
 		return (T) decision.getValue();
+	}
+
+	private static Lapse getCurrentLapse() throws RemoteException {
+		if (isEnable) {
+			return strategySelector.getCurrentLapse();
+		}
+		return selectorBackup.getCurrentLapse();
 	}
 
 	public static <T> T beforeCalled(T o, Class clazz, int line, int sourceStart, int sourceEnd) {

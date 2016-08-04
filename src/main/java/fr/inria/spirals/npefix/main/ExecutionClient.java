@@ -66,7 +66,6 @@ public class ExecutionClient {
 		} catch (RemoteException e) {
 			throw new RuntimeException(e);
 		}
-		CallChecker.currentLapse = lapse;
 		//CallChecker.strategySelector = selector;
 		CallChecker.currentClassLoader = getClass().getClassLoader();
 		final TestRunner testRunner = new TestRunner();

@@ -62,7 +62,7 @@ public abstract class AbstractStrategy implements Strategy {
 		MethodContext vars = CallChecker.getCurrentMethodContext();
 		Map<String, Instance<T>> instances = obtainInstance(clazz, vars.getVariables());
 
-		 return instances;
+		return instances;
 
 		/*Stack<Set<Object>> stack = CallChecker.getStack();
 		for (Iterator<Set<Object>> iterator = stack.iterator(); iterator.hasNext(); ) {

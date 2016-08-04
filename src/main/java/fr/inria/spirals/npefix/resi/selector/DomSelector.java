@@ -7,7 +7,6 @@ import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
 import java.rmi.RemoteException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,8 +31,7 @@ public class DomSelector extends AbstractSelector {
 
 	@Override
 	public boolean restartTest(Lapse lapse) {
-		getLapses().add(lapse);
-		lapse.setEndDate(new Date());
+		super.restartTest(lapse);
 		if(currentIndex < decisions.size() - 1) {
 			return true;
 		}

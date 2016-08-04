@@ -228,7 +228,11 @@ public class Launcher {
 
             lapse.setTestClassName(method.getDeclaringClass().getCanonicalName());
             lapse.setTestName(method.getName());
-            CallChecker.currentLapse = lapse;
+            try {
+                selector.startLaps(lapse);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
             Result result = testRunner.run(request);
 
             lapse.setOracle(new TestOracle(result));

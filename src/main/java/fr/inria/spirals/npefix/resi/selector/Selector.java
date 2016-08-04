@@ -2,7 +2,6 @@ package fr.inria.spirals.npefix.resi.selector;
 
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Lapse;
-import fr.inria.spirals.npefix.resi.oracle.Oracle;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
 import java.rmi.Remote;
@@ -24,5 +23,5 @@ public interface Selector extends Remote {
 
 	List<Lapse> getLapses() throws RemoteException;
 
-	Oracle createOracle(String m, boolean isValid)  throws RemoteException;
+	Lapse getCurrentLapse()  throws RemoteException;
 }

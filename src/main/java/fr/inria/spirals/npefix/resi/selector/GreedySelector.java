@@ -1,7 +1,6 @@
 package fr.inria.spirals.npefix.resi.selector;
 
 import fr.inria.spirals.npefix.config.Config;
-import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.RandomGenerator;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Lapse;
@@ -11,7 +10,6 @@ import fr.inria.spirals.npefix.resi.strategies.Strategy;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -96,12 +94,12 @@ public class GreedySelector extends AbstractSelector {
 			}
 			usedDecisions.add(bestDecision);
 			bestDecision.setDecisionType(BEST);
-			CallChecker.currentLapse.putMetadata("strategy_selection", "best");
+			getCurrentLapse().putMetadata("strategy_selection", "best");
 			bestDecision.setEpsilon(epsilon);
 			return bestDecision;
 		}
 		// return a random strategy
-		CallChecker.currentLapse.putMetadata("strategy_selection", "random");
+		getCurrentLapse().putMetadata("strategy_selection", "random");
 		Decision output;
 		if(localUnusedDecision.isEmpty()) {
 			int maxValue = decisions.size();
@@ -119,12 +117,11 @@ public class GreedySelector extends AbstractSelector {
 
 	@Override
 	public boolean restartTest(Lapse lapse) {
-		lapse.setEndDate(new Date());
+		super.restartTest(lapse);
 		if(lapse.getDecisions().isEmpty()) {
 			return false;
 			//return !laps.getOracle().wasSuccessful();
 		}
-		getLapses().add(lapse);
 
 		for (int i = 0; i < lapse.getDecisions().size(); i++) {
 			Decision decision =  lapse.getDecisions().get(i);
