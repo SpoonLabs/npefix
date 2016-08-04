@@ -36,19 +36,19 @@ import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.code.UnaryOperatorKind;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtTypedElement;
 import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.declaration.ParentNotInitializedException;
-import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtCatchVariableReference;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
+import spoon.reflect.visitor.EarlyTerminatingScanner;
 import spoon.reflect.visitor.filter.AbstractFilter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -326,6 +326,9 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 
 	private CtExpression extractInvocations(CtTargetedExpression element,
 			CtExpression target, CtElement line) {
+		if (target instanceof CtInvocation && ((CtInvocation) target).getExecutable().getDeclaration() == null) {
+			return target;
+		}
 		if(target instanceof CtInvocation && Config.CONFIG.extractInvocation()) {
 			int id = invocationVariables.size();
 			String variableName = "npe_invocation_var" + id;
@@ -342,10 +345,13 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 			if(typeCasts.size() > 0) {
 				type = typeCasts.get(typeCasts.size() - 1);
 			}
-			removeGenType(type);
 			if(type.toString().equals("?")) {
 				type = getFactory().Code().createCtTypeReference(Object.class);
 			}
+			if (localTarget instanceof CtInvocation) {
+				CtExecutable declaration = ((CtInvocation) localTarget).getExecutable().getDeclaration();
+			}
+			addExtendsInGeneric(type);
 			CtLocalVariable localVariable = getFactory().Code().createLocalVariable(type, variableName, localTarget);
 			localVariable.setPosition(target.getPosition());
 			localVariable.addModifier(ModifierKind.FINAL);
@@ -363,43 +369,38 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 		return target;
 	}
 
-	private void removeGenType(CtTypeReference type) {
+	private void addExtendsInGeneric(CtTypeReference type) {
 		//removeGenType_rec(type);
 		if (type.toString().contains("?")) {
 			List<CtTypeReference<?>> actualTypeArguments = type.getActualTypeArguments();
 			for (int i = 0; i < actualTypeArguments.size(); i++) {
 				CtTypeReference<?> ctTypeReference = actualTypeArguments.get(i);
-				if (ctTypeReference.toString().contains("? extends") && !ctTypeReference.toString().startsWith("?")) {
+				if (ctTypeReference.toString().contains("?") && !ctTypeReference.toString().startsWith("?") && !containsCtParamaterReference(type)) {
 					CtTypeParameterReference typeParameterReference = type.getFactory().Core().createTypeParameterReference();
 					typeParameterReference.setBoundingType(ctTypeReference);
 					typeParameterReference.setSimpleName("?");
 					actualTypeArguments.set(i, typeParameterReference);
 				}
 			}
-
-			System.out.println(type);
 		}
 	}
 
-	private void removeGenType_rec(CtTypeReference type) {
-		if(type instanceof CtArrayTypeReference) {
-			removeGenType_rec(((CtArrayTypeReference) type).getComponentType());
-		} else {
-			List<CtTypeReference<?>> actualTypeArguments = new ArrayList<>(type.getActualTypeArguments());
-			for (int i = 0; i < actualTypeArguments.size(); i++) {
-				CtTypeReference<?> ctTypeReference = actualTypeArguments.get(i);
-				if(ctTypeReference.toString().equals("?")) {
-					//type.getActualTypeArguments().remove(ctTypeReference);
+	private boolean containsCtParamaterReference(CtTypeReference type) {
+		EarlyTerminatingScanner<CtTypeParameterReference> ctVisitor = new EarlyTerminatingScanner<CtTypeParameterReference>() {
+			@Override
+			public void visitCtTypeParameterReference(CtTypeParameterReference ref) {
+				if (!"?".equals(ref.getSimpleName())) {
+					setResult(ref);
+					terminate();
 				}
-				/*if(ctTypeReference.toString().contains("?") && !(ctTypeReference.toString().contains("? extends") || ctTypeReference.toString().contains("? super"))) {
-					type.getActualTypeArguments().remove(ctTypeReference);
-				}*/
-				removeGenType_rec(ctTypeReference);
-				if (ctTypeReference.getSuperclass() != null) {
-					removeGenType_rec(ctTypeReference.getSuperclass());
-				}
+				super.visitCtTypeParameterReference(ref);
 			}
+		};
+		type.accept(ctVisitor);
+		if (ctVisitor.getResult() != null) {
+			return true;
 		}
+		return false;
 	}
 
 }
