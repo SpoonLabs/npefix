@@ -27,6 +27,7 @@ public class DecisionServer {
 
 	private Selector selector;
 	private int port = Config.CONFIG.getServerPort();
+	private String host = Config.CONFIG.getServerHost();
 
 	public DecisionServer(Selector selector) {
 		this.selector = selector;
@@ -45,8 +46,8 @@ public class DecisionServer {
 					throw new RuntimeException(e);
 				}
 				try{
-					LocateRegistry.getRegistry(port).list();
-					registry = LocateRegistry.getRegistry(port);
+					LocateRegistry.getRegistry(host, port).list();
+					registry = LocateRegistry.getRegistry(host, port);
 				}catch(Exception ex){
 					try{
 						registry = LocateRegistry.createRegistry(port);
