@@ -1,5 +1,6 @@
 package fr.inria.spirals.npefix.resi.context.instance;
 
+import fr.inria.spirals.npefix.resi.CallChecker;
 import org.json.JSONObject;
 
 public abstract class AbstractInstance<T> implements Instance<T> {
@@ -50,9 +51,33 @@ public abstract class AbstractInstance<T> implements Instance<T> {
 		try {
 			return getClass().forName(className);
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+			try {
+				return CallChecker.currentClassLoader.loadClass(className);
+			} catch (Exception e1) {
+				throw new RuntimeException(e1);
+			}
 		}
 	}
 
 	public abstract JSONObject toJSON();
+
+	@Override
+	public int compareTo(Object o) {
+		if (this instanceof PrimitiveInstance) {
+			return -5;
+		}
+		if (this instanceof VariableInstance) {
+			return -4;
+		}
+		if (this instanceof StaticVariableInstance) {
+			return -3;
+		}
+		if (this instanceof NewInstance) {
+			return -2;
+		}
+		if (this instanceof NewArrayInstance) {
+			return -1;
+		}
+		return 0;
+	}
 }
