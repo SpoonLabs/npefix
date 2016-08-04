@@ -131,8 +131,8 @@ public abstract class AbstractStrategy implements Strategy {
 			instances.add(new PrimitiveInstance<T>((T) new Character(' ')));
 		}
 		if(clazz == boolean.class){
-			instances.add(new PrimitiveInstance<T>((T) new Boolean(true)));
 			instances.add(new PrimitiveInstance<T>((T) new Boolean(false)));
+			instances.add(new PrimitiveInstance<T>((T) new Boolean(true)));
 		}
 		if(clazz == float.class){
 			instances.add(new PrimitiveInstance<T>((T) new Float(0)));
@@ -356,7 +356,7 @@ public abstract class AbstractStrategy implements Strategy {
 							continue;
 						}
 						if(clazz.isAssignableFrom(cl)){
-							classes.add(clazz);
+							classes.add(cl);
 						}
 					} catch (Throwable e1) {
 						//e1.printStackTrace();
