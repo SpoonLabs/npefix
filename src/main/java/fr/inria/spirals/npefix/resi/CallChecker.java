@@ -33,8 +33,10 @@ public class CallChecker {
 		try {
 			Registry registry = LocateRegistry.getRegistry(Config.CONFIG.getServerHost(), Config.CONFIG.getServerPort());
 			strategySelector =  (Selector) registry.lookup("Selector");
+			System.out.println("RMI selector: OK");
 		} catch (Exception e) {
 			strategySelector = new GreedySelector();
+			System.out.println("RMI selector: KO");
 		}
 	}
 

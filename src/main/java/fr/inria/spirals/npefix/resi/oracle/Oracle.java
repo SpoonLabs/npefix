@@ -4,7 +4,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
-public interface Oracle extends Serializable{
+public interface Oracle extends Serializable {
 	boolean isValid();
 
 	String getError();

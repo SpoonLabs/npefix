@@ -6,7 +6,7 @@ import spoon.reflect.factory.Factory;
 
 import java.io.Serializable;
 
-public interface Instance<T> extends Serializable {
+public interface Instance<T> extends Serializable, Comparable {
 	T getValue();
 
 	CtExpression toCtExpression(Factory factory);
