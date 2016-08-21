@@ -59,8 +59,8 @@ public class Config  {
 				this.greedyEpsilon = Double.parseDouble(userProperties.getProperty(SELECTOR_GREEDY_EPSILON, greedyEpsilon + ""));
 				this.datasetRoot = userProperties.getProperty(EVALUATION_DATASET_ROOT, datasetRoot);
 				this.workingDirectory = userProperties.getProperty(EVALUATION_WORKING_DIRECTORY, workingDirectory);
-				setM2Repository(properties.getProperty(EVALUATION_M2_ROOT, m2Repository));
-				this.serverName = properties.getProperty(SERVER_NAME, serverName);
+				setM2Repository(userProperties.getProperty(EVALUATION_M2_ROOT, m2Repository));
+				this.serverName = userProperties.getProperty(SERVER_NAME, serverName);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to open the configuration.", e);
@@ -150,6 +150,6 @@ public class Config  {
 	}
 
 	public void setServerName(String serverName) {
-		serverName = serverName;
+		this.serverName = serverName;
 	}
 }

@@ -38,7 +38,7 @@ public class CallChecker {
 
 			Registry registry = LocateRegistry.getRegistry(Config.CONFIG.getServerHost(), Config.CONFIG.getServerPort());
 
-			strategySelector =  (Selector) registry.lookup("Selector");
+			strategySelector =  (Selector) registry.lookup(Config.CONFIG.getServerName());
 			System.out.println("OK");
 		} catch (Exception e) {
 			strategySelector = new GreedySelector();
