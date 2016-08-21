@@ -10,6 +10,7 @@ public class Config  {
 	private static final String ITERATION_COUNT = "iteration.count";
 	private static final String SERVER_PORT = "server.port";
 	private static final String SERVER_HOST = "server.host";
+	private static final String SERVER_NAME = "server.name";
 	private static final String RANDOM_SEED = "random.seed";
 	private static final String SELECTOR_GREEDY_EPSILON = "selector.greedy.epsilon";
 	private static final String EVALUATION_DATASET_ROOT = "evaluation.datasetRoot";
@@ -18,6 +19,7 @@ public class Config  {
 	private static final String ITERATION_TIMEOUT = "iteration.timeout";
 
 	public static Config CONFIG = new Config();
+	private String serverName;
 	private String datasetRoot;
 	private double greedyEpsilon;
 	private int randomSeed;
@@ -42,6 +44,7 @@ public class Config  {
 			this.datasetRoot = properties.getProperty(EVALUATION_DATASET_ROOT);
 			this.workingDirectory = properties.getProperty(EVALUATION_WORKING_DIRECTORY);
 			setM2Repository(properties.getProperty(EVALUATION_M2_ROOT));
+			this.serverName = properties.getProperty(SERVER_NAME, "Selector");
 
 			File currentDir = new File(System.getProperty("user.dir") + "/config.ini");
 			if (currentDir.exists()) {
@@ -57,6 +60,7 @@ public class Config  {
 				this.datasetRoot = userProperties.getProperty(EVALUATION_DATASET_ROOT, datasetRoot);
 				this.workingDirectory = userProperties.getProperty(EVALUATION_WORKING_DIRECTORY, workingDirectory);
 				setM2Repository(properties.getProperty(EVALUATION_M2_ROOT, m2Repository));
+				this.serverName = properties.getProperty(SERVER_NAME, serverName);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to open the configuration.", e);
@@ -139,5 +143,13 @@ public class Config  {
 
 	public boolean extractInvocation() {
 		return true;
+	}
+
+	public String getServerName() {
+		return serverName;
+	}
+
+	public void setServerName(String serverName) {
+		serverName = serverName;
 	}
 }

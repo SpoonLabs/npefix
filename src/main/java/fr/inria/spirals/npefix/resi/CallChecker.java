@@ -31,12 +31,18 @@ public class CallChecker {
 
 	static {
 		try {
+			System.out.print(String.format("RMI %s (Host: %s, Port: %d): ",
+					Config.CONFIG.getServerName(),
+					Config.CONFIG.getServerHost(),
+					Config.CONFIG.getServerPort()));
+
 			Registry registry = LocateRegistry.getRegistry(Config.CONFIG.getServerHost(), Config.CONFIG.getServerPort());
+
 			strategySelector =  (Selector) registry.lookup("Selector");
-			System.out.println("RMI selector: OK");
+			System.out.println("OK");
 		} catch (Exception e) {
 			strategySelector = new GreedySelector();
-			System.out.println("RMI selector: KO");
+			System.out.println("KO");
 		}
 	}
 
