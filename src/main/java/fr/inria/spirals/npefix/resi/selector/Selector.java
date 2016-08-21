@@ -23,5 +23,7 @@ public interface Selector extends Remote {
 
 	List<Lapse> getLapses() throws RemoteException;
 
-	Lapse getCurrentLapse()  throws RemoteException;
+	Lapse getCurrentLapse() throws RemoteException;
+
+	Lapse updateCurrentLapse(Lapse updatedLapse) throws RemoteException;
 }

@@ -50,6 +50,14 @@ public abstract class AbstractSelector implements Selector {
 		return currentLapse;
 	}
 
+	@Override
+	public Lapse updateCurrentLapse(Lapse updatedLapse) {
+		if (currentLapse.equals(updatedLapse)) {
+			currentLapse = updatedLapse;
+		}
+		return currentLapse;
+	}
+
 	public List<Strategy> getAllStrategies() {
 		return Arrays.asList(strategies);
 	}

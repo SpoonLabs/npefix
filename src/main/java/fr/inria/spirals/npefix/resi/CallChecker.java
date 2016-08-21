@@ -136,6 +136,7 @@ public class CallChecker {
 			enable();
 			try {
 				currentLapse.addApplication(decision);
+				strategySelector.updateCurrentLapse(currentLapse);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -168,6 +169,7 @@ public class CallChecker {
 
 		try {
 			currentLapse.addDecision(decision);
+			strategySelector.updateCurrentLapse(currentLapse);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -182,6 +184,7 @@ public class CallChecker {
 		//System.out.println("Nb method calls: " + MethodContext.idCount);
 		try {
 			currentLapse.addApplication(decision);
+			strategySelector.updateCurrentLapse(currentLapse);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
