@@ -111,7 +111,7 @@ public class CallChecker {
 	private static <T> T called(Strategy.ACTION action, T o, Class clazz, int line, int sourceStart, int sourceEnd) {
 		Location location = getLocation(line, sourceStart, sourceEnd);
 		try {
-			if(!strategySelector.isToHandle(action, o, location)) {
+			if(!strategySelector.isToHandle(action, o == null, location)) {
 				return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
 			}
 		} catch (RemoteException e) {

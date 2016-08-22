@@ -80,8 +80,8 @@ public abstract class AbstractSelector implements Selector {
 	}
 
 	@Override
-	public boolean isToHandle(Strategy.ACTION action, Object object, Location location) throws RemoteException {
-		return object == null && !ExceptionStack.isStoppable(NullPointerException.class);
+	public boolean isToHandle(Strategy.ACTION action, boolean isNull, Location location) throws RemoteException {
+		return isNull && !ExceptionStack.isStoppable(NullPointerException.class);
 	}
 
 	@Override

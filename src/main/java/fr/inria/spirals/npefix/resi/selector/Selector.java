@@ -28,5 +28,5 @@ public interface Selector extends Remote {
 
 	Lapse updateCurrentLapse(Lapse updatedLapse) throws RemoteException;
 
-	boolean isToHandle(Strategy.ACTION action, Object object, Location location)  throws RemoteException;
+	boolean isToHandle(Strategy.ACTION action, boolean isNull, Location location)  throws RemoteException;
 }

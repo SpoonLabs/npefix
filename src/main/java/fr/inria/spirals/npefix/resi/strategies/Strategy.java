@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface Strategy extends Comparable<Strategy>, Serializable{
 
-	enum ACTION  {
+	enum ACTION  implements Serializable {
 		// initClass globally a variable
 		beforeCalled,
 		//
