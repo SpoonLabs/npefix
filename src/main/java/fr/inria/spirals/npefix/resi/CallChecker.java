@@ -31,6 +31,13 @@ public class CallChecker {
 
 	static {
 		try {
+			System.out.println(LocateRegistry
+					.getRegistry(Config.CONFIG.getServerHost(),
+							Config.CONFIG.getServerPort()).list());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
 			System.out.print(String.format("RMI %s (Host: %s, Port: %d): ",
 					Config.CONFIG.getServerName(),
 					Config.CONFIG.getServerHost(),
