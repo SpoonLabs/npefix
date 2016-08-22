@@ -1,6 +1,8 @@
 package fr.inria.spirals.npefix.resi.selector;
 
+import fr.inria.spirals.npefix.resi.ExceptionStack;
 import fr.inria.spirals.npefix.resi.context.Lapse;
+import fr.inria.spirals.npefix.resi.context.Location;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.ReturnType;
 import fr.inria.spirals.npefix.resi.strategies.Strat1A;
@@ -75,6 +77,11 @@ public abstract class AbstractSelector implements Selector {
 		}
 		lapse.setEndDate(new Date());
 		return false;
+	}
+
+	@Override
+	public boolean isToHandle(Strategy.ACTION action, Object object, Location location) throws RemoteException {
+		return object != null || ExceptionStack.isStoppable(NullPointerException.class);
 	}
 
 	@Override

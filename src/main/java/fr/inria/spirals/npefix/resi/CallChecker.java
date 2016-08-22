@@ -102,8 +102,12 @@ public class CallChecker {
 	public static  Map<Location, Decision> decisions = new HashMap<>();
 
 	private static <T> T called(Strategy.ACTION action, T o, Class clazz, int line, int sourceStart, int sourceEnd) {
-		if(o != null
-				|| ExceptionStack.isStoppable(NullPointerException.class)) {
+		Location location = getLocation(line, sourceStart, sourceEnd);
+		try {
+			if(!strategySelector.isToHandle(action, o, location)) {
+				return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
+			}
+		} catch (RemoteException e) {
 			return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
 		}
 
@@ -122,7 +126,6 @@ public class CallChecker {
 			e.printStackTrace();
 			return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
 		}
-		Location location = getLocation(line, sourceStart, sourceEnd);
 
 		if(decisions.containsKey(location)) {
 			Decision decision = decisions.get(location);

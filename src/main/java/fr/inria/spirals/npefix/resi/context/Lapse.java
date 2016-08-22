@@ -152,7 +152,9 @@ public class Lapse implements Comparable<Lapse>, Serializable {
 			output.append("decisions", decision.toJSON());
 		}
 
-		output.put("diff", toDiff(spoon));
+		if (spoon != null) {
+			output.put("diff", toDiff(spoon));
+		}
 
 		output.put("startDate", startDate.getTime());
 		output.put("endDate", endDate.getTime());
