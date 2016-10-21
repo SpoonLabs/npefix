@@ -19,7 +19,7 @@ import java.util.Stack;
 
 public class ExplorerSelector extends AbstractSelector {
 
-	private Set<List<Decision>> usedDecisionSeq = new HashSet<>();
+	private Map<String, Set<List<Decision>>> usedDecisionSeq = new HashMap<>();
 	private Map<Location, Set<Decision>> decisions = new HashMap<>();
 	private Map<String, Stack<Decision>> stackDecision  = new HashMap<>();
 	private String currentTestKey;
@@ -30,6 +30,9 @@ public class ExplorerSelector extends AbstractSelector {
 		this.currentTestKey = getCurrentLapse().getTestClassName() + "#" + getCurrentLapse().getTestName();
 		if(!stackDecision.containsKey(currentTestKey)) {
 			stackDecision.put(currentTestKey, new Stack<Decision>());
+		}
+		if(!usedDecisionSeq.containsKey(currentTestKey)) {
+			usedDecisionSeq.put(currentTestKey, new HashSet<List<Decision>>());
 		}
 		return true;
 	}
@@ -84,7 +87,7 @@ public class ExplorerSelector extends AbstractSelector {
 
 			for (Decision decision : decisions) {
 				otherDecision.add(decision);
-				if (!usedDecisionSeq.contains(otherDecision)) {
+				if (!usedDecisionSeq.get(currentTestKey).contains(otherDecision)) {
 					decision.setUsed(true);
 					decision.setDecisionType(Decision.DecisionType.NEW);
 					stackDecision.get(currentTestKey).push(decision);
@@ -105,7 +108,7 @@ public class ExplorerSelector extends AbstractSelector {
 		if(lapse.getDecisions().isEmpty()) {
 			return false;
 		}
-		usedDecisionSeq.add(lapse.getDecisions());
+		usedDecisionSeq.get(currentTestKey).add(lapse.getDecisions());
 
 		stackDecision.put(currentTestKey, new Stack<Decision>());
 		for (int i = 0; i < lapse.getDecisions().size(); i++) {
@@ -121,7 +124,7 @@ public class ExplorerSelector extends AbstractSelector {
 		Set<Decision> decisions = this.decisions.get(lastDecision.getLocation());
 		for (Decision decision : decisions) {
 			otherDecision.add(decision);
-			if (!usedDecisionSeq.contains(otherDecision)) {
+			if (!usedDecisionSeq.get(currentTestKey).contains(otherDecision)) {
 				return false;
 			}
 			otherDecision.remove(decision);

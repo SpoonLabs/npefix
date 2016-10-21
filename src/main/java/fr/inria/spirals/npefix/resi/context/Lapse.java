@@ -140,8 +140,12 @@ public class Lapse implements Comparable<Lapse>, Serializable {
 	}
 
 	public String toDiff(Launcher spoon) {
-		PatchesGenerator patchesGenerator = new PatchesGenerator(decisions, spoon);
-		return patchesGenerator.getDiff();
+		try {
+			PatchesGenerator patchesGenerator = new PatchesGenerator(decisions, spoon);
+			return patchesGenerator.getDiff();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	public JSONObject toJSON(Launcher spoon) {

@@ -2,7 +2,6 @@ package fr.inria.spirals.npefix.resi.selector;
 
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Lapse;
-import fr.inria.spirals.npefix.resi.context.Location;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
 import java.rmi.Remote;
@@ -27,6 +26,4 @@ public interface Selector extends Remote {
 	Lapse getCurrentLapse() throws RemoteException;
 
 	Lapse updateCurrentLapse(Lapse updatedLapse) throws RemoteException;
-
-	boolean isToHandle(Strategy.ACTION action, boolean isNull, Location location)  throws RemoteException;
 }

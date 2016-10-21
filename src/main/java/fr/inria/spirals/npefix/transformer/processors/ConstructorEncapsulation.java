@@ -19,6 +19,7 @@ import spoon.support.reflect.code.CtVariableAccessImpl;
 import spoon.support.reflect.code.CtVariableReadImpl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -30,13 +31,25 @@ import java.util.List;
 public class ConstructorEncapsulation extends AbstractProcessor<CtConstructor> {
 
 	private static int contructor = 0;
-	
+	private Date start;
+
 	public static int getCpt(){
 		return contructor;
 	}
 
 	public ConstructorEncapsulation() {
 		contructor = 0;
+		this.start = new Date();
+	}
+
+	@Override
+	public void init() {
+		this.start = new Date();
+	}
+
+	@Override
+	public void processingDone() {
+		System.out.println("ConstructorEncapsulation # Constructor: " + contructor + " in " + (new Date().getTime() - start.getTime()) + "ms");
 	}
 
 	@Override

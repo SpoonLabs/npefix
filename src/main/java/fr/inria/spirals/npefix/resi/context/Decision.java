@@ -151,7 +151,11 @@ public class Decision<T> implements Serializable {
 		output.put("used", isUsed);
 		output.put("epsilon", epsilon);
 		output.put("nbUse", nbUse);
-		output.put("value", value.toJSON());
+		if (value == null) {
+			System.out.println(strategy);
+		} else {
+			output.put("value", value.toJSON());
+		}
 		output.put("location", location.toJSON());
 		return output;
 	}

@@ -30,6 +30,7 @@ public class Config  {
 	private Properties properties = new Properties();
 	private String workingDirectory;
 	private String m2Repository;
+	private boolean multiPoints = true;
 
 	private Config() {
 		try {
@@ -122,6 +123,9 @@ public class Config  {
 	}
 
 	public void setDatasetRoot(String datasetRoot) {
+		if (datasetRoot.charAt(datasetRoot.length() -1) != '/') {
+			datasetRoot += "/";
+		}
 		this.datasetRoot = datasetRoot;
 	}
 
@@ -138,7 +142,10 @@ public class Config  {
 	}
 
 	public void setM2Repository(String m2Repository) {
-		this.m2Repository = (m2Repository + "/").replaceFirst("^~", System.getProperty("user.home")) + "repository/";
+		if (m2Repository.charAt(m2Repository.length() -1) != '/') {
+			m2Repository += "/";
+		}
+		this.m2Repository = m2Repository.replaceFirst("^~", System.getProperty("user.home")) + "repository/";
 	}
 
 	public boolean extractInvocation() {
@@ -151,5 +158,13 @@ public class Config  {
 
 	public void setServerName(String serverName) {
 		this.serverName = serverName;
+	}
+
+	public boolean isMultiPoints() {
+		return multiPoints;
+	}
+
+	public void setMultiPoints(boolean multiPoints) {
+		this.multiPoints = multiPoints;
 	}
 }

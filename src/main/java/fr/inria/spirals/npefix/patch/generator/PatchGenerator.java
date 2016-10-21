@@ -9,7 +9,10 @@ import fr.inria.spirals.npefix.resi.strategies.Strat2B;
 import fr.inria.spirals.npefix.resi.strategies.Strat3;
 import fr.inria.spirals.npefix.resi.strategies.Strat4;
 import spoon.Launcher;
+import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtConstructor;
@@ -90,7 +93,7 @@ class PatchGenerator {
 		String classContent = firstDecisionElement.getClassContent();
 
 		String line = getLine(firstDecisionElement);
-		CtStatement parentLine = getParentLine(firstDecisionElement.getElement());
+		CtStatement parentLine = getParentLine(firstElement);
 		String currentIndentation = "";
 
 		for (int i = 0; i < line.length(); i++) {
@@ -105,16 +108,45 @@ class PatchGenerator {
 
 		final String indentation = getIndentation(firstDecisionElement);
 		Writer writer = new Writer(currentIndentation, indentation);
-		if (parentLine.getParent() instanceof CtIf) {
+		if (parentLine.getParent() instanceof CtIf || (parentLine.getParent() instanceof CtBlock
+				&& parentLine.getParent().getParent() instanceof CtIf)) {
 			writer.write("} else {").tab();
 			line = getSubstring(classContent, parentLine);
 		}
 
-		writer.write("if (");
-
 		Factory factory = firstElement.getFactory();
 		factory.getEnvironment().setAutoImports(true);
 		String nullElement = getSubstring(classContent, firstElement);
+
+		if (firstElement instanceof CtInvocation && (decision.getStrategy() instanceof Strat2B ||
+				decision.getStrategy() instanceof Strat1B)) {
+			writer.write(((CtInvocation) firstElement).getType());
+			writer.write(" ");
+			String variableName = ((CtInvocation) firstElement).getExecutable().getSimpleName();
+			variableName = variableName.replace("get", "");
+			if (Character.isUpperCase(variableName.charAt(0))) {
+				variableName = Character.toLowerCase(variableName.charAt(0)) + variableName.substring(1);
+			}
+			writer.write(variableName);
+			writer.write(" = ");
+			writer.write(nullElement);
+			writer.write(";").line();
+			line = line.replace(nullElement, variableName);
+			nullElement = variableName;
+		}
+
+		if (parentLine instanceof CtLocalVariable
+				&& (decision.getStrategy() instanceof Strat1A
+					|| decision.getStrategy() instanceof Strat2A)) {
+			int variableNamePosition = line.indexOf(((CtLocalVariable) parentLine).getSimpleName());
+			writer.write(line.substring(0, variableNamePosition));
+			writer.write(((CtLocalVariable) parentLine).getSimpleName());
+			writer.write(";").line();
+		}
+
+		writer.write("if (");
+
+
 		writer.write(nullElement);
 
 		if (decision.getStrategy() instanceof Strat3) {
@@ -151,6 +183,11 @@ class PatchGenerator {
 				}
 				break;
 			}
+			if (parentLine instanceof CtLocalVariable) {
+				int variableNamePosition = line.indexOf(((CtLocalVariable) parentLine).getSimpleName());
+				line = line.substring(0, getOffset(parentLine.getPosition().getLine(), parentLine.getPosition().getSourceStart()) - sourceStart) + line.substring(variableNamePosition);
+				sourceStart += variableNamePosition;
+			}
 
 			for (int i = 0; i < elements.size(); i++) {
 				DecisionElement element = elements.get(i);
@@ -162,15 +199,13 @@ class PatchGenerator {
 				}
 				int end = getOffset(element.getElement().getPosition().getLine(), element.getElement().getPosition().getSourceEnd()) - sourceStart;
 				if (i == 0) {
-					if (start >= line.length()) {
-						System.out.println(line);
-						System.out.println(nextStart);
-					}
 					writer.write(writer.addIndentationToString(line.substring(0, start)));
 				}
 				writer.write(" ");
 				writer.write(decision.getInstance().toCtExpression(factory).toString());
-				writer.write(writer.addIndentationToString(line.substring(end + 1, nextStart)));
+				if (end != nextStart) {
+					writer.write(writer.addIndentationToString(line.substring(end + 1, nextStart)));
+				}
 			}
 			writer.untab();
 
@@ -178,7 +213,8 @@ class PatchGenerator {
 			writer.write(writer.addIndentationToString(line)).untab();
 			writer.write("}");
 		}
-		if (parentLine.getParent() instanceof CtIf) {
+		if (parentLine.getParent() instanceof CtIf || (parentLine.getParent() instanceof CtBlock
+				&& parentLine.getParent().getParent() instanceof CtIf)) {
 			writer.untab().write("}");
 		}
 		return writer.toString();

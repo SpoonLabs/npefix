@@ -30,8 +30,8 @@ public class PatchesGeneratorTest {
 		Decision foo = new Decision(new Strat4(ReturnType.NEW),
 				new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
-		foo.setValue(new NewInstance(Object.class.getCanonicalName(), new String[0], Collections
-				.emptyList()));
+		foo.setValue(new NewInstance(Object.class.getCanonicalName(), new String[0], Collections.emptyList()));
+		foo.setUsed(true);
 
 		Lapse lapse = new Lapse(new DomSelector());
 		lapse.addDecision(foo);
@@ -56,10 +56,12 @@ public class PatchesGeneratorTest {
 		Decision foo = new Decision(new Strat4(ReturnType.VAR), new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
 		foo.setValue(new VariableInstance("result"));
+		foo.setUsed(true);
 
 		Decision field = new Decision(new Strat3(), new Location("Foo", 31, 616, 620));
 		field.setValueType(Object.class);
 		field.setValue(new VariableInstance("element"));
+		field.setUsed(true);
 
 		Lapse lapse = new Lapse(new DomSelector());
 		lapse.addDecision(foo);
@@ -93,6 +95,7 @@ public class PatchesGeneratorTest {
 				new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
 		foo.setValue(new VariableInstance("result"));
+		foo.setUsed(true);
 
 		Lapse lapse = new Lapse(new DomSelector());
 		lapse.addDecision(foo);
@@ -125,6 +128,7 @@ public class PatchesGeneratorTest {
 				new Location("Foo", 21, 392, 396));
 		foo.setValueType(String[].class);
 		foo.setValue(new NewArrayInstance(String[].class, Collections.EMPTY_LIST));
+		foo.setUsed(true);
 
 		Lapse lapse = new Lapse(new DomSelector());
 		lapse.addDecision(foo);
@@ -151,6 +155,7 @@ public class PatchesGeneratorTest {
 				new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
 		foo.setValue(new VariableInstance("result"));
+		foo.setUsed(true);
 
 		Lapse lapse = new Lapse(new DomSelector());
 		lapse.addDecision(foo);
@@ -191,6 +196,7 @@ public class PatchesGeneratorTest {
 				new Location("Foo", 21, 392, 396));
 		foo.setValueType(Object.class);
 		foo.setValue(new NewArrayInstance(String[].class, Collections.EMPTY_LIST));
+		foo.setUsed(true);
 
 		Lapse lapse = new Lapse(new DomSelector());
 		lapse.addDecision(foo);
@@ -230,10 +236,12 @@ public class PatchesGeneratorTest {
 		Decision foo = new Decision(new Strat2A(), new Location("Foo", 106, 2258, 2262));
 		foo.setValueType(String.class);
 		foo.setValue(new NewInstance(String.class.getCanonicalName(), new String[0], Collections.EMPTY_LIST));
+		foo.setUsed(true);
 
 		Decision field = new Decision(new Strat2A(), new Location("Foo", 106, 2276, 2280));
 		field.setValueType(String.class);
 		field.setValue(new NewInstance(String.class.getCanonicalName(), new String[0], Collections.EMPTY_LIST));
+		field.setUsed(true);
 
 		Lapse lapse = new Lapse(new DomSelector());
 		lapse.addDecision(foo);
@@ -262,6 +270,7 @@ public class PatchesGeneratorTest {
 		Decision foo = new Decision(new Strat2A(), new Location("Foo", 112, 2383, 2390));
 		foo.setValueType(String.class);
 		foo.setValue(new NewInstance(String.class.getCanonicalName(), new String[0], Collections.EMPTY_LIST));
+		foo.setUsed(true);
 
 		Lapse lapse = new Lapse(new DomSelector());
 		lapse.addDecision(foo);
@@ -288,7 +297,7 @@ public class PatchesGeneratorTest {
 				+ "         }\n", s);
 	}
 
-	public spoon.Launcher getSpoonLauncher() {
+	private spoon.Launcher getSpoonLauncher() {
 		URL sourcePath = getClass().getResource("/foo/src/main/java/");
 		URL testPath = getClass().getResource("/foo/src/test/java/");
 		String classpath = System.getProperty("java.class.path");

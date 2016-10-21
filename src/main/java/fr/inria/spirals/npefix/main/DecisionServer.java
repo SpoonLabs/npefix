@@ -15,14 +15,44 @@ public class DecisionServer {
 
 	public static void main(String[] args) {
 		try {
+
 			Selector selector = new GreedySelector();
 			System.out.println("Start selector " + selector);
-			Selector skeleton = (Selector) UnicastRemoteObject.exportObject(selector, 10000);
-			Registry registry = LocateRegistry.createRegistry(10000);
-			registry.rebind("Selector", skeleton);
+
+			startRMI(selector);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private static Registry startRMI(Selector selector) {
+		Registry registry;
+
+		int port = Config.CONFIG.getServerPort();
+		String host = Config.CONFIG.getServerHost();
+
+		Selector skeleton;
+		try {
+			skeleton = (Selector) UnicastRemoteObject.exportObject(selector, port);
+		} catch (RemoteException e) {
+			throw new RuntimeException(e);
+		}
+		try{
+			LocateRegistry.getRegistry(host, port).list();
+			registry = LocateRegistry.getRegistry(host, port);
+		}catch(Exception ex){
+			try{
+				registry = LocateRegistry.createRegistry(port);
+			} catch(Exception e){
+				throw new RuntimeException(e);
+			}
+		}
+		try {
+			registry.rebind(Config.CONFIG.getServerName(), skeleton);
+		} catch (RemoteException e) {
+			throw new RuntimeException(e);
+		}
+		return registry;
 	}
 
 	private Selector selector;
@@ -39,28 +69,10 @@ public class DecisionServer {
 
 			@Override
 			public void run() {
-				Selector skeleton = null;
-				try {
-					skeleton = (Selector) UnicastRemoteObject.exportObject(selector, port);
-				} catch (RemoteException e) {
-					throw new RuntimeException(e);
-				}
-				try{
-					LocateRegistry.getRegistry(host, port).list();
-					registry = LocateRegistry.getRegistry(host, port);
-				}catch(Exception ex){
-					try{
-						registry = LocateRegistry.createRegistry(port);
-					} catch(Exception e){
-						throw new RuntimeException(e);
-					}
-				}
-				try {
-					registry.rebind("Selector", skeleton);
-				} catch (RemoteException e) {
-					throw new RuntimeException(e);
-				}
+				startRMI(selector);
 			}
+
+
 		});
 		thread.run();
 	}

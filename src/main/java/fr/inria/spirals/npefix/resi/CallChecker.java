@@ -19,7 +19,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -30,13 +32,6 @@ public class CallChecker {
 	public static Selector strategySelector;
 
 	static {
-		try {
-			System.out.println(LocateRegistry
-					.getRegistry(Config.CONFIG.getServerHost(),
-							Config.CONFIG.getServerPort()).list());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		try {
 			System.out.print(String.format("RMI %s (Host: %s, Port: %d): ",
 					Config.CONFIG.getServerName(),
@@ -110,11 +105,7 @@ public class CallChecker {
 
 	private static <T> T called(Strategy.ACTION action, T o, Class clazz, int line, int sourceStart, int sourceEnd) {
 		Location location = getLocation(line, sourceStart, sourceEnd);
-		try {
-			if(!strategySelector.isToHandle(action, o == null, location)) {
-				return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
-			}
-		} catch (RemoteException e) {
+		if (o != null) {
 			return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
 		}
 
@@ -131,9 +122,8 @@ public class CallChecker {
 			lastLapse = currentLapse;
 		} catch (RemoteException e) {
 			e.printStackTrace();
-			return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
+			return o;
 		}
-
 		if(decisions.containsKey(location)) {
 			Decision decision = decisions.get(location);
 			if(!decision.getStrategy().isCompatibleAction(action)) {
@@ -155,12 +145,21 @@ public class CallChecker {
 			}
 			return (T) decision.getValue();
 		}
-		if(!isEnable()) {
-			return o;
+		if (!isEnable()) {
+			return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
+		}
+		if (!Config.CONFIG.isMultiPoints()) {
+			Collection<Decision> usedDecisions = decisions.values();
+			for (Iterator<Decision> iterator = usedDecisions.iterator(); iterator.hasNext(); ) {
+				Decision decision = iterator.next();
+				if (decision.isUsed()) {
+					return action == Strategy.ACTION.beforeDeref? (T) Boolean.TRUE : o;
+				}
+			}
 		}
 
 		List<Decision<T>> searchSpace = new ArrayList<>();
-		if(cache.containsKey(location)) {
+		if(false && cache.containsKey(location) && !Config.CONFIG.getServerName().equals("Regression")) {
 			List<Decision> decisions = cache.get(location);
 			for (int i = 0; i < decisions.size(); i++) {
 				Decision<T> decision =  decisions.get(i);
@@ -277,7 +276,7 @@ public class CallChecker {
 		return (T) table;
 	}
 
-	public static void enable() {
+	public synchronized static void enable() {
 		if(isEnable()) {
 			return;
 		}
@@ -286,7 +285,7 @@ public class CallChecker {
 		isEnable = true;
 	}
 
-	public static void disable() {
+	public synchronized static void disable() {
 		if(!isEnable()) {
 			return;
 		}

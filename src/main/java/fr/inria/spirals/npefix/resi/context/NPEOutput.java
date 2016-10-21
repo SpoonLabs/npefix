@@ -11,9 +11,13 @@ import java.util.Set;
 
 public class NPEOutput extends ArrayList<Lapse>{
 
-	public NPEOutput() {
+	private Date start;
+	private Date end;
 
+	public NPEOutput() {
+		this.start = new Date();
 	}
+
 	public Set<String> getTests() {
 		Set<String> output = new HashSet<>();
 		for (int i = 0; i < this.size(); i++) {
@@ -83,13 +87,33 @@ public class NPEOutput extends ArrayList<Lapse>{
 		return output;
 	}
 
+	public Date getStart() {
+		return start;
+	}
+
+	public Date getEnd() {
+		return end;
+	}
+
+	public void setStart(Date start) {
+		this.start = start;
+	}
+
+	public void setEnd(Date end) {
+		this.end = end;
+	}
+
 	public JSONObject toJSON(Launcher spoon) {
 		JSONObject output = new JSONObject();
-		output.put("date", new Date());
+		output.put("start", start.getTime());
 		for (int i = 0; i < this.size(); i++) {
 			Lapse lapse = this.get(i);
 			output.append("executions", lapse.toJSON(spoon));
 		}
+		if (end == null) {
+			end = new Date();
+		}
+		output.put("end", end.getTime());
 		return output;
 	}
 }

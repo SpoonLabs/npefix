@@ -3,6 +3,7 @@ package fr.inria.spirals.npefix.resi;
 import fr.inria.spirals.npefix.AbstractEvaluation;
 import fr.inria.spirals.npefix.main.all.Launcher;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
+import org.junit.Ignore;
 import org.junit.Test;
 import utils.TestClassesFinder;
 import utils.sacha.runner.main.TestRunner;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Ignore
 public class BenchmarkPaper extends AbstractEvaluation {
 
     private static final int NBITERATION = 10;

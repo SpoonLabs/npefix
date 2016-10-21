@@ -26,12 +26,21 @@ public class PatchesGenerator {
 	private Launcher spoon;
 
 	public PatchesGenerator(List<Decision> decisions, Launcher spoon) {
-		this.decisions = decisions;
+		this.decisions = new ArrayList<>();
+		for (int i = 0; i < decisions.size(); i++) {
+			Decision decision = decisions.get(i);
+			if (decision.isUsed()) {
+				this.decisions.add(decision);
+			}
+		}
 		this.spoon = spoon;
 	}
 
 	public String getDiff() {
 		StringBuilder output = new StringBuilder();
+		if (decisions.isEmpty()) {
+			return output.toString();
+		}
 
 		// group decision per file
 		Map<String, List<Decision>> classes = new HashMap<>(decisions.size());

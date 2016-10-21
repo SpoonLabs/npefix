@@ -22,7 +22,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.List;
@@ -31,7 +30,7 @@ public class AbstractEvaluation {
 
     private static final String M2REPO = Config.CONFIG.getM2Repository();
 
-    boolean instrumentCode = false;
+    boolean instrumentCode = true;
 
     protected NPEOutput runProject(String name, String source, String test, String[] deps) {
         return runProject(name, source, test, deps, false);
@@ -53,6 +52,7 @@ public class AbstractEvaluation {
 
     protected NPEOutput multipleRunsProject(String name, String source,
             String test, String[] deps, boolean printException, int nbIteration, Selector selector) {
+        NPEOutput output = new NPEOutput();
         Launcher launcher;
         if(instrumentCode) {
             launcher = initNPEFix(name, source, test, deps);
@@ -61,27 +61,35 @@ public class AbstractEvaluation {
             launcher = initNPEFix(name, Config.CONFIG.getEvaluationWorkingDirectory() + "/" + name + "/instrumented", null, deps);
             //launcher.getCompiler().compile();
         }
-        spoon.Launcher spoon = new spoon.Launcher();
-        System.out.println(source);
-        spoon.addInputResource(new File(source).getAbsolutePath());
-        spoon.getModelBuilder().setSourceClasspath(launcher.getSpoon().getModelBuilder().getSourceClasspath());
-        spoon.buildModel();
-        System.out.println("nb type: " + spoon.getFactory().Type().getAll().size());
         DecisionServer decisionServer = new DecisionServer(selector);
         decisionServer.startServer();
-        List<Method> tests = launcher.getTests();
+        List<String> tests = launcher.getTests();
         if(test.isEmpty()) {
             throw new RuntimeException("No test found");
         }
+        Date initEndDate = new Date();
         int countError = 0;
-        NPEOutput output = new NPEOutput();
         while (output.size() < nbIteration) {
             if(countError > 5) {
                 break;
             }
             try {
-                List<Lapse> result = launcher.runCommandLine(selector, tests);
+                List<Lapse> result = launcher.run(selector, tests);
                 if(result.isEmpty()) {
+                    countError++;
+                    continue;
+                }
+                boolean isEnd = true;
+                for (int i = 0; i < result.size() && isEnd; i++) {
+                    Lapse lapse = result.get(i);
+                    if (lapse.getOracle().getError() != null) {
+                        isEnd = isEnd && lapse.getOracle().getError().contains("No more available decision");
+                    } else {
+                        isEnd = false;
+                    }
+                }
+                if (isEnd) {
+                    // no more decision
                     countError++;
                     continue;
                 }
@@ -106,7 +114,15 @@ public class AbstractEvaluation {
             }
             System.out.println("Multirun " + output.size() + "/" + nbIteration + " " + ((int)(output.size()/(double)nbIteration * 100)) + "%");
         }
+        output.setEnd(new Date());
+
+        spoon.Launcher spoon = new spoon.Launcher();
+        spoon.addInputResource(source);
+        spoon.getModelBuilder().setSourceClasspath(launcher.getSpoon().getModelBuilder().getSourceClasspath());
+        spoon.buildModel();
+
         JSONObject jsonObject = output.toJSON(spoon);
+        jsonObject.put("endInit", initEndDate.getTime());
         try {
             for (Decision decision : selector.getSearchSpace()) {
                 jsonObject.append("searchSpace", decision.toJSON());
@@ -121,7 +137,7 @@ public class AbstractEvaluation {
         return output;
     }
 
-    private void serializeResult(JSONObject results, String project, String selector) {
+    public void serializeResult(JSONObject results, String project, String selector) {
         try {
             File file = new File("output/" + selector + "/" + project + "/" + (new Date().getTime()) + ".json");
             if(!file.exists()) {
@@ -342,6 +358,7 @@ public class AbstractEvaluation {
 
         binFolder.mkdirs();
         outputSource.mkdirs();
+
         Launcher launcher = new Launcher(
                 new String[]{source, test},
                 outputSource.getAbsolutePath(),

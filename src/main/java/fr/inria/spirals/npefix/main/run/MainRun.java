@@ -23,7 +23,7 @@ public class MainRun {
 		// String[] toto = new String[]{};
 		//
 		// System.out.println(toto[0]);
-
+		
 		TestRunnerCore runner = new TestRunnerCore();
 		runner.setEclipseMetadataFolder("/home/thomas/workspace/.metadata/");
 		// runner.setEclipseProject("commons-math4-o");

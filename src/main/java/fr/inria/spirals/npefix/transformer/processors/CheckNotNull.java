@@ -11,15 +11,15 @@ import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLoop;
 import spoon.reflect.code.CtStatement;
-import spoon.reflect.code.CtStatementList;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.filter.AbstractFilter;
+import spoon.reflect.visitor.filter.LineFilter;
 import spoon.reflect.visitor.filter.ReturnOrThrowFilter;
-import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -27,32 +27,17 @@ import java.util.List;
  */
 public class CheckNotNull extends AbstractProcessor<CtBinaryOperator<Boolean>> {
 
-	private static final TypeFilter<CtElement> lineFilter = new TypeFilter<CtElement>(CtElement.class) {
-		@Override
-		public boolean matches(CtElement element) {
-			if (!super.matches(element)) {
-				return false;
-			}
-			CtElement parent = element.getParent();
-			if (element instanceof CtConditional) {
-				return true;
-			}
-			if (parent instanceof CtStatementList) {
-				return true;
-			}
-			if (parent instanceof CtLoop
-					&& ((CtLoop) parent).getBody().equals(element)) {
-				return true;
-			}
-			if (parent instanceof CtIf
-					&& (element.equals(((CtIf) parent).getElseStatement())
-						|| element.equals(((CtIf) parent).getThenStatement()))){
-				return true;
-			}
+	private Date start;
 
-			return element instanceof CtStatement;
-		}
-	};
+	@Override
+	public void init() {
+		this.start = new Date();
+	}
+
+	@Override
+	public void processingDone() {
+		System.out.println("CheckNotNull  in " + (new Date().getTime() - start.getTime()) + "ms");
+	}
 
 	@Override
 	public boolean isToBeProcessed(CtBinaryOperator<Boolean> element) {
@@ -61,9 +46,8 @@ public class CheckNotNull extends AbstractProcessor<CtBinaryOperator<Boolean>> {
 		}
 		BinaryOperatorKind kind = ((CtBinaryOperator) element).getKind();
 		if (kind.equals(BinaryOperatorKind.EQ) || kind.equals(BinaryOperatorKind.NE)) {
-			return ("null".equals(((CtBinaryOperator) element)
-					.getLeftHandOperand().toString()) || "null".equals(((CtBinaryOperator) element)
-					.getRightHandOperand().toString()));
+			return ("null".equals(((CtBinaryOperator) element).getLeftHandOperand().toString())
+					|| "null".equals(((CtBinaryOperator) element).getRightHandOperand().toString()));
 		}
 		return false;
 	}
@@ -77,7 +61,7 @@ public class CheckNotNull extends AbstractProcessor<CtBinaryOperator<Boolean>> {
 			notNullElement = element.getLeftHandOperand();
 		}
 
-		CtElement parent = element.getParent(lineFilter);
+		final CtElement parent = element.getParent(new LineFilter());
 
 		List<CtElement> notNullElements = new ArrayList<>();
 
@@ -101,7 +85,7 @@ public class CheckNotNull extends AbstractProcessor<CtBinaryOperator<Boolean>> {
 										if (element.getPosition() == null) {
 											return false;
 										}
-										return element.getPosition().getLine() > block.getPosition().getEndLine();
+										return element.getPosition().getSourceStart() > parent.getPosition().getSourceEnd();
 									}
 								});
 							for (CtStatement postElement : postElements) {

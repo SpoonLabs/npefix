@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Replace null element by existing one
  * b.foo
  * @author bcornu
  *

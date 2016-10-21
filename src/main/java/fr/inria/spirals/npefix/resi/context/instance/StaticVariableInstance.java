@@ -1,5 +1,6 @@
 package fr.inria.spirals.npefix.resi.context.instance;
 
+import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.exception.VarNotFound;
 import org.json.JSONObject;
 import spoon.reflect.code.CtFieldRead;
@@ -21,7 +22,7 @@ public class StaticVariableInstance<T> extends AbstractInstance<T> {
 	@Override
 	public T getValue() {
 		try {
-			Field field = getClass().forName(clazz).getField(fieldName);
+			Field field = CallChecker.currentClassLoader.loadClass(clazz).getField(fieldName);
 			field.setAccessible(true);
 			Object o = field.get(null);
 			return (T) o;

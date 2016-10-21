@@ -36,7 +36,6 @@ import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.code.UnaryOperatorKind;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtTypedElement;
@@ -49,6 +48,7 @@ import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.EarlyTerminatingScanner;
 import spoon.reflect.visitor.filter.AbstractFilter;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,14 +59,20 @@ import static fr.inria.spirals.npefix.transformer.processors.ProcessorUtility.re
 @SuppressWarnings("all")
 public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 
+	private Date start;
 	private int nbBeforeDeref =0;
 	private int countFailed =0;
 
 	private Map<String, String> invocationVariables = new HashMap<>();
 
 	@Override
+	public void init() {
+		this.start = new Date();
+	}
+
+	@Override
 	public void processingDone() {
-		System.out.println("BeforeDeref --> " + nbBeforeDeref + " (failed:" + countFailed + ")");
+		System.out.println("BeforeDeref --> " + nbBeforeDeref + " (failed:" + countFailed + ")" + " in " + (new Date().getTime() - start.getTime()) + "ms");
 	}
 
 	@Override
@@ -155,6 +161,18 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 			}
 			if (line instanceof CtLocalVariable && ((CtLocalVariable) line).hasModifier(ModifierKind.FINAL))
 				return;
+
+			if (line instanceof CtIf) {
+				CtStatement thenStatement = ((CtIf) line).getThenStatement();
+				if (thenStatement instanceof CtBlock && !((CtBlock) thenStatement).getStatements().isEmpty()) {
+					thenStatement = ((CtBlock) thenStatement).getStatement(0);
+				}
+				if (thenStatement instanceof CtAssignment && ((CtAssignment) thenStatement).getAssigned() instanceof CtVariableAccess) {
+					if (((CtVariableAccess)((CtAssignment) thenStatement).getAssigned()).getVariable().getDeclaration().hasModifier(ModifierKind.FINAL)) {
+						return ;
+					}
+				}
+			}
 
 			nbBeforeDeref++;
 
@@ -347,9 +365,6 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 			}
 			if(type.toString().equals("?")) {
 				type = getFactory().Code().createCtTypeReference(Object.class);
-			}
-			if (localTarget instanceof CtInvocation) {
-				CtExecutable declaration = ((CtInvocation) localTarget).getExecutable().getDeclaration();
 			}
 			addExtendsInGeneric(type);
 			CtLocalVariable localVariable = getFactory().Code().createLocalVariable(type, variableName, localTarget);

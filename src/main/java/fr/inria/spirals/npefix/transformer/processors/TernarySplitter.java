@@ -3,6 +3,7 @@ package fr.inria.spirals.npefix.transformer.processors;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtBinaryOperator;
+import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtConditional;
 import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.code.CtExpression;
@@ -17,13 +18,27 @@ import spoon.reflect.code.CtThrow;
 import spoon.reflect.code.CtUnaryOperator;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtField;
+import spoon.reflect.reference.CtTypeReference;
 
+import java.util.Date;
 import java.util.List;
 
 /**
  * Split if condition into several if in order to add check not null before each section of the condition
  */
 public class TernarySplitter extends AbstractProcessor<CtConditional>{
+
+    private Date start;
+
+    @Override
+    public void init() {
+        this.start = new Date();
+    }
+
+    @Override
+    public void processingDone() {
+        System.out.println("TernarySplitter  in " + (new Date().getTime() - start.getTime()) + "ms");
+    }
 
     @Override
     public boolean isToBeProcessed(CtConditional candidate) {
@@ -55,17 +70,21 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
                 return;
             }
 
-            CtReturn<Object> returnThen = getFactory().Core().clone(((CtReturn) parent));
-            CtReturn<Object> returnElse = getFactory().Core().clone(((CtReturn) parent));
+            CtReturn returnThen = (CtReturn) parent.clone();
+            CtReturn returnElse = (CtReturn) parent.clone();
 
             returnThen.setReturnedExpression(ctConditional.getThenExpression());
             returnElse.setReturnedExpression(ctConditional.getElseExpression());
 
-            returnThen.getReturnedExpression().setTypeCasts(ctConditional.getThenExpression().getTypeCasts());
-            returnElse.getReturnedExpression().setTypeCasts(ctConditional.getElseExpression().getTypeCasts());
+            List<CtTypeReference> typeCasts = ctConditional.getTypeCasts();
+            for (int i = 0; i < typeCasts.size(); i++) {
+                CtTypeReference ctTypeReference = typeCasts.get(i);
+                returnThen.getReturnedExpression().addTypeCast(ctTypeReference.clone());
+                returnElse.getReturnedExpression().addTypeCast(ctTypeReference.clone());
+            }
 
-            anIf.setElseStatement(returnElse);
-            anIf.setThenStatement(returnThen);
+            anIf.setElseStatement(getFactory().Code().createCtBlock(returnElse));
+            anIf.setThenStatement(getFactory().Code().createCtBlock(returnThen));
         } else if(parent instanceof CtAssignment) {
             CtAssignment assignment = (CtAssignment) parent;
             CtExpression ctExpression = assignment.getAssignment();
@@ -74,8 +93,8 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
                     CtBinaryOperator ctBinaryOperator = (CtBinaryOperator) ctExpression;
 
                     createAssignment(ctConditional, anIf, assignment);
-                    CtBinaryOperator cloneThen = getFactory().Core().clone(ctBinaryOperator);
-                    CtBinaryOperator cloneElse = getFactory().Core().clone(ctBinaryOperator);
+                    CtBinaryOperator cloneThen = ctBinaryOperator.clone();
+                    CtBinaryOperator cloneElse = ctBinaryOperator.clone();
 
                     if(ctBinaryOperator.getLeftHandOperand().equals(ctConditional)) {
                         cloneThen.setLeftHandOperand(ctConditional.getThenExpression());
@@ -85,10 +104,11 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
                         cloneThen.setRightHandOperand(ctConditional.getThenExpression());
                         cloneElse.setRightHandOperand(ctConditional.getElseExpression());
                     }
+
                     cloneThen.getLeftHandOperand().setParent(cloneThen);
                     cloneElse.getLeftHandOperand().setParent(cloneElse);
-                    ((CtAssignment)anIf.getThenStatement()).setAssignment(cloneThen);
-                    ((CtAssignment)anIf.getElseStatement()).setAssignment(cloneElse);
+                    ((CtAssignment)((CtBlock)anIf.getThenStatement()).getStatement(0)).setAssignment(cloneThen);
+                    ((CtAssignment)((CtBlock)anIf.getElseStatement()).getStatement(0)).setAssignment(cloneElse);
                 } else {
                     return;
                 }
@@ -101,7 +121,7 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
                 return;
             }
 
-            CtLocalVariable clone = getFactory().Core().clone(localVariable);
+            CtLocalVariable clone = localVariable.clone();
             clone.setDefaultExpression(null);
 
             localVariable.insertBefore(clone);
@@ -109,13 +129,13 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
             CtAssignment variableAssignment = getFactory().Code()
                     .createVariableAssignment(localVariable.getReference(),
                             false, ctConditional);
+            variableAssignment.setType(localVariable.getType().clone());
             variableAssignment.setPosition(ctConditional.getPosition());
-            createAssignment(ctConditional, anIf,
-                    variableAssignment);
+            createAssignment(ctConditional, anIf, variableAssignment);
         } else if(parent instanceof CtInvocation) {
             CtInvocation invocation = (CtInvocation) parent;
-            CtInvocation cloneThen = getFactory().Core().clone(invocation);
-            CtInvocation cloneElse = getFactory().Core().clone(invocation);
+            CtInvocation cloneThen = invocation.clone();
+            CtInvocation cloneElse = invocation.clone();
 
 
             List arguments = cloneThen.getArguments();
@@ -138,15 +158,12 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
             cloneThen.setParent(anIf);
             cloneElse.setParent(anIf);
 
-            cloneThen.setTypeCasts(ctConditional.getThenExpression().getTypeCasts());
-            cloneElse.setTypeCasts(ctConditional.getElseExpression().getTypeCasts());
-
-            anIf.setThenStatement(cloneThen);
-            anIf.setElseStatement(cloneElse);
+            anIf.setElseStatement(getFactory().Code().createCtBlock(cloneElse));
+            anIf.setThenStatement(getFactory().Code().createCtBlock(cloneThen));
         } else if(parent instanceof CtConstructorCall) {
             CtConstructorCall invocation = (CtConstructorCall) parent;
-            CtConstructorCall cloneThen = getFactory().Core().clone(invocation);
-            CtConstructorCall cloneElse = getFactory().Core().clone(invocation);
+            CtConstructorCall cloneThen = invocation.clone();
+            CtConstructorCall cloneElse = invocation.clone();
 
             List arguments = cloneThen.getArguments();
             boolean found = false;
@@ -166,20 +183,17 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
             cloneThen.setParent(anIf);
             cloneElse.setParent(anIf);
 
-            cloneThen.setTypeCasts(ctConditional.getThenExpression().getTypeCasts());
-            cloneElse.setTypeCasts(ctConditional.getElseExpression().getTypeCasts());
-
-            anIf.setThenStatement(cloneThen);
-            anIf.setElseStatement(cloneElse);
+            anIf.setElseStatement(getFactory().Code().createCtBlock(cloneElse));
+            anIf.setThenStatement(getFactory().Code().createCtBlock(cloneThen));
         } else if(parent instanceof CtIf) {
             CtIf elem = (CtIf) parent;
             if(!elem.getCondition().equals(ctConditional)) {
                 return;
             }
 
-            CtIf cloneThen = getFactory().Core().clone(elem);
+            CtIf cloneThen = elem.clone();
             cloneThen.setParent(anIf);
-            CtIf cloneElse = getFactory().Core().clone(elem);
+            CtIf cloneElse = elem.clone();
             cloneElse.setParent(anIf);
 
             cloneThen.setCondition(ctConditional.getThenExpression());
@@ -188,11 +202,8 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
             cloneElse.setCondition(ctConditional.getElseExpression());
             ctConditional.getElseExpression().setParent(cloneElse);
 
-            ctConditional.getThenExpression().setTypeCasts(ctConditional.getThenExpression().getTypeCasts());
-            ctConditional.getElseExpression().setTypeCasts(ctConditional.getElseExpression().getTypeCasts());
-
-            anIf.setThenStatement(cloneThen);
-            anIf.setElseStatement(cloneElse);
+            anIf.setElseStatement(getFactory().Code().createCtBlock(cloneElse));
+            anIf.setThenStatement(getFactory().Code().createCtBlock(cloneThen));
         } else if(parent instanceof CtThrow) {
             return;
         } else if(parent instanceof CtLoop) {
@@ -219,20 +230,24 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
 
     private void createAssignment(CtConditional ctConditional, CtIf anIf,
             CtAssignment assignment) {
-        CtAssignment assignmentThen = getFactory().Core().clone(assignment);
+        CtAssignment assignmentThen = assignment.clone();
         assignmentThen.setAssignment(ctConditional.getThenExpression());
         assignmentThen.setParent(anIf);
         anIf.setThenStatement(assignmentThen);
 
-        CtAssignment assignmentElse = getFactory().Core().clone(assignment);
+        CtAssignment assignmentElse = assignment.clone();
         assignmentElse.setAssignment(ctConditional.getElseExpression());
         assignmentElse.setParent(anIf);
         anIf.setThenStatement(assignmentElse);
 
-        assignmentThen.setTypeCasts(ctConditional.getThenExpression().getTypeCasts());
-        assignmentElse.setTypeCasts(ctConditional.getElseExpression().getTypeCasts());
+        List<CtTypeReference> typeCasts = ctConditional.getTypeCasts();
+        for (int i = 0; i < typeCasts.size(); i++) {
+            CtTypeReference ctTypeReference = typeCasts.get(i);
+            assignmentThen.getAssignment().addTypeCast(ctTypeReference.clone());
+            assignmentElse.getAssignment().addTypeCast(ctTypeReference.clone());
+        }
 
-        anIf.setElseStatement(assignmentElse);
-        anIf.setThenStatement(assignmentThen);
+        anIf.setElseStatement(getFactory().Code().createCtBlock(assignmentElse));
+        anIf.setThenStatement(getFactory().Code().createCtBlock(assignmentThen));
     }
 }

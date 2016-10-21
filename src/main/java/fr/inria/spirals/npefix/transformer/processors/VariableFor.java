@@ -16,10 +16,24 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtTypeReference;
 
+import java.util.Date;
+
 /**
  * Verify that a variable is not null in a loop or a foreach loop if(varA !=null) for(a in varA)
  */
 public class VariableFor extends AbstractProcessor<CtVariableRead<?>> {
+
+	private Date start;
+
+	@Override
+	public void init() {
+		this.start = new Date();
+	}
+
+	@Override
+	public void processingDone() {
+		System.out.println("VariableFor in " + (new Date().getTime() - start.getTime()) + "ms");
+	}
 
 	@Override
 	public boolean isToBeProcessed(CtVariableRead<?> element) {

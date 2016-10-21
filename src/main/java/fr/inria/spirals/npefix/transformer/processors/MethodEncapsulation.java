@@ -13,23 +13,31 @@ import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtNewClass;
 import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtThisAccess;
 import spoon.reflect.code.CtTry;
 import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.declaration.CtEnum;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtParameter;
+import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtExecutableReference;
+import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtVariableAccessImpl;
 import spoon.support.reflect.code.CtVariableReadImpl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -41,11 +49,21 @@ import java.util.List;
 public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 
 	private static int methodNumber = 0;
-	
+	private Date start;
+
 	public static int getCpt(){
 		return methodNumber;
 	}
 
+	@Override
+	public void init() {
+		this.start = new Date();
+	}
+
+	@Override
+	public void processingDone() {
+		System.out.println("MethodEncapsulation # Method: " + methodNumber + " in " + (new Date().getTime() - start.getTime()) + "ms");
+	}
 
 	@Override
 	public boolean isToBeProcessed(CtMethod ctMethode) {
@@ -211,10 +229,30 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 	}
 
 	private void collectFields(CtMethod element) {
-		List<CtField<?>> fields = element.getDeclaringType().getFields();
-		for (int i = 0; i < fields.size(); i++) {
-			CtField<?> ctField = fields.get(i);
+		CtType<?> declaringType = element.getDeclaringType();
+		if (declaringType instanceof CtEnum) {
+			return;
+		}
+		if (declaringType.getParent() instanceof CtNewClass) {
+			return;
+		}
+		Collection<CtFieldReference<?>> fields = declaringType.getAllFields();
+		for (Iterator<CtFieldReference<?>> iterator = fields.iterator(); iterator.hasNext(); ) {
+			CtFieldReference<?> ctFieldReference = iterator.next();
+			CtField<?> ctField = ctFieldReference.getDeclaration();
+			if (ctField == null) {
+				continue;
+			}
 			if(!ctField.hasModifier(ModifierKind.STATIC) && element.hasModifier(ModifierKind.STATIC)) {
+				continue;
+			}
+			if (ctField.hasModifier(ModifierKind.PUBLIC) || ctField.hasModifier(ModifierKind.PROTECTED)) {
+
+			} else if (ctField.hasModifier(ModifierKind.PRIVATE) && (!element.hasParent(ctField.getParent())
+					|| (!ctField.getParent(CtType.class).hasModifier(ModifierKind.STATIC) &&  declaringType.hasModifier(ModifierKind.STATIC)))) {
+				continue;
+			} else if (!element.getParent(CtPackage.class).equals(ctField.getParent(CtPackage.class))) {
+				// default visibility
 				continue;
 			}
 

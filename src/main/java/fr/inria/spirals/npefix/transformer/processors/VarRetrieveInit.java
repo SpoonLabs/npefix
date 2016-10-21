@@ -11,9 +11,17 @@ import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtNewClass;
 import spoon.reflect.reference.CtTypeReference;
 
+import java.util.Date;
+
 public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 
+	private Date start;
 	private int nbVarInit;
+
+	@Override
+	public void init() {
+		this.start = new Date();
+	}
 
 	@Override
 	public boolean isToBeProcessed(CtLocalVariable element) {
@@ -33,7 +41,10 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 		if(defaultExpression instanceof CtNewClass) {
 			return false;
 		}
-		if(defaultExpression.toString().contains("CallChecker.init")) {
+		if (defaultExpression == null) {
+			return false;
+		}
+		if (defaultExpression.toString().contains("CallChecker.init")) {
 			return false;
 		}
 		return true;
@@ -67,7 +78,7 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 				defaultExpression.getType().isPrimitive() &&
 				!defaultExpression.toString().equals("null")) {
 			CtTypeReference destType = element.getType();
-			defaultExpression.addTypeCast(destType);
+			defaultExpression.addTypeCast(destType.clone());
 		}
 		element.setDefaultExpression(invoc);
 
@@ -105,7 +116,7 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 
 	@Override
 	public void processingDone() {
-		System.out.println("VarInit --> "+ nbVarInit);
+		System.out.println("VarInit --> "+ nbVarInit + " in " + (new Date().getTime() - start.getTime()) + "ms");
 	}
 
 }

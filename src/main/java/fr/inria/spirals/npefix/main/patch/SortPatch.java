@@ -3,6 +3,7 @@ package fr.inria.spirals.npefix.main.patch;
 import fr.inria.spirals.npefix.patch.generator.PatchesGenerator;
 import fr.inria.spirals.npefix.patch.sorter.Experiment;
 import fr.inria.spirals.npefix.patch.sorter.tokenizer.FullTokenizer;
+import fr.inria.spirals.npefix.resi.AbstractNPEDataset;
 import fr.inria.spirals.npefix.resi.NPEDataset;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Location;
@@ -42,6 +43,7 @@ public class SortPatch {
 	 */
 	public static void main(String[] args) throws Exception {
 		String resultsRootPath = "/home/thomas/git/bandit-repair-experiments/results/2016-May/exhaustive_exploration";
+		resultsRootPath = "output/Template";
 		String resultsPath = resultsRootPath + "/results.json";
 		File file = new File(resultsPath);
 		JSONTokener tokener = new JSONTokener(new FileReader(file));
@@ -49,7 +51,7 @@ public class SortPatch {
 		Iterator<String> keys = root.keys();
 		while (keys.hasNext()) {
 			String project = keys.next();
-			if (!project.contains("math1117")) {
+			if (!project.contains(AbstractNPEDataset.MATH_290)) {
 				//continue;
 			}
 			System.out.println(project);
@@ -76,11 +78,16 @@ public class SortPatch {
 		JSONArray executions = root.getJSONArray("executions");
 		for (Object execution : executions) {
 			if (!((JSONObject) execution).getJSONObject("result").getBoolean("success")) {
-				continue;
+				//continue;
 			}
 			List<Decision> decisions = new ArrayList<>();
-
+			if (!((JSONObject) execution).has("decisions")) {
+				continue;
+			}
 			JSONArray jsonDecisions = ((JSONObject) execution).getJSONArray("decisions");
+			if (jsonDecisions.length() == 0) {
+				continue;
+			}
 			for (Object jsonDecision : jsonDecisions) {
 				JSONObject jsonLocation = ((JSONObject) jsonDecision).getJSONObject("location");
 
@@ -93,7 +100,7 @@ public class SortPatch {
 				Decision decision = new Decision(strategy, location);
 				decision.setDecisionType(Decision.DecisionType.valueOf(((JSONObject) jsonDecision).getString("decisionType")));
 				decision.setValue(createInstanceFromJson(((JSONObject) jsonDecision).getJSONObject("value")));
-
+				decision.setUsed(((JSONObject) jsonDecision).getBoolean("used"));
 				decisions.add(decision);
 			}
 
@@ -280,7 +287,7 @@ public class SortPatch {
 	}
 
 	private static String getProjectName(String name) {
-		return name.replace(" ", "").replace("-", "").toLowerCase();
+		return name.toLowerCase();
 	}
 
 	private static String getClasspath(String name) {

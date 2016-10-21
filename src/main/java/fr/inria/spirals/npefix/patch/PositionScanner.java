@@ -19,7 +19,10 @@ public class PositionScanner extends CtScanner {
 			return;
 		}
 		SourcePosition position = e.getPosition();
-		if (position == null) {
+		if (position.getSourceStart() == -1) {
+			if (e.isImplicit()) {
+				super.scan(e);
+			}
 			return;
 		}
 		if (position.getLine() == location.getLine() &&

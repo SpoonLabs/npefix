@@ -55,7 +55,7 @@ public class ExecutionClient {
 
 	private void run() {
 		Selector selector = getSelector();
-		final Lapse lapse = new Lapse(selector);
+		Lapse lapse = new Lapse(selector);
 		lapse.setTestClassName(classTestName);
 		lapse.setTestName(testName);
 
@@ -78,27 +78,30 @@ public class ExecutionClient {
 			final Future<Result> handler = executor.submit(new Callable<Result>() {
 				@Override
 				public Result call() throws Exception {
-					Result result = testRunner.run(request);
-					lapse.setOracle(new TestOracle(result));
-					return result;
+					return testRunner.run(request);
 				}
 			});
 
 			try {
-				handler.get(25, TimeUnit.SECONDS);
+				executor.shutdownNow();
+				Result result = handler.get(25, TimeUnit.SECONDS);
+				lapse = getSelector().getCurrentLapse();
+				lapse.setOracle(new TestOracle(result));
 			} catch (TimeoutException e) {
+				lapse = getSelector().getCurrentLapse();
 				lapse.setOracle(new ExceptionOracle(e));
 				e.printStackTrace();
 				handler.cancel(true);
 			} catch (ExecutionException e) {
+				lapse = getSelector().getCurrentLapse();
 				lapse.setOracle(new ExceptionOracle(e));
 				e.printStackTrace();
 				handler.cancel(true);
 			}
-			executor.shutdownNow();
 
-			System.out.println(lapse);
+
 			selector.restartTest(lapse);
+			System.out.println(lapse);
 			System.exit(0);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

@@ -18,16 +18,24 @@ import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtLocalVariableImpl;
 
+import java.util.Date;
+
 /**
  * Created by thomas on 12/01/16.
  */
 public class AddImplicitCastChecker extends AbstractProcessor<CtTypedElement>{
 
+	private Date start;
 	private int nbImplicitCast;
 
 	@Override
+	public void init() {
+		this.start = new Date();
+	}
+
+	@Override
 	public void processingDone() {
-		System.out.println("AddImplicitCastChecker --> " + nbImplicitCast);
+		System.out.println("AddImplicitCastChecker --> " + nbImplicitCast + " in " + (new Date().getTime() - start.getTime()) + "ms");
 	}
 
 	@Override
@@ -36,6 +44,9 @@ public class AddImplicitCastChecker extends AbstractProcessor<CtTypedElement>{
 		if(!(parent instanceof CtReturn
 				|| parent instanceof CtLocalVariable
 				|| parent instanceof CtAssignment)) {
+			return false;
+		}
+		if (candidate instanceof CtLiteral) {
 			return false;
 		}
 		CtTypeReference type = candidate.getType();
@@ -59,7 +70,11 @@ public class AddImplicitCastChecker extends AbstractProcessor<CtTypedElement>{
 			return ctMethod.getType().isPrimitive();
 		}
 		if(parent instanceof CtTypedElement) {
-			return ((CtTypedElement) parent).getType().isPrimitive();
+			CtTypeReference type1 = ((CtTypedElement) parent).getType();
+			if (type1 == null) {
+				return false;
+			}
+			return type1.isPrimitive();
 		}
 		return super.isToBeProcessed(candidate);
 	}

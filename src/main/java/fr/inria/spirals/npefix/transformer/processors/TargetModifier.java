@@ -28,6 +28,7 @@ import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 
+import java.util.Date;
 import java.util.Set;
 
 import static fr.inria.spirals.npefix.transformer.processors.ProcessorUtility.createCtTypeElement;
@@ -35,11 +36,18 @@ import static fr.inria.spirals.npefix.transformer.processors.ProcessorUtility.is
 
 @SuppressWarnings("all")
 public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
+	private Date start;
 	private int i=0;
 	private int j=0;
+
+	@Override
+	public void init() {
+		this.start = new Date();
+	}
+
 	@Override
 	public void processingDone() {
-		System.out.println("target--> "+i +" (failed:"+j+")");
+		System.out.println("target--> " + i + " (failed:"+j+")"+ " in " + (new Date().getTime() - start.getTime()) + "ms");
 	}
 
 	@Override

@@ -14,33 +14,27 @@ import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtStatementList;
 import spoon.reflect.code.CtTargetedExpression;
 import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.ParentNotInitializedException;
+import spoon.reflect.visitor.filter.LineFilter;
+
+import java.util.Date;
 
 public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 
+	private Date start;
 	int nbError = 0;
 	int nbAssignment = 0;
 
 	@Override
+	public void init() {
+		this.start = new Date();
+	}
+
+	@Override
 	public boolean isToBeProcessed(CtAssignment element) {
-		CtStatement parentStatement = element.getParent(CtStatement.class);
-		while(!(parentStatement.getParent() instanceof CtBlock) && parentStatement.getParent(CtStatement.class) != null) {
-			parentStatement = parentStatement.getParent(CtStatement.class);
+		if(element.getAssignment() == null) {
+			return false;
 		}
-		try {
-			if(parentStatement instanceof CtLoop) {
-				return false;
-			}
-			if(element.getParent(CtReturn.class) instanceof CtLoop) {
-				return false;
-			}
-			if(element.getAssignment() == null) {
-				return false;
-			}
-		} catch (ParentNotInitializedException e) {
-			// ignore the error
-		}
-		if(element.getAssignment().toString().contains(CallChecker.class.getSimpleName() + ".beforeCalled")) {
+		if (element.getAssignment().toString().contains(CallChecker.class.getSimpleName() + ".beforeCalled")) {
 			return false;
 		}
 		return true;
@@ -61,8 +55,7 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 			CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
 			CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(element.getPosition().getSourceEnd());
 
-			CtLiteral<String> variableName = getFactory().Code()
-					.createLiteral(assigned.toString());
+			CtLiteral<String> variableName = getFactory().Code().createLiteral(assigned.toString());
 
 			CtInvocation invoc = ProcessorUtility.createStaticCall(getFactory(),
 					CallChecker.class,
@@ -79,17 +72,27 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 				element.insertAfter(invoc);
 				invoc.setParent(element.getParent());
 			} else {
-				if(element.getParent(CtStatementList.class) == null) {
-					return;
+				CtStatement parent;
+				if (element.getParent() instanceof CtStatementList) {
+					parent = element;
+				} else {
+					parent = element.getParent(new LineFilter());
 				}
-				CtElement parent = element.getParent();
-				while (!(parent.getParent() instanceof CtStatementList)) {
-					parent = parent.getParent();
+				if (parent == null) {
+					return;
 				}
 				if(parent instanceof CtReturn) {
 					return;
 				}
-				((CtStatement)parent).insertAfter(invoc);
+				if (parent instanceof CtLoop) {
+					CtStatement body = ((CtLoop) parent).getBody();
+					if (!(body instanceof CtBlock)) {
+						((CtLoop) parent).setBody(getFactory().Code().createCtBlock(body));
+					}
+					((CtBlock)body).insertBegin(invoc);
+				} else {
+					parent.insertAfter(invoc);
+				}
 				invoc.setParent(parent);
 			}
 
@@ -116,7 +119,7 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 
 	@Override
 	public void processingDone() {
-		System.out.println("Assign --> " + nbAssignment + " (failed: "+ nbError +")");
+		System.out.println("Assign --> " + nbAssignment + " (failed: "+ nbError +")" + " in " + (new Date().getTime() - start.getTime()) + "ms");
 	}
 
 }

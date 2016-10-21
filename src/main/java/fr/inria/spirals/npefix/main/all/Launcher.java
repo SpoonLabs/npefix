@@ -19,6 +19,7 @@ import fr.inria.spirals.npefix.transformer.processors.ConstructorEncapsulation;
 import fr.inria.spirals.npefix.transformer.processors.ForceNullInit;
 import fr.inria.spirals.npefix.transformer.processors.MethodEncapsulation;
 import fr.inria.spirals.npefix.transformer.processors.TargetModifier;
+import fr.inria.spirals.npefix.transformer.processors.TernarySplitter;
 import fr.inria.spirals.npefix.transformer.processors.TryRegister;
 import fr.inria.spirals.npefix.transformer.processors.VarRetrieveAssign;
 import fr.inria.spirals.npefix.transformer.processors.VarRetrieveInit;
@@ -93,7 +94,7 @@ public class Launcher {
     public void instrument() {
         ProcessingManager p = new QueueProcessingManager(spoon.getFactory());
 
-        //p.addProcessor(TernarySplitter.class.getCanonicalName());
+        p.addProcessor(new TernarySplitter());
         //p.addProcessor(new IfSplitter());
         p.addProcessor(new CheckNotNull());
         p.addProcessor(new ForceNullInit());
@@ -194,10 +195,10 @@ public class Launcher {
 
         spoon.getEnvironment().setCopyResources(true);
         spoon.getEnvironment().setAutoImports(true);
-        spoon.getEnvironment().setShouldCompile(true);
+        spoon.getEnvironment().setShouldCompile(false);
         spoon.getEnvironment().setCommentEnabled(false);
         spoon.getEnvironment().setComplianceLevel(7);
-        spoon.getEnvironment().setLevel("DEBUG");
+        spoon.getEnvironment().setLevel("OFF");
         spoon.buildModel();
         copyResources();
         return compiler;
@@ -208,12 +209,12 @@ public class Launcher {
     }
 
     public NPEOutput run(Selector selector) {
-        List<Method> methodTests = getTests();
+        List<String> methodTests = getTests();
 
         return run(selector, methodTests);
     }
 
-    public NPEOutput run(Selector selector, List<Method> methodTests) {
+    public NPEOutput run(Selector selector, List<String> methodTests) {
         CallChecker.enable();
         CallChecker.strategySelector = selector;
 
@@ -223,11 +224,26 @@ public class Launcher {
 
         final TestRunner testRunner = new TestRunner();
         for (int i = 0; i < methodTests.size(); i++) {
-            Method method = methodTests.get(i);
-            final Request request = Request.method(method.getDeclaringClass(), method.getName());
+            String method = methodTests.get(i);
+            String[] split = method.split("#");
+            method = split[1];
+            String className = split[0];
 
-            lapse.setTestClassName(method.getDeclaringClass().getCanonicalName());
-            lapse.setTestName(method.getName());
+            String[] sourceClasspath = spoon.getModelBuilder().getSourceClasspath();
+            URLClassLoader urlClassLoader = getUrlClassLoader(sourceClasspath);
+
+            CallChecker.currentClassLoader = urlClassLoader;
+
+            final Request request;
+            try {
+                request = Request.method(urlClassLoader.loadClass(className), method);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                continue;
+            }
+
+            lapse.setTestClassName(className);
+            lapse.setTestName(method);
             try {
                 selector.startLaps(lapse);
             } catch (RemoteException e) {
@@ -297,7 +313,7 @@ public class Launcher {
         }).start();
     }
 
-    public NPEOutput runCommandLine(Selector selector, List<Method> methodTests) {
+    public NPEOutput runCommandLine(Selector selector, List<String> methodTests) {
 
         CallChecker.enable();
         CallChecker.strategySelector = selector;
@@ -305,7 +321,10 @@ public class Launcher {
         NPEOutput output = new NPEOutput();
 
         for (int i = 0; i < methodTests.size(); i++) {
-            Method method = methodTests.get(i);
+            String method = methodTests.get(i);
+            String[] split = method.split("#");
+            method = split[1];
+            String className = split[0];
             String separator = System.getProperty("file.separator");
             String path = System.getProperty("java.home")
                     + separator + "bin" + separator + "java";
@@ -313,8 +332,8 @@ public class Launcher {
                     new ProcessBuilder(path, "-cp",
                             classpath,
                             ExecutionClient.class.getName(),
-                            method.getDeclaringClass().getCanonicalName(),
-                            method.getName(),
+                            className,
+                            method,
                             Config.CONFIG.getRandomSeed() + "");
             try {
                 // run the new JVM
@@ -354,17 +373,21 @@ public class Launcher {
      * Returns all test methods of the spooned project
      * @return a list of test methods
      */
-    public List<Method> getTests() {
+    public List<String> getTests() {
         String[] sourceClasspath = spoon.getModelBuilder().getSourceClasspath();
 
         URLClassLoader urlClassLoader = getUrlClassLoader(sourceClasspath);
 
         CallChecker.currentClassLoader = urlClassLoader;
 
-        String[] testsString = new TestClassesFinder().findIn(urlClassLoader, false);
-        Class[] tests = filterTest(urlClassLoader, testsString);
+        return getTests(spoon, urlClassLoader);
+    }
 
-        List<Method> methodTests = new ArrayList();
+    public static List<String> getTests(spoon.Launcher spoon, URLClassLoader urlClassLoader) {
+        String[] testsString = new TestClassesFinder().findIn(urlClassLoader, false);
+        Class[] tests = filterTest(spoon, urlClassLoader, testsString);
+
+        List<String> methodTests = new ArrayList();
         for (int i = 0; i < tests.length; i++) {
             Class test = tests[i];
             Method[] methods = test.getDeclaredMethods();
@@ -384,7 +407,7 @@ public class Launcher {
                             && !method.isAnnotationPresent(Before.class)
                             && !method.isAnnotationPresent(BeforeClass.class)
                             && !method.isAnnotationPresent(Override.class)) {
-                        methodTests.add(method);
+                        methodTests.add(test.getCanonicalName() + "#" + method.getName());
                     }
                 }
             }
@@ -399,7 +422,7 @@ public class Launcher {
         DecisionServer decisionServer = new DecisionServer(selector);
         decisionServer.startServer();
 
-        List<Method> tests = getTests();
+        List<String> tests = getTests();
         for (int i = 0; i < strategies.length; i++) {
             Strategy strategy = strategies[i];
             System.out.println(strategy);
@@ -412,11 +435,11 @@ public class Launcher {
         return output;
     }
 
-    private Class[] filterTest(URLClassLoader urlClassLoader, String[] testsString) {
+    private static Class[] filterTest(spoon.Launcher spoon, URLClassLoader urlClassLoader, String[] testsString) {
         Set<Class> tests = new HashSet<>();
         for (int i = 0; i < testsString.length; i++) {
             String s = testsString[i];
-            if(!isValidTest(s)) {
+            if(!isValidTest(spoon, s)) {
                 continue;
             }
             try {
@@ -442,7 +465,7 @@ public class Launcher {
         return new URLClassLoader(uRLClassPath.toArray(new URL[]{}));
     }
 
-    private boolean isValidTest(String testName) {
+    private static boolean isValidTest(spoon.Launcher spoon, String testName) {
         return spoon.getFactory().Class().get(testName) != null;
     }
 

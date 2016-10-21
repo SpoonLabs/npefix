@@ -17,13 +17,25 @@ import spoon.reflect.reference.CtTypeReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class TryRegister extends AbstractProcessor<CtTry> {
 
+	private Date start;
 	private int tryNumber = 0;
 	private CtVariableAccess mainContextVar = null;
+
+	@Override
+	public void init() {
+		this.start = new Date();
+	}
+
+	@Override
+	public void processingDone() {
+		System.out.println("TryRegister # Try: " + tryNumber + " in " + (new Date().getTime() - start.getTime()) + "ms");
+	}
 
 	@Override
 	public void process(CtTry element) {

@@ -57,4 +57,9 @@ public class AbstractOracle implements Oracle {
 		}
 		return output.toString();
 	}
+
+	@Override
+	public String toString() {
+		return error ;
+	}
 }

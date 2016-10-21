@@ -87,7 +87,7 @@ public class TestRunner {
 		public void testFailure(Failure failure) throws Exception {
 			if(failure.getDescription() != null
 					&& (failure.getDescription().getDisplayName().startsWith("warning") ||
-					failure.getMessage().startsWith("No tests found"))) {
+					(failure.getMessage() != null && failure.getMessage().startsWith("No tests found")))) {
 				return;
 			}
 			super.testFailure(failure);
@@ -100,7 +100,7 @@ public class TestRunner {
 				Failure failure = failures.get(i);
 				if(failure.getDescription() != null
 						&& (failure.getDescription().getDisplayName().startsWith("warning") ||
-						failure.getMessage().startsWith("No tests found"))) {
+						(failure.getMessage() != null && failure.getMessage().startsWith("No tests found")))) {
 					result.getFailures().remove(failure);
 				}
 			}
