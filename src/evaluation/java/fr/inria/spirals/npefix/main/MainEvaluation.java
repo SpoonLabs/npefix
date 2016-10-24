@@ -5,8 +5,10 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import fr.inria.spirals.npefix.config.Config;
+import fr.inria.spirals.npefix.resi.NPEFixTemplateEvaluation;
 import fr.inria.spirals.npefix.resi.selector.ExplorationSelectorEvaluation;
 import fr.inria.spirals.npefix.resi.selector.GreedySelectorEvaluation;
+import fr.inria.spirals.npefix.resi.selector.MonoExplorationEvaluation;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -38,16 +40,21 @@ public abstract class MainEvaluation {
 			if(arguments.getString("mode").equals("normal")) {
 				GreedySelectorEvaluation evaluation = new GreedySelectorEvaluation();
 				evaluation.setup();
-				Method project = GreedySelectorEvaluation.class.getMethod(
-						arguments.getString("project").toLowerCase()
-								.replace("-", ""));
+				Method project = GreedySelectorEvaluation.class.getMethod(arguments.getString("project").toLowerCase().replace("-", ""));
 				project.invoke(evaluation);
 			} else if(arguments.getString("mode").equals("exploration")) {
 				ExplorationSelectorEvaluation evaluation = new ExplorationSelectorEvaluation();
 				evaluation.setup();
-				Method project = ExplorationSelectorEvaluation.class.getMethod(
-						arguments.getString("project").toLowerCase()
-								.replace("-", ""));
+				Method project = ExplorationSelectorEvaluation.class.getMethod(arguments.getString("project").toLowerCase().replace("-", ""));
+				project.invoke(evaluation);
+			} else if(arguments.getString("mode").equals("mono")) {
+				MonoExplorationEvaluation evaluation = new MonoExplorationEvaluation();
+				evaluation.setup();
+				Method project = MonoExplorationEvaluation.class.getMethod(arguments.getString("project").toLowerCase().replace("-", ""));
+				project.invoke(evaluation);
+			} else if(arguments.getString("mode").equals("Template")) {
+				NPEFixTemplateEvaluation evaluation = new NPEFixTemplateEvaluation();
+				Method project = NPEFixTemplateEvaluation.class.getMethod(arguments.getString("project").toLowerCase().replace("-", ""));
 				project.invoke(evaluation);
 			}
 		} catch (NoSuchMethodException e) {
@@ -84,8 +91,7 @@ public abstract class MainEvaluation {
 			Config.CONFIG.setRandomSeed(config.getInt(RANDOM_SEED));
 		}
 		if (config.contains(WORKING_DIRECTORY)) {
-			Config.CONFIG.setEvaluationWorkingDirectory(config.getString(
-					WORKING_DIRECTORY));
+			Config.CONFIG.setEvaluationWorkingDirectory(config.getString(WORKING_DIRECTORY));
 		}
 		if (config.contains(M2_REPO)) {
 			Config.CONFIG.setM2Repository(config.getString(M2_REPO));
@@ -94,8 +100,7 @@ public abstract class MainEvaluation {
 			Config.CONFIG.setNbIteration(config.getInt(NB_LAPS));
 		}
 		if (config.contains(TEST_TIMEOUT)) {
-			Config.CONFIG.setTimeoutIteration(
-					config.getInt(TEST_TIMEOUT));
+			Config.CONFIG.setTimeoutIteration(config.getInt(TEST_TIMEOUT));
 		}
 		if (config.contains(NPEDATASET)) {
 			Config.CONFIG.setDatasetRoot(new File(config.getString(NPEDATASET)).getAbsolutePath() + "/");
@@ -123,7 +128,7 @@ public abstract class MainEvaluation {
 		modeOpt.setUsageName("mode");
 		modeOpt.setDefault("normal");
 		modeOpt.setStringParser(JSAP.STRING_PARSER);
-		modeOpt.setHelp("The execution mode.");
+		modeOpt.setHelp("The execution mode (normal, exploration, mono).");
 		jsap.registerParameter(modeOpt);
 
 		FlaggedOption workingDirectoryOpt = new FlaggedOption(WORKING_DIRECTORY);
