@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MoloExplorerSelector extends AbstractSelector {
+public class MonoExplorerSelector extends AbstractSelector {
 
 	private Map<String, Set<Decision>> usedDecisions = new HashMap<>();
 	private Map<Location, Set<Decision>> decisions = new HashMap<>();
