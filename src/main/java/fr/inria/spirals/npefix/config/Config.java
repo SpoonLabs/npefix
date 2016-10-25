@@ -15,10 +15,12 @@ public class Config  {
 	private static final String SELECTOR_GREEDY_EPSILON = "selector.greedy.epsilon";
 	private static final String EVALUATION_DATASET_ROOT = "evaluation.datasetRoot";
 	private static final String EVALUATION_WORKING_DIRECTORY = "evaluation.workingDirectory";
+	private static final String EVALUATION_OUTPUT_DIRECTORY = "evaluation.outputDirectory";
 	private static final String EVALUATION_M2_ROOT = "evaluation.m2Root";
 	private static final String ITERATION_TIMEOUT = "iteration.timeout";
 
 	public static Config CONFIG = new Config();
+	private String outputDirectory;
 	private String serverName;
 	private String datasetRoot;
 	private double greedyEpsilon;
@@ -44,6 +46,7 @@ public class Config  {
 			this.greedyEpsilon = Double.parseDouble(properties.getProperty(SELECTOR_GREEDY_EPSILON));
 			this.datasetRoot = properties.getProperty(EVALUATION_DATASET_ROOT);
 			this.workingDirectory = properties.getProperty(EVALUATION_WORKING_DIRECTORY);
+			this.outputDirectory = properties.getProperty(EVALUATION_OUTPUT_DIRECTORY, "output/");
 			setM2Repository(properties.getProperty(EVALUATION_M2_ROOT));
 			this.serverName = properties.getProperty(SERVER_NAME, "Selector");
 
@@ -60,6 +63,7 @@ public class Config  {
 				this.greedyEpsilon = Double.parseDouble(userProperties.getProperty(SELECTOR_GREEDY_EPSILON, greedyEpsilon + ""));
 				this.datasetRoot = userProperties.getProperty(EVALUATION_DATASET_ROOT, datasetRoot);
 				this.workingDirectory = userProperties.getProperty(EVALUATION_WORKING_DIRECTORY, workingDirectory);
+				this.outputDirectory = userProperties.getProperty(EVALUATION_OUTPUT_DIRECTORY, outputDirectory);
 				setM2Repository(userProperties.getProperty(EVALUATION_M2_ROOT, m2Repository));
 				this.serverName = userProperties.getProperty(SERVER_NAME, serverName);
 			}
@@ -135,6 +139,17 @@ public class Config  {
 
 	public void setEvaluationWorkingDirectory(String workingDirectory) {
 		this.workingDirectory = workingDirectory;
+	}
+
+	public String getOutputDirectory() {
+		return outputDirectory;
+	}
+
+	public void setOutputDirectory(String outputDirectory) {
+		if (outputDirectory.charAt(outputDirectory.length() -1) != '/') {
+			outputDirectory += "/";
+		}
+		this.outputDirectory = outputDirectory;
 	}
 
 	public String getM2Repository() {

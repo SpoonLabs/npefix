@@ -139,7 +139,7 @@ public class AbstractEvaluation {
 
     public void serializeResult(JSONObject results, String project, String selector) {
         try {
-            File file = new File("output/" + selector + "/" + project + "/" + (new Date().getTime()) + ".json");
+            File file = new File(Config.CONFIG.getOutputDirectory() + selector + "/" + project + "/" + (new Date().getTime()) + ".json");
             if(!file.exists()) {
                 FileUtils.forceMkdir(file.getParentFile());
                 file.createNewFile();

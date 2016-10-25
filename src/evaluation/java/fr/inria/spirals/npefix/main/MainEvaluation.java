@@ -16,6 +16,7 @@ import java.util.Iterator;
 
 public abstract class MainEvaluation {
 	private static final String WORKING_DIRECTORY = "workingDirectory";
+	private static final String OUTPUT_DIRECTORY = "outputDirectory";
 	private static final String GREEDY_EPSILON = "greedyEpsilon";
 	private static final String RANDOM_SEED = "randomSeed";
 	private static final String M2_REPO = "m2Repo";
@@ -93,6 +94,9 @@ public abstract class MainEvaluation {
 		if (config.contains(WORKING_DIRECTORY)) {
 			Config.CONFIG.setEvaluationWorkingDirectory(config.getString(WORKING_DIRECTORY));
 		}
+		if (config.contains(OUTPUT_DIRECTORY)) {
+			Config.CONFIG.setOutputDirectory(config.getString(OUTPUT_DIRECTORY));
+		}
 		if (config.contains(M2_REPO)) {
 			Config.CONFIG.setM2Repository(config.getString(M2_REPO));
 		}
@@ -140,6 +144,16 @@ public abstract class MainEvaluation {
 		workingDirectoryOpt.setStringParser(JSAP.STRING_PARSER);
 		workingDirectoryOpt.setHelp("The path to the evaluation working directory.");
 		jsap.registerParameter(workingDirectoryOpt);
+
+		FlaggedOption outputDirectoryOpt = new FlaggedOption(OUTPUT_DIRECTORY);
+		outputDirectoryOpt.setRequired(false);
+		outputDirectoryOpt.setAllowMultipleDeclarations(false);
+		outputDirectoryOpt.setLongFlag("output");
+		outputDirectoryOpt.setShortFlag('o');
+		outputDirectoryOpt.setUsageName(WORKING_DIRECTORY);
+		outputDirectoryOpt.setStringParser(JSAP.STRING_PARSER);
+		outputDirectoryOpt.setHelp("The path to the evaluation output directory.");
+		jsap.registerParameter(outputDirectoryOpt);
 
 		FlaggedOption npeDataset = new FlaggedOption(NPEDATASET);
 		npeDataset.setRequired(false);
