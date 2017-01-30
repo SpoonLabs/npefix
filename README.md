@@ -2,7 +2,7 @@
 
 This is the repository of NPEFix.
 
-BanditRepair is a system that systematically explores and assesses a set of possible runtime patches developed at Inria Lille.
+NPEFix is a system that systematically explores and assesses a set of possible runtime patches developed at Inria Lille.
 
 This code is research code, released under the GPL licence.
 

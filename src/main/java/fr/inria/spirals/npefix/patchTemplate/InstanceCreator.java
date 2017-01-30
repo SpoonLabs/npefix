@@ -129,7 +129,7 @@ public class InstanceCreator {
 					|| ctType.hasModifier(ModifierKind.ABSTRACT)) {
 				continue;
 			}
-			if (ctType.getReference().isAssignableFrom(type)) {
+			if (ctType.getReference().isSubtypeOf(type)) {
 				output.add((CtClass) ctType);
 			}
 		}

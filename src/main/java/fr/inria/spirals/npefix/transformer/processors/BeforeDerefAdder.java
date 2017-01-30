@@ -315,7 +315,7 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 							@Override
 							public boolean matches(CtThrow element) {
 								return !getFactory().Code().createCtTypeReference(
-												NPEFixError.class).isAssignableFrom(
+												NPEFixError.class).isSubtypeOf(
 												element.getThrownExpression().getType()) && super.matches(element);
 							}
 						}).size() > 0;
