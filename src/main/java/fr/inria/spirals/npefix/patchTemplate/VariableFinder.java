@@ -173,7 +173,6 @@ public class VariableFinder {
 	}
 
 	public static boolean  isAssignableFrom(CtTypeReference target, CtTypeReference args) {
-		if (true) return target.isSubtypeOf(args);
 		TypeFactory type = target.getFactory().Type();
 		// in java all types is assignable to Object
 		if (target.equals(type.OBJECT)) {
