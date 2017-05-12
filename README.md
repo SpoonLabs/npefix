@@ -1,10 +1,21 @@
 # NPEFix [![Build Status](https://travis-ci.org/Spirals-Team/npefix.svg?branch=master)](https://travis-ci.org/Spirals-Team/npefix) [![Coverage Status](https://coveralls.io/repos/github/Spirals-Team/npefix/badge.svg?branch=master)](https://coveralls.io/github/Spirals-Team/npefix?branch=master)
 
 This is the repository of NPEFix.
-
 NPEFix is a system that systematically explores and assesses a set of possible runtime patches developed at Inria Lille.
-
 This code is research code, released under the GPL licence.
+
+If you use this code, please cite:
+
+Thomas Durieux, Benoit Cornu, Lionel Seinturier and Martin Monperrus, "Dynamic Patch Generation for Null Pointer Exceptions Using Metaprogramming", In IEEE International Conference on Software Analysis, Evolution and Reengineering, 2017.
+Bibtex Entry:
+
+    @inproceedings{durieux2016npefix,
+        title = {{Dynamic Patch Generation for Null Pointer Exceptions Using Metaprogramming}},
+        author = {Durieux, Thomas and Cornu, Benoit and Seinturier, Lionel and Monperrus, Martin},
+        url = {https://hal.archives-ouvertes.fr/hal-01419861/document},
+        booktitle = {{IEEE International Conference on Software Analysis, Evolution and Reengineering}},
+        year = {2017},
+    }
 
 
 ## Getting Started
@@ -20,8 +31,8 @@ mvn test
 1. Gets the NPE Dataset: https://github.com/Spirals-Team/npe-dataset
 2. Installs each bug on your system, in order to download the dependencies
 3. Configures the location of the dataset in src/main/resources/config.ini
-4. Creates the Bandit Repair jar with all dependencies: `mvn clean compile assembly:single`
-5. Executes Bandit Repair `java -jar target/npefix-0.3-jar-with-dependencies.jar` (see the execution usage below)
+4. Creates the jar with all dependencies: `mvn clean compile assembly:single`
+5. Execute `java -jar target/npefix-0.3-jar-with-dependencies.jar` (see the execution usage below)
 
 #### Execution usage
 ```Bash
@@ -32,7 +43,7 @@ java -jar target/npefix-0.2-jar-with-dependencies.jar
         The name of the buggy program to execute (e.g. collection-360, math-1117, ...).
 
   [(-m|--mode) <mode>]
-        The execution mode of Bandit Repair:
+        The execution mode:
             * normal: Executes n times (the option --laps) the program and use the Epsilon Greedy algorithm to select the decision.
             * exploration: Explores all possible decision sequences with a limit of n laps (defined by --laps)
 
