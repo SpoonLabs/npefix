@@ -1,11 +1,11 @@
 package utils.sacha.finder.filters.impl;
 
 import junit.framework.TestCase;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import utils.sacha.finder.filters.ClassFilter;
 import utils.sacha.finder.filters.utils.TestType;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -84,8 +84,10 @@ public class TestFilter implements ClassFilter {
 		}
 		try {
 			for (Method method : clazz.getMethods()) {
-				if (method.getAnnotation(Test.class) != null) {
-					return true;
+				for (Annotation annotation : method.getAnnotations()) {
+					if ("org.junit.Test".equals(annotation.annotationType().getName())) {
+						return true;
+					}
 				}
 			}
 		} catch (NoClassDefFoundError ignore) {
