@@ -230,7 +230,7 @@ public class Launcher {
             String className = split[0];
 
             String[] sourceClasspath = spoon.getModelBuilder().getSourceClasspath();
-            URLClassLoader urlClassLoader = getUrlClassLoader(sourceClasspath);
+            final URLClassLoader urlClassLoader = getUrlClassLoader(sourceClasspath);
 
             CallChecker.currentClassLoader = urlClassLoader;
 
@@ -462,7 +462,7 @@ public class Launcher {
                 continue;
             }
         }
-        return new URLClassLoader(uRLClassPath.toArray(new URL[]{}));
+        return new URLClassLoader(uRLClassPath.toArray(new URL[]{}), Thread.currentThread().getContextClassLoader());
     }
 
     private static boolean isValidTest(spoon.Launcher spoon, String testName) {
