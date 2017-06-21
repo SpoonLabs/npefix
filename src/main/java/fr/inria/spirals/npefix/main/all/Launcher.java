@@ -415,14 +415,13 @@ public class Launcher {
         return methodTests;
     }
 
-    public NPEOutput runStrategy(Strategy...strategies) {
+    public NPEOutput runStrategy(List<String> tests, Strategy...strategies) {
         NPEOutput output = new NPEOutput();
 
         Selector selector = new DomSelector();
         DecisionServer decisionServer = new DecisionServer(selector);
         decisionServer.startServer();
 
-        List<String> tests = getTests();
         for (int i = 0; i < strategies.length; i++) {
             Strategy strategy = strategies[i];
             System.out.println(strategy);
@@ -433,6 +432,11 @@ public class Launcher {
         }
         Collections.sort(output);
         return output;
+    }
+
+    public NPEOutput runStrategy(Strategy...strategies) {
+        List<String> tests = getTests();
+        return runStrategy(tests, strategies);
     }
 
     private static Class[] filterTest(spoon.Launcher spoon, URLClassLoader urlClassLoader, String[] testsString) {

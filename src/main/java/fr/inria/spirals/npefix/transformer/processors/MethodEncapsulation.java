@@ -10,6 +10,7 @@ import spoon.reflect.code.CtCatch;
 import spoon.reflect.code.CtCatchVariable;
 import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtLocalVariable;
@@ -18,6 +19,7 @@ import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtThisAccess;
 import spoon.reflect.code.CtTry;
+import spoon.reflect.code.CtTypeAccess;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.declaration.CtEnum;
 import spoon.reflect.declaration.CtField;
@@ -264,8 +266,12 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 			if(ctField.getType() == null) {
 				isStatic = true;
 			}
-			CtVariableAccess variableRead = getFactory().Code().createVariableRead(ctField.getReference(), isStatic);
-
+			CtFieldAccess variableRead = (CtFieldAccess) getFactory().Code().createVariableRead(ctFieldReference, isStatic);
+			if (!isStatic) {
+				((CtTypeAccess) ((CtThisAccess) variableRead.getTarget())
+						.getTarget())
+						.setAccessedType(declaringType.getReference());
+			}
 			CtLiteral<String> variableName = getFactory().Code()
 					.createLiteral(variableRead.getVariable().toString());
 			CtInvocation invoc = ProcessorUtility.createStaticCall(getFactory(),
