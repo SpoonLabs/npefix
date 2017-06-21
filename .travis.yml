@@ -9,7 +9,7 @@ cache:
   - "$HOME/.m2"
 env:
   global:
-    secure: JIObGWMPCNPWMT6vGJzjS7cfbwLsbNuK+TLigRUD2dbYrNgg6sC7SESEL5ZxXOdF8Tr9eyryhVDnzU1YkrL2FX1P5xPx++5AGqGR0gmsK5o5qFTReIQOVDvvb31N60VTQJUHEVgx1Y3N71MvtxPVTLAft8dhU22ft7b3/tKHO6j0Pyt3ki32grGWct/RdTr9UuO5M0nN+BqATe0WFO7nIEKVgEgZglI6RrSOUfz1EI07R+8C0UDUACtbIGuRoOYf7AOy6hiQdvwbGj85cR3Ul+dEBb/6te+xZbV1hn6V8zOfWyswk9rNToNpJnsD1dR3WwmECUY54LGZncW4z9mcdvz94llAsWFBX6cKgAxujR9rLMNOPHfrdwlYWc6bjtgq+VZw6WAVZrTtZhMycxWYKdHSUuUqKLBlRfZRKgCP3sGLlU+GI2QCVks6Tm03O6ZHJ1O2D7SWZlJ09NVeiPv61PRi5hSUa05D/yoqeTvyHcXNgCpJnjddgMyC0mux+ICDmLUo43S3ty6rIcQAze4BUKr8wQsxBXye+FKXusORkiuX6a1AGa3GDR3atSxnPbyBBAhuQRZSa6DVaeixXIQeTHKuiKlCUB/bjXR9pB6Dv/8D0nt8dahlKIzDkmPmF8m2hnRemD+oAOlv6YBsBazf4cJvRgfYQoWft/2PGUbsFIo=
+    secure: bl2Y2HFBmI14Ql8PU9D2uBzoCwspm9OuFFGTCj597ikIkTvsJl6xBfGCtwHi+rOmsGQcmxof2y68BuW5BfT85g7ppg3g7bH3m8eBmZrDP39YUkFF/a1lF1xACfb8B02GXg3xqYT4yRa103DCmfhxjYYjmIpgIBbKkUjCvl+dD1QRMdlSqwVJRKOG4ZGxwfC6V3bGnhx5/WVIAM0ZtYWu7O7ZKxf2U4Z3c13mn5t2Tu8avO1kdERJAftXnlbckyE1WAVBgYzozXVcgMNIrMrCRpRB/OZbokFvSasrVmPclr6hxBiOoktY7aZZ2UCU11NsIjE8Oz+F/Ikj/Lhxs1dmuMZVDPRJC4nmKsOxLGZmq9bDW2+Psy6TbJbfdw8+o0B1lib5bzlj9K4Do/idS6pkosMwCRzYvVXfbgiXC7Lxcpnl9KbV9jKvh0DN53hNaAEDGWKx6ndqcYVyPNux9vbVyZDJdt5Dhx9/kUvYJfcF9QDkAshUZ26MJq4gbZIAj1GpDpMEDqtX3BwRoM8I6y9FZi0gQzQSp2aeQvro14D8fks9KYPTGSvZGFwOT3+7KN63mipw+8xiFrCgUD5hZWrT4W5+LiMARkutD/aYglgh0hoP0xqv82bV4fBXw0TMxMwi8C+xRzPFJ14eTkHZ0PqgUUZ563a44jhb8q8qmOitjJ8=
 after_success:
-- '[[ $TRAVIS_BRANCH == "master" ]] && { mvn deploy --settings .travis-settings.xml
-  -DskipTests=true -B; };'
+- '[[ $TRAVIS_BRANCH == "master" ]] && [[ $TRAVIS_JDK_VERSION == "oraclejdk7" ]] &&
+  { mvn deploy --settings .travis-settings.xml -DskipTests=true -B; };'
