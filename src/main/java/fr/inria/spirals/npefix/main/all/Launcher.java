@@ -66,6 +66,7 @@ import java.util.Set;
 public class Launcher {
 
     private final String[] sourcePath;
+    private int complianceLevel;
     private final String classpath;
     private final String sourceOutput;
     private final String binOutput;
@@ -75,7 +76,12 @@ public class Launcher {
     private final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     public Launcher(String[] sourcePath, String sourceOutput, String binOutput, String classpath) {
+        this(sourcePath, sourceOutput, binOutput, classpath, 7);
+    }
+
+    public Launcher(String[] sourcePath, String sourceOutput, String binOutput, String classpath, int complianceLevel) {
         this.sourcePath = sourcePath;
+        this.complianceLevel = complianceLevel;
         if(!File.pathSeparator.equals(classpath.charAt(classpath.length() - 1) + "")) {
             classpath = classpath + File.pathSeparator;
         }
@@ -83,6 +89,7 @@ public class Launcher {
         this.classpath = classpath + System.getProperty("java.class.path");
         this.sourceOutput = sourceOutput;
         this.binOutput = binOutput;
+        this.complianceLevel = complianceLevel;
         this.compiler = init();
         spoon.setSourceOutputDirectory(sourceOutput);
         spoon.setBinaryOutputDirectory(binOutput);
@@ -197,7 +204,7 @@ public class Launcher {
         spoon.getEnvironment().setAutoImports(true);
         spoon.getEnvironment().setShouldCompile(false);
         spoon.getEnvironment().setCommentEnabled(false);
-        spoon.getEnvironment().setComplianceLevel(7);
+        spoon.getEnvironment().setComplianceLevel(complianceLevel);
         spoon.getEnvironment().setLevel("OFF");
         spoon.buildModel();
         copyResources();
