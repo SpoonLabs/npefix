@@ -20,9 +20,28 @@ Bibtex Entry:
 
 ## Getting Started
 
-### Run the tests
+How to automatically repair your NullPointerException?
+```
+git clone https://github.com/Spirals-Team/npefix-maven
+cd npefix-maven
+mvn install
+cd /somewhere/my-project-with-an-NPE
+
+# check there is a NullPointerException
+mvn test 
+
+# look for patches
+mvn fr.inria.spirals:npefix-maven:1.0-SNAPSHOT:npefix
+
+# the patches are in target
+cat target/npefix/patches.json
+```
+
+## Run the tests
 
 ```Bash
+git clone https://github.com/Spirals-Team/npefix
+cd npefix
 mvn test
 ```
 
