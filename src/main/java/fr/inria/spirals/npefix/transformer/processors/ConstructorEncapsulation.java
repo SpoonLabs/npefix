@@ -3,15 +3,7 @@ package fr.inria.spirals.npefix.transformer.processors;
 import fr.inria.spirals.npefix.resi.exception.ForceReturn;
 import fr.inria.spirals.npefix.transformer.utils.IConstants;
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.CtBlock;
-import spoon.reflect.code.CtCatchVariable;
-import spoon.reflect.code.CtConstructorCall;
-import spoon.reflect.code.CtExpression;
-import spoon.reflect.code.CtInvocation;
-import spoon.reflect.code.CtLiteral;
-import spoon.reflect.code.CtLocalVariable;
-import spoon.reflect.code.CtStatement;
-import spoon.reflect.code.CtTry;
+import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
@@ -96,7 +88,7 @@ public class ConstructorEncapsulation extends AbstractProcessor<CtConstructor> {
 		CtCatchVariable parameter = getFactory().Code().createCatchVariable(getFactory().Type().createReference(ForceReturn.class), "_bcornu_return_t");
 		parameter.setPosition(methodVar.getPosition());
 
-		CtVariableAccessImpl methodAccess = new CtVariableReadImpl();
+		CtVariableAccess methodAccess = getFactory().createVariableRead();
 		methodAccess.setVariable(methodVar.getReference());
 
 		CtExecutableReference executableRef = getFactory().Core().createExecutableReference();

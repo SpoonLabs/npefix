@@ -118,7 +118,7 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		localCatch.setParameter(parameter);
 		localCatch.setBody(getFactory().Core().createBlock());
 
-		CtVariableAccessImpl methodAccess = new CtVariableReadImpl();
+		CtVariableAccess methodAccess = getFactory().createVariableRead();
 		methodAccess.setVariable(methodVar.getReference());
 		
 		CtReturn ret = getFactory().Core().createReturn();
