@@ -19,6 +19,7 @@ import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtFieldWrite;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLambda;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtLoop;
@@ -89,6 +90,9 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 
 		if(element.getParent() instanceof CtBinaryOperator &&
 				element.getParent(CtReturn.class) != null ) {
+			return false;
+		}
+		if(element.getParent(CtLambda.class) != null) {
 			return false;
 		}
 		if (element.getParent(CtField.class) != null) {

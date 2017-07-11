@@ -15,6 +15,7 @@ import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strat4;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
+import java.lang.reflect.Array;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -77,7 +78,7 @@ public class CallChecker {
 		}
 	}
 
-	private static <T> List<Decision<T>> getSearchSpace(Strategy.ACTION action, Class clazz, Location location) {
+	private static <T> List<Decision<T>> getSearchSpace(Strategy.ACTION action, Object value, Class clazz, Location location) {
 		List<Decision<T>> output = new ArrayList<>();
 		List<Strategy> strategies = null;
 		try {
@@ -90,7 +91,7 @@ public class CallChecker {
 		for (int i = 0; i < strategies.size(); i++) {
 			Strategy strategy = strategies.get(i);
 			try {
-				output.addAll(strategy.getSearchSpace(clazz, location));
+				output.addAll(strategy.getSearchSpace(value, clazz, location));
 			} catch (Exception e) {
 				e.printStackTrace();
 				continue;
@@ -166,7 +167,7 @@ public class CallChecker {
 				searchSpace.add(decision);
 			}
 		} else {
-			searchSpace = getSearchSpace(action, clazz, location);
+			searchSpace = getSearchSpace(action, o, clazz, location);
 			cache.put(location, new ArrayList<Decision>(searchSpace));
 		}
 
@@ -250,6 +251,104 @@ public class CallChecker {
 		}
 	}
 
+	public static <T> T arrayAccess(Object array, int index, Class<T> type, int line, int sourceStart, int sourceEnd) {
+		Location location = getLocation(line, sourceStart, sourceEnd);
+		System.out.println(location);
+		int size = Array.getLength(array);
+		if (index >= 0 && size > index) {
+			return (T) Array.get(array, index);
+		}
+
+		Lapse currentLapse;
+		try {
+			currentLapse = getCurrentLapse();
+			if (currentLapse == null) {
+				return (T) Array.get(array, index);
+			}
+			if (!currentLapse.equals(lastLapse)) {
+				decisions.clear();
+				enable();
+			}
+			lastLapse = currentLapse;
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			return (T) Array.get(array, index);
+		}
+		if(decisions.containsKey(location)) {
+			Decision decision = decisions.get(location);
+			decision.increaseNbUse();
+			decision.setUsed(true);
+			enable();
+			try {
+				currentLapse.addApplication(decision);
+				strategySelector.updateCurrentLapse(currentLapse);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if(decision.getStrategy() instanceof Strat4) {
+				throw new ForceReturn(decision);
+			}
+			return (T) decision.getValue();
+		}
+		if (!isEnable()) {
+			return (T) Array.get(array, index);
+		}
+		if (!Config.CONFIG.isMultiPoints()) {
+			Collection<Decision> usedDecisions = decisions.values();
+			for (Iterator<Decision> iterator = usedDecisions.iterator(); iterator.hasNext(); ) {
+				Decision decision = iterator.next();
+				if (decision.isUsed()) {
+					return (T) Array.get(array, index);
+				}
+			}
+		}
+
+		List<Decision<T>> searchSpace = new ArrayList<>();
+		if(false && cache.containsKey(location) && !Config.CONFIG.getServerName().equals("Regression")) {
+			List<Decision> decisions = cache.get(location);
+			for (int i = 0; i < decisions.size(); i++) {
+				Decision<T> decision =  decisions.get(i);
+				searchSpace.add(decision);
+			}
+		} else {
+			searchSpace = getSearchSpace(Strategy.ACTION.arrayAccess, array, type, location);
+			cache.put(location, new ArrayList<Decision>(searchSpace));
+		}
+
+		if(searchSpace.isEmpty()) {
+			return (T) Array.get(array, index);
+		}
+
+		Decision<?> decision = getDecision(searchSpace);
+
+		try {
+			currentLapse.addDecision(decision);
+			strategySelector.updateCurrentLapse(currentLapse);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		decisions.put(location, decision);
+
+		if(!decision.getStrategy().isCompatibleAction(Strategy.ACTION.arrayAccess)) {
+			disable();
+			return (T) Array.get(array, index);
+		}
+		try {
+			currentLapse.addApplication(decision);
+			strategySelector.updateCurrentLapse(currentLapse);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		decision.increaseNbUse();
+		decision.setUsed(true);
+
+		if(decision.getStrategy() instanceof Strat4) {
+			throw new ForceReturn(decision);
+		}
+
+		return (T) decision.getValue();
+	}
 	/*public static <T> T returned(Class clazz) {
 		Strategy strat = currentLaps.getMainDecision();
 		if(strat == null) {

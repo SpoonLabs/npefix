@@ -9,6 +9,7 @@ import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLambda;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtLoop;
 import spoon.reflect.code.CtReturn;
@@ -50,6 +51,9 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
             if(((CtInvocation) parent).getExecutable().getSimpleName().equals("<init>")) {
                 return false;
             }
+        }
+        if(candidate.getParent(CtLambda.class) != null) {
+            return false;
         }
         return candidate.getParent() instanceof CtStatement ||true;
     }

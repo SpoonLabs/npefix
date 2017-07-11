@@ -36,7 +36,8 @@ public class Strat4 extends AbstractStrategy {
 	}
 
 	@Override
-	public <T> List<Decision<T>> getSearchSpace(Class<T> clazz,
+	public <T> List<Decision<T>> getSearchSpace(Object value,
+			Class<T> clazz,
 			Location location) {
 		clazz = CallChecker.getCurrentMethodContext().getMethodType();
 

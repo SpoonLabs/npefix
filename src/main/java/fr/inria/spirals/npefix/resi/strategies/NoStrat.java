@@ -14,7 +14,8 @@ public class NoStrat extends AbstractStrategy {
 	}
 
 	@Override
-	public <T> List<Decision<T>> getSearchSpace(Class<T> clazz,
+	public <T> List<Decision<T>> getSearchSpace(Object value,
+			Class<T> clazz,
 			Location location) {
 		return Collections.EMPTY_LIST;
 	}

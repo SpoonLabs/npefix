@@ -114,6 +114,7 @@ public class Launcher {
         p.addProcessor(new MethodEncapsulation());
         p.addProcessor(new ConstructorEncapsulation());
         p.addProcessor(new VariableFor());
+        //p.addProcessor(new ArrayRead());
 
         logger.debug("Start code instrumentation");
 
@@ -179,6 +180,7 @@ public class Launcher {
             String packageDir = resourceParentPath.substring(directory.getPath().length());
             packageDir = packageDir.replace("/java", "").replace("/resources", "");
             String targetDirectory = this.binOutput + packageDir;
+            new File(packageDir).mkdirs();
 
             try {
                 FileUtils.copyFileToDirectory((File) resource, new File(targetDirectory));
@@ -237,7 +239,11 @@ public class Launcher {
             String className = split[0];
 
             String[] sourceClasspath = spoon.getModelBuilder().getSourceClasspath();
-            final URLClassLoader urlClassLoader = getUrlClassLoader(sourceClasspath);
+            String[] sourceClasspath_temp = new String[sourceClasspath.length + 1];
+            sourceClasspath_temp[0] = spoon.getModelBuilder().getBinaryOutputDirectory().getAbsolutePath();
+            System.arraycopy(sourceClasspath, 0, sourceClasspath_temp, 1, sourceClasspath.length);
+
+            final URLClassLoader urlClassLoader = getUrlClassLoader(sourceClasspath_temp);
 
             CallChecker.currentClassLoader = urlClassLoader;
 

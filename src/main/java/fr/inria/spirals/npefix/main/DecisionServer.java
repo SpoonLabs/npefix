@@ -1,7 +1,7 @@
 package fr.inria.spirals.npefix.main;
 
 import fr.inria.spirals.npefix.config.Config;
-import fr.inria.spirals.npefix.resi.selector.GreedySelector;
+import fr.inria.spirals.npefix.resi.selector.ExplorerSelector;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 
 import java.rmi.RemoteException;
@@ -16,7 +16,7 @@ public class DecisionServer {
 	public static void main(String[] args) {
 		try {
 
-			Selector selector = new GreedySelector();
+			Selector selector = new ExplorerSelector();
 			System.out.println("Start selector " + selector);
 
 			startRMI(selector);

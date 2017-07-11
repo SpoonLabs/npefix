@@ -3,12 +3,10 @@ package fr.inria.spirals.npefix.resi.strategies;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Location;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
+import fr.inria.spirals.npefix.resi.context.instance.PrimitiveInstance;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Replace null element by existing one
@@ -16,7 +14,7 @@ import java.util.Set;
  * @author bcornu
  *
  */
-public abstract class Strat1 extends AbstractStrategy {
+public class ArrayReadReturnNull extends AbstractStrategy {
 
 	@Override
 	public boolean collectData() {
@@ -27,16 +25,13 @@ public abstract class Strat1 extends AbstractStrategy {
 	public <T> List<Decision<T>> getSearchSpace(Object value,
 			Class<T> clazz, Location location) {
 		List<Decision<T>> output = new ArrayList<>();
-		Map<String, Instance<T>> instances = obtain(clazz);
-		Set<String> strings = instances.keySet();
-		for (Iterator<String> iterator = strings.iterator(); iterator
-				.hasNext(); ) {
-			String key = iterator.next();
-			Decision<T> decision = new Decision<>(this, location, instances.get(key), clazz);
-			output.add(decision);
-		}
+		Instance instance = new PrimitiveInstance(null);
+		output.add(new Decision<>(this, location, instance, clazz));
 		return output;
 	}
 
-
+	@Override
+	public boolean isCompatibleAction(ACTION action) {
+		return action.equals(ACTION.arrayAccess);
+	}
 }

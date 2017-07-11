@@ -6,6 +6,7 @@ import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFor;
 import spoon.reflect.code.CtForEach;
 import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLambda;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtNewClass;
@@ -42,6 +43,9 @@ public class VarRetrieveInit extends AbstractProcessor<CtLocalVariable>  {
 			return false;
 		}
 		if (defaultExpression == null) {
+			return false;
+		}
+		if(element.getParent(CtLambda.class) != null) {
 			return false;
 		}
 		if (defaultExpression.toString().contains("CallChecker.init")) {

@@ -7,6 +7,7 @@ import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLambda;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtLoop;
 import spoon.reflect.code.CtReturn;
@@ -35,6 +36,9 @@ public class VarRetrieveAssign extends AbstractProcessor<CtAssignment>  {
 			return false;
 		}
 		if (element.getAssignment().toString().contains(CallChecker.class.getSimpleName() + ".beforeCalled")) {
+			return false;
+		}
+		if(element.getParent(CtLambda.class) != null) {
 			return false;
 		}
 		return true;

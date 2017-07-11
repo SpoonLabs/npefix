@@ -5,6 +5,7 @@ import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtForEach;
 import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLambda;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtNewClass;
 import spoon.reflect.code.CtVariableRead;
@@ -42,6 +43,9 @@ public class ForceNullInit extends AbstractProcessor<CtLocalVariable> {
 				|| element.getParent() instanceof CtForEach)
 			return false;
 		if (element.hasModifier(ModifierKind.FINAL) && variableInNewClass(element)){
+			return false;
+		}
+		if(element.getParent(CtLambda.class) != null) {
 			return false;
 		}
 		return super.isToBeProcessed(element);

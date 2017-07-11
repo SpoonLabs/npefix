@@ -6,6 +6,7 @@ import spoon.reflect.code.CtCatch;
 import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLambda;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtStatement;
@@ -30,6 +31,14 @@ public class TryRegister extends AbstractProcessor<CtTry> {
 	@Override
 	public void init() {
 		this.start = new Date();
+	}
+
+	@Override
+	public boolean isToBeProcessed(CtTry element) {
+		if(element.getParent(CtLambda.class) != null) {
+			return false;
+		}
+		return super.isToBeProcessed(element);
 	}
 
 	@Override

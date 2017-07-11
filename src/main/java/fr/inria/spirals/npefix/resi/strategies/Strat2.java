@@ -16,7 +16,8 @@ import java.util.List;
 public abstract class Strat2 extends AbstractStrategy {
 
 	@Override
-	public <T> List<Decision<T>> getSearchSpace(Class<T> clazz,
+	public <T> List<Decision<T>> getSearchSpace(Object value,
+			Class<T> clazz,
 			Location location) {
 		List<Decision<T>> output = new ArrayList<>();
 		List<Instance<T>> instances = initNotNull(clazz);

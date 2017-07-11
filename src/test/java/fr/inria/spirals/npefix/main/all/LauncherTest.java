@@ -1,6 +1,7 @@
 package fr.inria.spirals.npefix.main.all;
 
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
+import fr.inria.spirals.npefix.resi.strategies.ArrayReadReturnNull;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.ReturnType;
 import fr.inria.spirals.npefix.resi.strategies.Strat1A;
@@ -75,5 +76,24 @@ public class LauncherTest {
 
         results = launcher.runStrategy(new Strat4(ReturnType.VOID));
         Assert.assertEquals("Strat4 void failing", 5, results.getFailureCount());
+    }
+
+    @Test
+    public void fixArrayAccess() throws Exception {
+        URL sourcePath = getClass().getResource("/foo/src/main/java/");
+        URL testPath = getClass().getResource("/foo/src/test/java/");
+        URL rootPath = getClass().getResource("/");
+        String classpath = System.getProperty("java.class.path");
+
+        Launcher launcher = new Launcher(
+                new String[]{sourcePath.getFile(),
+                        testPath.getFile()},
+                rootPath.getFile() + "/../instrumented",
+                rootPath.getFile() + "",
+                classpath);
+
+        launcher.instrument();
+
+        NPEOutput results = launcher.runStrategy(new ArrayReadReturnNull());
     }
 }

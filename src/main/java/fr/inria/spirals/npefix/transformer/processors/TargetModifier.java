@@ -8,6 +8,7 @@ import spoon.reflect.code.CtCatchVariable;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLambda;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtLoop;
 import spoon.reflect.code.CtStatement;
@@ -66,6 +67,9 @@ public class TargetModifier extends AbstractProcessor<CtTargetedExpression>{
 			return false;
 		}
 		if (target.getType() instanceof CtTypeParameterReference) {
+			return false;
+		}
+		if(element.getParent(CtLambda.class) != null) {
 			return false;
 		}
 		if(target instanceof CtVariableRead) {

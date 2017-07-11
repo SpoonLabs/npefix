@@ -14,14 +14,16 @@ public interface Strategy extends Comparable<Strategy>, Serializable{
 		//
 		isCalled,
 		// skipLine
-		beforeDeref
+		beforeDeref,
+		//
+		arrayAccess
 	}
 
 	boolean isCompatibleAction(ACTION action);
 
 	boolean collectData();
 
-	<T> List<Decision<T>> getSearchSpace(Class<T> clazz, Location location);
+	<T> List<Decision<T>> getSearchSpace(Object value, Class<T> clazz, Location location);
 
 	String getPatch (Decision decision);
 

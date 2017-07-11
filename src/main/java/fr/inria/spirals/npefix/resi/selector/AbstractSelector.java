@@ -52,7 +52,7 @@ public abstract class AbstractSelector implements Selector {
 
 	@Override
 	public Lapse updateCurrentLapse(Lapse updatedLapse) {
-		if (currentLapse.equals(updatedLapse)) {
+		if (currentLapse == null || currentLapse.equals(updatedLapse)) {
 			currentLapse = updatedLapse;
 		}
 		return currentLapse;
