@@ -47,35 +47,35 @@ public class LauncherTest {
         launcher.instrument();
 
         NPEOutput results = launcher.runStrategy(new NoStrat());
-        Assert.assertEquals("Nb test", 7, results.size());
-        Assert.assertEquals("NoStrat failing", 7, results.getFailureCount());
+        Assert.assertEquals("Nb test", 10, results.size());
+        Assert.assertEquals("NoStrat failing", 10, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat1A());
-        Assert.assertEquals("Strat1A failing", 6, results.getFailureCount());
+        Assert.assertEquals("Strat1A failing", 9, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat1B());
-        Assert.assertEquals("Strat1B failing", 6, results.getFailureCount());
+        Assert.assertEquals("Strat1B failing", 9, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat2A());
-        Assert.assertEquals("Strat2A failing", 4, results.getFailureCount());
+        Assert.assertEquals("Strat2A failing", 7, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat2B());
-        Assert.assertEquals("Strat2B failing", 4, results.getFailureCount());
+        Assert.assertEquals("Strat2B failing", 7, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat3());
-        Assert.assertEquals("Strat3 failing", 2, results.getFailureCount());
+        Assert.assertEquals("Strat3 failing", 5, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat4(ReturnType.NULL));
-        Assert.assertEquals("Strat4 Null failing", 6, results.getFailureCount());
+        Assert.assertEquals("Strat4 Null failing", 9, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat4(ReturnType.VAR));
-        Assert.assertEquals("Strat4 var failing", 6, results.getFailureCount());
+        Assert.assertEquals("Strat4 var failing", 9, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat4(ReturnType.NEW));
-        Assert.assertEquals("Strat4 new failing", 5, results.getFailureCount());
+        Assert.assertEquals("Strat4 new failing", 8, results.getFailureCount());
 
         results = launcher.runStrategy(new Strat4(ReturnType.VOID));
-        Assert.assertEquals("Strat4 void failing", 5, results.getFailureCount());
+        Assert.assertEquals("Strat4 void failing", 8, results.getFailureCount());
     }
 
     @Test
