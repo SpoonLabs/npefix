@@ -99,9 +99,11 @@ public class TryCatchRepairStrategy implements RepairStrategy {
 	public static Decision<Object> getDecision(Class clazz, String className, int line, int sourceStart, int sourceEnd) {
 		try {
 			final Strategy strategy = selector.getStrategies().get(0);
-			final Location location = new Location("", 0, 0, 0);
+			final Location location = new Location(className, line, sourceStart, sourceEnd);
 			final List<Decision<Object>> searchSpace = strategy.getSearchSpace(null, clazz, location);//TODO
-			return selector.select(searchSpace);
+			final Decision<Object> decision = selector.select(searchSpace);
+			selector.getCurrentLapse().addApplication(decision);
+			return decision;
 		} catch (RemoteException e) {
 			throw new RuntimeException(e);
 		}
