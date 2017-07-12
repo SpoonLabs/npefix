@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria.spirals</groupId>
     <artifactId>npefix</artifactId>
-    <version>0.4</version>
+    <version>0.5-SNAPTSHOT</version>
     <name>npefix</name>
 
     <properties>
