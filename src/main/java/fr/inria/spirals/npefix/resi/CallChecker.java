@@ -10,10 +10,7 @@ import fr.inria.spirals.npefix.resi.exception.ForceReturn;
 import fr.inria.spirals.npefix.resi.selector.DomSelector;
 import fr.inria.spirals.npefix.resi.selector.GreedySelector;
 import fr.inria.spirals.npefix.resi.selector.Selector;
-import fr.inria.spirals.npefix.resi.strategies.AbstractStrategy;
-import fr.inria.spirals.npefix.resi.strategies.NoStrat;
-import fr.inria.spirals.npefix.resi.strategies.Strat4;
-import fr.inria.spirals.npefix.resi.strategies.Strategy;
+import fr.inria.spirals.npefix.resi.strategies.*;
 
 import java.lang.reflect.Array;
 import java.rmi.RemoteException;
@@ -141,9 +138,11 @@ public class CallChecker {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+
 			if(decision.getStrategy() instanceof Strat4) {
 				throw new ForceReturn(decision);
 			}
+
 			return (T) decision.getValue();
 		}
 		if (!isEnable()) {
