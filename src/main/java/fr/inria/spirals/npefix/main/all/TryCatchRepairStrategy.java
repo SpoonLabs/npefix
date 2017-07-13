@@ -12,7 +12,6 @@ import fr.inria.spirals.npefix.resi.strategies.Strategy;
 import fr.inria.spirals.npefix.transformer.processors.*;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
-import spoon.processing.AbstractProcessor;
 import utils.sacha.runner.main.TestRunner;
 
 import java.rmi.RemoteException;
@@ -26,7 +25,7 @@ import java.util.List;
  * on 11/07/17
  */
 @SuppressWarnings("all")
-public class TryCatchRepairStrategy implements RepairStrategy {
+public class TryCatchRepairStrategy extends DefaultRepairStrategy {
 
 	public static int targetLine;
 
@@ -35,8 +34,6 @@ public class TryCatchRepairStrategy implements RepairStrategy {
 	}
 
 	private static Selector selector;
-
-	private List<AbstractProcessor> processors;
 
 	public TryCatchRepairStrategy(int targetLine) {
 		TryCatchRepairStrategy.targetLine = targetLine;
@@ -50,12 +47,6 @@ public class TryCatchRepairStrategy implements RepairStrategy {
 		processors.add(new TryCatchRepair());
 //		processors.add(new ConstructorEncapsulation()); //TODO
 		processors.add(new VariableFor());//
-	}
-
-
-	@Override
-	public List<AbstractProcessor> getListOfProcessors() {
-		return this.processors;
 	}
 
 	@Override

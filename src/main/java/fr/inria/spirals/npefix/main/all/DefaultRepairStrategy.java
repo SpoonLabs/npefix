@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class DefaultRepairStrategy implements RepairStrategy {
 
-	private List<AbstractProcessor> processors;
+	protected List<AbstractProcessor> processors;
 
 	public DefaultRepairStrategy() {
 		processors = new ArrayList<>();
