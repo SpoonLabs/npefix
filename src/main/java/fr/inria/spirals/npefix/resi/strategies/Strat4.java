@@ -19,7 +19,7 @@ import java.util.Set;
 public class Strat4 extends AbstractStrategy {
 
 	private ReturnType returnType;
-	
+
 	public Strat4(ReturnType returnType) {
 		this.returnType = returnType;
 	}

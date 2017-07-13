@@ -7,31 +7,17 @@ import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
 import fr.inria.spirals.npefix.resi.oracle.ExceptionOracle;
-import fr.inria.spirals.npefix.resi.oracle.TestOracle;
 import fr.inria.spirals.npefix.resi.selector.DomSelector;
 import fr.inria.spirals.npefix.resi.selector.RandomSelector;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
-import fr.inria.spirals.npefix.transformer.processors.AddImplicitCastChecker;
-import fr.inria.spirals.npefix.transformer.processors.BeforeDerefAdder;
-import fr.inria.spirals.npefix.transformer.processors.CheckNotNull;
-import fr.inria.spirals.npefix.transformer.processors.ConstructorEncapsulation;
-import fr.inria.spirals.npefix.transformer.processors.ForceNullInit;
-import fr.inria.spirals.npefix.transformer.processors.MethodEncapsulation;
-import fr.inria.spirals.npefix.transformer.processors.TargetModifier;
-import fr.inria.spirals.npefix.transformer.processors.TernarySplitter;
-import fr.inria.spirals.npefix.transformer.processors.TryRegister;
-import fr.inria.spirals.npefix.transformer.processors.VarRetrieveAssign;
-import fr.inria.spirals.npefix.transformer.processors.VarRetrieveInit;
-import fr.inria.spirals.npefix.transformer.processors.VariableFor;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.Request;
-import org.junit.runner.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.SpoonException;
@@ -43,7 +29,6 @@ import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.AnnotationFilter;
 import spoon.support.QueueProcessingManager;
 import utils.TestClassesFinder;
-import utils.sacha.runner.main.TestRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +38,6 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,13 +57,20 @@ public class Launcher {
     private final SpoonModelBuilder compiler;
     private spoon.Launcher spoon;
 
+    private RepairStrategy repairStrategy;
+
     private final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     public Launcher(String[] sourcePath, String sourceOutput, String binOutput, String classpath) {
-        this(sourcePath, sourceOutput, binOutput, classpath, 7);
+        this(sourcePath, sourceOutput, binOutput, classpath, 7, new DefaultRepairStrategy());
     }
 
-    public Launcher(String[] sourcePath, String sourceOutput, String binOutput, String classpath, int complianceLevel) {
+    public Launcher(String[] sourcePath, String sourceOutput, String binOutput, String classpath, RepairStrategy repairStrategy) {
+        this(sourcePath, sourceOutput, binOutput, classpath, 7, repairStrategy);
+    }
+
+    public Launcher(String[] sourcePath, String sourceOutput, String binOutput, String classpath, int complianceLevel,
+        RepairStrategy repairStrategy) {
         this.sourcePath = sourcePath;
         this.complianceLevel = complianceLevel;
         if(!File.pathSeparator.equals(classpath.charAt(classpath.length() - 1) + "")) {
@@ -93,6 +84,8 @@ public class Launcher {
         this.compiler = init();
         spoon.setSourceOutputDirectory(sourceOutput);
         spoon.setBinaryOutputDirectory(binOutput);
+
+        this.repairStrategy = repairStrategy;
     }
 
     /**
@@ -101,20 +94,9 @@ public class Launcher {
     public void instrument() {
         ProcessingManager p = new QueueProcessingManager(spoon.getFactory());
 
-        p.addProcessor(new TernarySplitter());
-        //p.addProcessor(new IfSplitter());
-        p.addProcessor(new CheckNotNull());
-        p.addProcessor(new ForceNullInit());
-        p.addProcessor(new AddImplicitCastChecker());
-        p.addProcessor(new BeforeDerefAdder());
-        p.addProcessor(new TargetModifier());
-        p.addProcessor(new TryRegister());
-        p.addProcessor(new VarRetrieveAssign());
-        p.addProcessor(new VarRetrieveInit());
-        p.addProcessor(new MethodEncapsulation());
-        p.addProcessor(new ConstructorEncapsulation());
-        p.addProcessor(new VariableFor());
-        //p.addProcessor(new ArrayRead());
+        for (int i = 0; i < this.repairStrategy.getListOfProcessors().size(); i++) {
+            p.addProcessor(this.repairStrategy.getListOfProcessors().get(i));
+        }
 
         logger.debug("Start code instrumentation");
 
@@ -224,95 +206,12 @@ public class Launcher {
     }
 
     public NPEOutput run(Selector selector, List<String> methodTests) {
-        CallChecker.enable();
-        CallChecker.strategySelector = selector;
-
-        NPEOutput output = new NPEOutput();
-
-        Lapse lapse = new Lapse(selector);
-
-        final TestRunner testRunner = new TestRunner();
-        for (int i = 0; i < methodTests.size(); i++) {
-            String method = methodTests.get(i);
-            String[] split = method.split("#");
-            method = split[1];
-            String className = split[0];
-
-            String[] sourceClasspath = spoon.getModelBuilder().getSourceClasspath();
-            String[] sourceClasspath_temp = new String[sourceClasspath.length + 1];
-            sourceClasspath_temp[0] = spoon.getModelBuilder().getBinaryOutputDirectory().getAbsolutePath();
-            System.arraycopy(sourceClasspath, 0, sourceClasspath_temp, 1, sourceClasspath.length);
-
-            final URLClassLoader urlClassLoader = getUrlClassLoader(sourceClasspath_temp);
-
-            CallChecker.currentClassLoader = urlClassLoader;
-
-            final Request request;
-            try {
-                request = Request.method(urlClassLoader.loadClass(className), method);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                continue;
-            }
-
-            lapse.setTestClassName(className);
-            lapse.setTestName(method);
-            try {
-                selector.startLaps(lapse);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-            Result result = testRunner.run(request);
-
-            lapse.setOracle(new TestOracle(result));
-
-            System.out.println(lapse);
-            if(result.getRunCount() > 0) {
-                output.add(lapse);
-                try {
-                    if (selector.restartTest(lapse)) {
-						/*Map<Location, Integer> currentIndex = new HashMap<>(laps.getCurrentIndex());
-						Map<Location, Map<String, Object>> possibleVariables = laps
-								.getPossibleVariables();
-						Map<Location, List<Object>> possibleValues = laps
-								.getPossibleValues();
-
-						Set<Location> locations = currentIndex.keySet();
-						for (Iterator<Location> iterator = locations
-								.iterator(); iterator.hasNext(); ) {
-							Location location = iterator.next();
-
-							if(possibleVariables != null
-									&& possibleVariables.containsKey(location)
-									&& possibleVariables.get(location).size() > currentIndex.get(location) + 1) {
-								currentIndex.put(location, currentIndex.get(location) + 1);
-							} else if ( possibleValues != null
-									&& possibleValues.containsKey(location)
-									&& possibleValues.get(location).size() > currentIndex.get(location) + 1) {
-								currentIndex.put(location, currentIndex.get(location) + 1);
-							}
-						}*/
-
-                        lapse = new Lapse(selector);
-						/*laps.setCurrentIndex(currentIndex);
-						laps.setPossibleValues(possibleValues);
-						laps.setPossibleVariables(possibleVariables);
-						i--;*/
-                    } else {
-                        lapse = new Lapse(selector);
-                    }
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                lapse = new Lapse(selector);
-            }
-            CallChecker.enable();
-            CallChecker.cache.clear();
-            CallChecker.getDecisions().clear();
-        }
-        Collections.sort(output);
-        return output;
+        String[] sourceClasspath = spoon.getModelBuilder().getSourceClasspath();
+        String[] sourceClasspath_temp = new String[sourceClasspath.length + 1];
+        sourceClasspath_temp[0] = spoon.getModelBuilder().getBinaryOutputDirectory().getAbsolutePath();
+        System.arraycopy(sourceClasspath, 0, sourceClasspath_temp, 1, sourceClasspath.length);
+        CallChecker.currentClassLoader = getUrlClassLoader(sourceClasspath_temp);
+        return this.repairStrategy.run(selector, methodTests);
     }
 
     private static void inheritIO(final InputStream src, final PrintStream dest) {
@@ -400,7 +299,7 @@ public class Launcher {
         String[] testsString = new TestClassesFinder().findIn(urlClassLoader, false);
         Class[] tests = filterTest(spoon, urlClassLoader, testsString);
 
-        List<String> methodTests = new ArrayList();
+        List<String> methodTests = new ArrayList<>();
         for (int i = 0; i < tests.length; i++) {
             Class test = tests[i];
             Method[] methods = test.getDeclaredMethods();

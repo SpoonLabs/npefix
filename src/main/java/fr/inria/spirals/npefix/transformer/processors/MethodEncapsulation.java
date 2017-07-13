@@ -33,8 +33,6 @@ import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.code.CtVariableAccessImpl;
-import spoon.support.reflect.code.CtVariableReadImpl;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,8 +48,8 @@ import java.util.List;
 @SuppressWarnings("all")
 public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 
-	private static int methodNumber = 0;
-	private Date start;
+	protected static int methodNumber = 0;
+	protected Date start;
 
 	public static int getCpt(){
 		return methodNumber;
@@ -105,8 +103,8 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		
 		ctMethode.getBody().setStatements(stats);
 	}
-	
-	private CtTry createTry(CtLocalVariable methodVar, CtTypeReference tmpref){
+
+	protected CtTry createTry(CtLocalVariable methodVar, CtTypeReference tmpref){
 		if((tmpref instanceof CtTypeParameterReference)) {
 			return null;
 		}
@@ -174,7 +172,7 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		return e;
 	}
 	
-	private CtLocalVariable getNewMethodcontext(CtMethod ctMethod) {
+	protected CtLocalVariable getNewMethodcontext(CtMethod ctMethod) {
 		CtTypeReference<?> methodContextRef = getFactory().Type()
 				.createReference(IConstants.Class.METHODE_CONTEXT);
 
@@ -201,7 +199,7 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 				ctx);
 	}
 
-	private void collectParams(CtMethod element) {
+	protected void collectParams(CtMethod element) {
 		List<CtParameter> parameters = element.getParameters();
 		for (int i = 0; i < parameters.size(); i++) {
 			CtParameter ctParameter = parameters.get(i);
@@ -230,7 +228,7 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		}
 	}
 
-	private void collectFields(CtMethod element) {
+	protected void collectFields(CtMethod element) {
 		CtType<?> declaringType = element.getDeclaringType();
 		if (declaringType instanceof CtEnum) {
 			return;
@@ -287,7 +285,7 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		}
 	}
 
-	private void collectThis(CtMethod element) {
+	protected void collectThis(CtMethod element) {
 		if(element.hasModifier(ModifierKind.STATIC)) {
 			return;
 		}
