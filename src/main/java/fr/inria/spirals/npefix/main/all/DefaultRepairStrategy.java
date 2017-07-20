@@ -91,6 +91,11 @@ public class DefaultRepairStrategy implements RepairStrategy {
 			System.out.println(lapse);
 			if (result.getRunCount() > 0) {
 				output.add(lapse);
+				try {
+					selector.restartTest(lapse);
+				} catch (RemoteException e) {
+					throw new RuntimeException(e);
+				}
 			}
 			lapse = new Lapse(selector);
 			CallChecker.enable();
