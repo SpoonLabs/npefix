@@ -3,6 +3,7 @@ package fr.inria.spirals.npefix.main.all;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
+import fr.inria.spirals.npefix.resi.exception.NoMoreDecision;
 import fr.inria.spirals.npefix.resi.oracle.TestOracle;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 import fr.inria.spirals.npefix.transformer.processors.AddImplicitCastChecker;
@@ -87,9 +88,12 @@ public class DefaultRepairStrategy implements RepairStrategy {
 			}
 			Result result = testRunner.run(request);
 
-			lapse.setOracle(new TestOracle(result));
-			System.out.println(lapse);
+			TestOracle oracle = new TestOracle(result);
+			lapse.setOracle(oracle);
 			if (result.getRunCount() > 0) {
+				if (oracle.isValid() || !oracle.getError().contains(NoMoreDecision.class.getSimpleName())) {
+					System.out.println(lapse);
+				}
 				output.add(lapse);
 				try {
 					selector.restartTest(lapse);

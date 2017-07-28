@@ -7,6 +7,7 @@ import fr.inria.spirals.npefix.resi.context.Location;
 import fr.inria.spirals.npefix.resi.context.MethodContext;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
 import fr.inria.spirals.npefix.resi.exception.ForceReturn;
+import fr.inria.spirals.npefix.resi.exception.NoMoreDecision;
 import fr.inria.spirals.npefix.resi.selector.DomSelector;
 import fr.inria.spirals.npefix.resi.selector.GreedySelector;
 import fr.inria.spirals.npefix.resi.selector.Selector;
@@ -274,7 +275,7 @@ public class CallChecker {
 		}
 
 		if(searchSpace.isEmpty()) {
-			throw throwable;
+			throw new NoMoreDecision();
 		}
 
 		Decision<?> decision = getDecision(searchSpace);

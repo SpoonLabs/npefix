@@ -3,6 +3,7 @@ package fr.inria.spirals.npefix.resi.selector;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.Location;
+import fr.inria.spirals.npefix.resi.exception.NoMoreDecision;
 import fr.inria.spirals.npefix.resi.strategies.NoStrat;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
@@ -104,9 +105,11 @@ public class ExplorerSelector extends AbstractSelector {
 				}
 				otherDecision.remove(decision);
 			}
-			throw new RuntimeException("No more available decision");
+			throw new NoMoreDecision();
 		} catch (Throwable e) {
-			e.printStackTrace();
+			if (!(e instanceof NoMoreDecision)) {
+				e.printStackTrace();
+			}
 			throw  e;
 		}
 	}

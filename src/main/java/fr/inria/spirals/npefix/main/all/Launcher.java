@@ -6,12 +6,12 @@ import fr.inria.spirals.npefix.main.ExecutionClient;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
+import fr.inria.spirals.npefix.resi.exception.NoMoreDecision;
 import fr.inria.spirals.npefix.resi.oracle.ExceptionOracle;
 import fr.inria.spirals.npefix.resi.selector.DomSelector;
 import fr.inria.spirals.npefix.resi.selector.RandomSelector;
 import fr.inria.spirals.npefix.resi.selector.Selector;
 import fr.inria.spirals.npefix.resi.strategies.Strategy;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -41,6 +41,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -193,6 +194,73 @@ public class Launcher {
         spoon.buildModel();
         copyResources();
         return compiler;
+    }
+
+    public NPEOutput run(int nbIteration, Selector selector) {
+        NPEOutput output = new NPEOutput();
+
+        DecisionServer decisionServer = new DecisionServer(selector);
+        decisionServer.startServer();
+        List<String> tests = this.getTests();
+        if(tests.isEmpty()) {
+            throw new RuntimeException("No test found");
+        }
+        Date initEndDate = new Date();
+        int countError = 0;
+        while (output.size() < nbIteration) {
+            if(countError > 5) {
+                break;
+            }
+            try {
+                List<Lapse> result = this.run(selector, tests);
+                if(result.isEmpty()) {
+                    countError++;
+                    continue;
+                }
+                boolean isEnd = true;
+                for (int i = 0; i < result.size() && isEnd; i++) {
+                    Lapse lapse = result.get(i);
+                    if (lapse.getOracle().getError() != null) {
+                        isEnd = isEnd && lapse.getOracle().getError().contains(NoMoreDecision.class.getSimpleName());
+                    } else {
+                        isEnd = false;
+                    }
+                }
+                if (isEnd) {
+                    // no more decision
+                    countError++;
+                    continue;
+                }
+                countError = 0;
+                if(output.size() + result.size() > nbIteration) {
+                    output.addAll(result.subList(0, (nbIteration - output.size())));
+                } else {
+                    output.addAll(result);
+                }
+            } catch (NoMoreDecision e) {
+                countError++;
+                continue;
+            } catch (OutOfMemoryError e) {
+                e.printStackTrace();
+                countError++;
+                continue;
+            } catch (Exception e) {
+                if(e.getCause() instanceof OutOfMemoryError) {
+                    countError++;
+                    continue;
+                }
+                e.printStackTrace();
+                countError++;
+                continue;
+            }
+            System.out.println("Multirun " + output.size() + "/" + nbIteration + " " + ((int)(output.size()/(double)nbIteration * 100)) + "%");
+        }
+        output.setStart(initEndDate);
+        output.setEnd(new Date());
+
+        decisionServer.stopServer();
+
+        return output;
     }
 
     public NPEOutput run() {
