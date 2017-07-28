@@ -78,7 +78,7 @@ public class CallChecker {
 		}
 	}
 
-	private static <T> List<Decision<T>> getSearchSpace(Strategy.ACTION action, Object value, Class clazz, Location location) {
+	private static <T> List<Decision<T>> getSearchSpace(Strategy.ACTION action, Object value, Class clazz, Location location, MethodContext context) {
 		List<Decision<T>> output = new ArrayList<>();
 		List<Strategy> strategies = null;
 		try {
@@ -91,7 +91,7 @@ public class CallChecker {
 		for (int i = 0; i < strategies.size(); i++) {
 			Strategy strategy = strategies.get(i);
 			try {
-				output.addAll(strategy.getSearchSpace(value, clazz, location));
+				output.addAll(strategy.getSearchSpace(value, clazz, location, context));
 			} catch (Exception e) {
 				e.printStackTrace();
 				continue;
@@ -167,7 +167,7 @@ public class CallChecker {
 				searchSpace.add(decision);
 			}
 		} else {
-			searchSpace = getSearchSpace(action, o, clazz, location);
+			searchSpace = getSearchSpace(action, o, clazz, location, getCurrentMethodContext());
 			cache.put(location, new ArrayList<Decision>(searchSpace));
 		}
 
@@ -204,6 +204,98 @@ public class CallChecker {
 		if(decision.getStrategy() instanceof Strat4) {
 			throw new ForceReturn(decision);
 		}
+
+		return (T) decision.getValue();
+	}
+
+
+	public static <T, E extends RuntimeException> T isToCatch(E throwable, Class<T> methodType){
+		Lapse currentLapse;
+		try {
+			currentLapse = getCurrentLapse();
+			if (currentLapse == null) {
+				throw throwable;
+			}
+			if (!currentLapse.equals(lastLapse)) {
+				decisions.clear();
+				enable();
+			}
+			lastLapse = currentLapse;
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			throw throwable;
+		}
+		if(decisions.containsKey(getCurrentMethodContext().getLocation())) {
+			Decision decision = decisions.get(getCurrentMethodContext().getLocation());
+			//System.out.println("Stack size: " + stack.size());
+			//System.out.println("Nb method calls" + MethodContext.idCount);
+			decision.increaseNbUse();
+			decision.setUsed(true);
+			enable();
+			try {
+				currentLapse.addApplication(decision);
+				strategySelector.updateCurrentLapse(currentLapse);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return (T) decision.getValue();
+		}
+
+		if (!isEnable()) {
+			throw throwable;
+		}
+
+
+
+
+		if (!Config.CONFIG.isMultiPoints()) {
+			Collection<Decision> usedDecisions = decisions.values();
+			for (Iterator<Decision> iterator = usedDecisions.iterator(); iterator.hasNext(); ) {
+				Decision decision = iterator.next();
+				if (decision.isUsed()) {
+					throw throwable;
+				}
+			}
+		}
+
+		List<Decision<T>> searchSpace = new ArrayList<>();
+		if(false && cache.containsKey(getCurrentMethodContext().getLocation()) && !Config.CONFIG.getServerName().equals("Regression")) {
+			List<Decision> decisions = cache.get(getCurrentMethodContext().getLocation());
+			for (int i = 0; i < decisions.size(); i++) {
+				Decision<T> decision =  decisions.get(i);
+				searchSpace.add(decision);
+			}
+		} else {
+			for (MethodContext context : stack) {
+				List<Decision<T>> space = getSearchSpace(Strategy.ACTION.tryRepair, null, context.getMethodType(), context.getLocation(), context);
+				searchSpace.addAll(space);
+			}
+			cache.put(getCurrentMethodContext().getLocation(), new ArrayList<Decision>(searchSpace));
+		}
+
+		if(searchSpace.isEmpty()) {
+			throw throwable;
+		}
+
+		Decision<?> decision = getDecision(searchSpace);
+
+		decisions.put(decision.getLocation(), decision);
+
+
+		if (!decision.getLocation().equals(getCurrentMethodContext().getLocation())) {
+			throw throwable;
+		}
+
+		//System.out.println("Stack size: " + stack.size());
+		//System.out.println("Nb method calls: " + MethodContext.idCount);
+		try {
+			currentLapse.addApplication(decision);
+			strategySelector.updateCurrentLapse(currentLapse);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		decision.increaseNbUse();
+		decision.setUsed(true);
 
 		return (T) decision.getValue();
 	}
@@ -311,7 +403,7 @@ public class CallChecker {
 				searchSpace.add(decision);
 			}
 		} else {
-			searchSpace = getSearchSpace(Strategy.ACTION.arrayAccess, array, type, location);
+			searchSpace = getSearchSpace(Strategy.ACTION.arrayAccess, array, type, location, getCurrentMethodContext());
 			cache.put(location, new ArrayList<Decision>(searchSpace));
 		}
 

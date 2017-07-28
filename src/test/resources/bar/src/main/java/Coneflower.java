@@ -2,6 +2,7 @@
 public class Coneflower {
 
 	private String nullString = null;
+	private int i = 0;
 
 	public String methodThrowingNPE() {
 		return nullString.toString();

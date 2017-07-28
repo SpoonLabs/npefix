@@ -1,14 +1,18 @@
 
 package fr.inria.spirals.npefix.main.all;
 
-import fr.inria.spirals.npefix.resi.context.Decision;
-import fr.inria.spirals.npefix.resi.context.Location;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
 import fr.inria.spirals.npefix.resi.selector.Selector;
-import fr.inria.spirals.npefix.resi.strategies.Strategy;
-import fr.inria.spirals.npefix.transformer.processors.*;
+import fr.inria.spirals.npefix.transformer.processors.AddImplicitCastChecker;
+import fr.inria.spirals.npefix.transformer.processors.CheckNotNull;
+import fr.inria.spirals.npefix.transformer.processors.ConstructorTryCatchRepair;
+import fr.inria.spirals.npefix.transformer.processors.ForceNullInit;
+import fr.inria.spirals.npefix.transformer.processors.TernarySplitter;
+import fr.inria.spirals.npefix.transformer.processors.TryCatchRepair;
+import fr.inria.spirals.npefix.transformer.processors.VarRetrieveAssign;
+import fr.inria.spirals.npefix.transformer.processors.VarRetrieveInit;
+import fr.inria.spirals.npefix.transformer.processors.VariableFor;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,17 +23,9 @@ import java.util.List;
  */
 @SuppressWarnings("all")
 public class TryCatchRepairStrategy extends DefaultRepairStrategy {
-
-	public static int targetLine;
-
-	public static int getTargetLine() {
-		return targetLine;
-	}
-
 	private static Selector selector;
 
-	public TryCatchRepairStrategy(int targetLine) {
-		TryCatchRepairStrategy.targetLine = targetLine;
+	public TryCatchRepairStrategy() {
 		processors = new ArrayList<>();
 		processors.add(new TernarySplitter());//
 		processors.add(new CheckNotNull());//
@@ -38,7 +34,7 @@ public class TryCatchRepairStrategy extends DefaultRepairStrategy {
 		processors.add(new VarRetrieveAssign());//
 		processors.add(new VarRetrieveInit());//
 		processors.add(new TryCatchRepair());
-//		processors.add(new ConstructorEncapsulation()); //TODO
+		processors.add(new ConstructorTryCatchRepair());
 		processors.add(new VariableFor());//
 	}
 
@@ -46,18 +42,4 @@ public class TryCatchRepairStrategy extends DefaultRepairStrategy {
 		TryCatchRepairStrategy.selector = selector;
 		return super.run(selector, methodTests);
 	}
-
-	public static Decision<Object> getDecision(Class clazz, String className, int line, int sourceStart, int sourceEnd) {
-		try {
-			final Strategy strategy = selector.getStrategies().get(0);
-			final Location location = new Location(className, line, sourceStart, sourceEnd);
-			final List<Decision<Object>> searchSpace = strategy.getSearchSpace(null, clazz, location);//TODO
-			final Decision<Object> decision = selector.select(searchSpace);
-			selector.getCurrentLapse().addApplication(decision);
-			return decision;
-		} catch (RemoteException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 }

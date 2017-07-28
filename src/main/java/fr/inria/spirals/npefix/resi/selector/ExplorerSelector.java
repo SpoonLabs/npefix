@@ -8,6 +8,7 @@ import fr.inria.spirals.npefix.resi.strategies.Strategy;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,16 @@ public class ExplorerSelector extends AbstractSelector {
 	private Map<Location, Set<Decision>> decisions = new HashMap<>();
 	private Map<String, Stack<Decision>> stackDecision  = new HashMap<>();
 	private String currentTestKey;
+	private List<Strategy> strategies;
+
+	public ExplorerSelector() {
+		this(AbstractSelector.strategies);
+	}
+
+	public ExplorerSelector(Strategy... strategies) {
+		this.strategies = new ArrayList<>(Arrays.asList(strategies));
+		this.strategies.remove(new NoStrat());
+	}
 
 	@Override
 	public boolean startLaps(Lapse lapse) throws RemoteException {
@@ -52,8 +63,6 @@ public class ExplorerSelector extends AbstractSelector {
 
 	@Override
 	public List<Strategy> getStrategies() {
-		ArrayList<Strategy> strategies = new ArrayList<>(getAllStrategies());
-		strategies.remove(new NoStrat());
 		return strategies;
 	}
 
@@ -133,5 +142,13 @@ public class ExplorerSelector extends AbstractSelector {
 			stackDecision.get(currentTestKey).pop();
 		}
 		return false;
+	}
+
+	@Override
+	public void reset() throws RemoteException {
+		super.reset();
+		stackDecision = new HashMap<>();
+		usedDecisionSeq = new HashMap<>();
+		decisions = new HashMap<>();
 	}
 }

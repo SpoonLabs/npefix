@@ -7,12 +7,9 @@ import spoon.reflect.code.CtCatchVariable;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLocalVariable;
-import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtTry;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.reference.CtExecutableReference;
-import spoon.reflect.reference.CtTypeParameterReference;
-import spoon.reflect.reference.CtTypeReference;
 
 import java.util.Date;
 
@@ -22,18 +19,15 @@ import java.util.Date;
  * on 11/07/17
  */
 @SuppressWarnings("all")
-public class TryCatchRepair extends MethodEncapsulation {
+public class ConstructorTryCatchRepair extends ConstructorEncapsulation {
 
 	@Override
 	public void processingDone() {
-		System.out.println("TryCatchRepair # Method: " + MethodEncapsulation.methodNumber + " in " + (new Date().getTime() - start.getTime()) + "ms");
+		System.out.println("ConstructorTryCatchRepair # Constructor: " + contructor + " in " + (new Date().getTime() - start.getTime()) + "ms");
 	}
 
 	@Override
-	protected CtTry createTry(CtLocalVariable methodVar, CtTypeReference tmpref) {
-		if ((tmpref instanceof CtTypeParameterReference)) {
-			return null;
-		}
+	protected CtTry createTry(CtLocalVariable methodVar) {
 
 		CtCatchVariable parameter = getFactory().Code().createCatchVariable(getFactory().Type().createReference(RuntimeException.class), "_bcornu_return_t");
 		parameter.setPosition(methodVar.getPosition());
@@ -45,10 +39,7 @@ public class TryCatchRepair extends MethodEncapsulation {
 		CtVariableAccess methodAccess = getFactory().createVariableRead();
 		methodAccess.setVariable(methodVar.getReference());
 
-		CtReturn ret = getFactory().Core().createReturn();
-		ret.setPosition(methodVar.getPosition());
-
-		CtExpression typeMethod = ProcessorUtility.createCtTypeElement(tmpref);
+		CtExpression typeMethod = ProcessorUtility.createCtTypeElement(getFactory().Type().voidPrimitiveType());
 
 		final CtInvocation invocation =  ProcessorUtility.createStaticCall(getFactory(),
 				CallChecker.class,
@@ -56,18 +47,7 @@ public class TryCatchRepair extends MethodEncapsulation {
 				getFactory().createVariableRead().setVariable(parameter.getReference()),
 				typeMethod
 				);
-
-
-
-		CtTypeReference variableType = tmpref;
-		if(tmpref.equals(getFactory().Type().VOID_PRIMITIVE)){
-			variableType = getFactory().Code().createCtTypeReference(Object.class);
-			localCatch.getBody().addStatement(invocation);
-		} else {
-			invocation.addTypeCast(variableType.box());
-			ret.setReturnedExpression(invocation);
-		}
-		localCatch.getBody().addStatement(ret);
+		localCatch.getBody().addStatement(invocation);
 
 		localCatch.setPosition(methodVar.getPosition());
 

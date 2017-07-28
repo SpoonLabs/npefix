@@ -2,6 +2,7 @@ package fr.inria.spirals.npefix.resi.strategies;
 
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Location;
+import fr.inria.spirals.npefix.resi.context.MethodContext;
 
 import java.io.Serializable;
 import java.util.List;
@@ -16,14 +17,16 @@ public interface Strategy extends Comparable<Strategy>, Serializable{
 		// skipLine
 		beforeDeref,
 		//
-		arrayAccess
+		arrayAccess,
+		//
+		tryRepair
 	}
 
 	boolean isCompatibleAction(ACTION action);
 
 	boolean collectData();
 
-	<T> List<Decision<T>> getSearchSpace(Object value, Class<T> clazz, Location location);
+	<T> List<Decision<T>> getSearchSpace(Object value, Class<T> clazz, Location location, MethodContext context);
 
 	String getPatch (Decision decision);
 

@@ -3,12 +3,19 @@ package fr.inria.spirals.npefix.transformer.processors;
 import fr.inria.spirals.npefix.resi.exception.ForceReturn;
 import fr.inria.spirals.npefix.transformer.utils.IConstants;
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtBlock;
+import spoon.reflect.code.CtCatchVariable;
+import spoon.reflect.code.CtConstructorCall;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLiteral;
+import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtTry;
+import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.code.CtVariableAccessImpl;
-import spoon.support.reflect.code.CtVariableReadImpl;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,8 +29,8 @@ import java.util.List;
 @SuppressWarnings("all")
 public class ConstructorEncapsulation extends AbstractProcessor<CtConstructor> {
 
-	private static int contructor = 0;
-	private Date start;
+	protected static int contructor = 0;
+	protected Date start;
 
 	public static int getCpt(){
 		return contructor;
@@ -84,7 +91,7 @@ public class ConstructorEncapsulation extends AbstractProcessor<CtConstructor> {
 		methodVar.insertAfter(coreTry);
 	}
 	
-	private CtTry createTry(CtLocalVariable methodVar){
+	protected CtTry createTry(CtLocalVariable methodVar){
 		CtCatchVariable parameter = getFactory().Code().createCatchVariable(getFactory().Type().createReference(ForceReturn.class), "_bcornu_return_t");
 		parameter.setPosition(methodVar.getPosition());
 

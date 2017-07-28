@@ -25,7 +25,7 @@ public abstract class AbstractSelector implements Selector {
 	private Lapse currentLapse;
 	private List<Lapse> lapses = new ArrayList<>();
 
-	private static final Strategy[] strategies = new Strategy[]{
+	protected static final Strategy[] strategies = new Strategy[]{
 			new NoStrat(),
 			new Strat1A(),
 			new Strat1B(),
@@ -75,6 +75,12 @@ public abstract class AbstractSelector implements Selector {
 		}
 		lapse.setEndDate(new Date());
 		return false;
+	}
+
+	@Override
+	public void reset() throws RemoteException {
+		currentLapse = null;
+		lapses = new ArrayList<>();
 	}
 
 	@Override

@@ -12,6 +12,7 @@ public class MethodContext {
 	private final String methodName;
 	private final String className;
 	private final int id;
+	private final Location location;
 
 	public MethodContext(Class c) {
 		CallChecker.methodStart(this);
@@ -22,6 +23,8 @@ public class MethodContext {
 		StackTraceElement stackTrace = stackTraces[2];
 		methodName = stackTrace.getMethodName();
 		className = stackTrace.getClassName();
+		int line = stackTrace.getLineNumber();
+		this.location = new Location(stackTrace.getClassName(), line, -1, -1);
 		this.id = idCount++;
 	}
 
@@ -44,6 +47,10 @@ public class MethodContext {
 
 	public Class getMethodType() {
 		return methodType;
+	}
+
+	public Location getLocation() {
+		return location;
 	}
 
 	@Override

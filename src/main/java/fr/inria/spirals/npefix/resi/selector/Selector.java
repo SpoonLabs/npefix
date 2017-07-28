@@ -26,4 +26,6 @@ public interface Selector extends Remote {
 	Lapse getCurrentLapse() throws RemoteException;
 
 	Lapse updateCurrentLapse(Lapse updatedLapse) throws RemoteException;
+
+	void reset() throws RemoteException;
 }

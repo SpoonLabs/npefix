@@ -4,6 +4,7 @@ import fr.inria.spirals.npefix.main.all.Launcher;
 import fr.inria.spirals.npefix.main.all.TryCatchRepairStrategy;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;
+import fr.inria.spirals.npefix.resi.selector.ExplorerSelector;
 import fr.inria.spirals.npefix.resi.strategies.ReturnType;
 import fr.inria.spirals.npefix.resi.strategies.Strat4;
 import org.apache.commons.io.FileUtils;
@@ -42,7 +43,7 @@ public class TryCatchRepairModelTest {
 	}
 
 	@Test
-	public void testNPE() throws Exception {
+	public void testRepairWithTryCatch() throws Exception {
 		URL sourcePath = getClass().getResource("/bar/src/main/java/Coneflower.java");
 		URL testPath = getClass().getResource("/bar/src/test/java/ConeflowerTest.java");
 		URL rootPath = getClass().getResource("/bar/");
@@ -52,48 +53,20 @@ public class TryCatchRepairModelTest {
 				rootPath.getFile() + "/../instrumented",
 				rootPath.getFile() + "",
 				rootPath.getFile(),
-				new TryCatchRepairStrategy(6));
+				new TryCatchRepairStrategy());
 
 		launcher.instrument();
 
-		NPEOutput results = launcher.runStrategy(new Strat4(ReturnType.NULL));
+		NPEOutput results = launcher.run(new ExplorerSelector(new Strat4(ReturnType.NULL)));
 		Assert.assertEquals("Strat4 Null failing", 4, results.getFailureCount());
 
-		results = launcher.runStrategy(new Strat4(ReturnType.VAR));
-		Assert.assertEquals("Strat4 var failing", 4, results.getFailureCount());
+		results = launcher.run(new ExplorerSelector(new Strat4(ReturnType.VAR)));
+		Assert.assertEquals("Strat4 var failing", 3, results.getFailureCount());
 
-		results = launcher.runStrategy(new Strat4(ReturnType.NEW));
-		Assert.assertEquals("Strat4 new failing", 1, results.getFailureCount());
+		results = launcher.run(new ExplorerSelector(new Strat4(ReturnType.NEW)));
+		Assert.assertEquals("Strat4 new failing", 0, results.getFailureCount());
 
-		results = launcher.runStrategy(new Strat4(ReturnType.VOID));
-		Assert.assertEquals("Strat4 void failing", 4, results.getFailureCount());
-	}
-
-	@Test
-	public void testAnotherException() throws Exception {
-		URL sourcePath = getClass().getResource("/bar/src/main/java/Coneflower.java");
-		URL testPath = getClass().getResource("/bar/src/test/java/ConeflowerTest.java");
-		URL rootPath = getClass().getResource("/bar/");
-		Launcher launcher = new Launcher(
-				new String[]{sourcePath.getFile(),
-						testPath.getFile()},
-				rootPath.getFile() + "/../instrumented",
-				rootPath.getFile() + "",
-				rootPath.getFile(),
-				new TryCatchRepairStrategy(18));
-
-		launcher.instrument();
-
-		NPEOutput results = launcher.runStrategy(new Strat4(ReturnType.NULL));
-		Assert.assertEquals("Strat4 Null failing", 4, results.getFailureCount());
-
-		results = launcher.runStrategy(new Strat4(ReturnType.VAR));
-		Assert.assertEquals("Strat4 var failing", 4, results.getFailureCount());
-
-		results = launcher.runStrategy(new Strat4(ReturnType.NEW));
-		Assert.assertEquals("Strat4 new failing", 3, results.getFailureCount());
-
-		results = launcher.runStrategy(new Strat4(ReturnType.VOID));
+		results = launcher.run(new ExplorerSelector(new Strat4(ReturnType.VOID)));
 		Assert.assertEquals("Strat4 void failing", 4, results.getFailureCount());
 	}
 }

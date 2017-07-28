@@ -1,8 +1,8 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
-import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Location;
+import fr.inria.spirals.npefix.resi.context.MethodContext;
 import fr.inria.spirals.npefix.resi.context.instance.Instance;
 import fr.inria.spirals.npefix.resi.context.instance.PrimitiveInstance;
 
@@ -32,17 +32,22 @@ public class Strat4 extends AbstractStrategy {
 
 	@Override
 	public boolean isCompatibleAction(ACTION action) {
-		return action.equals(ACTION.isCalled) || action.equals(ACTION.beforeDeref);
+		return action.equals(ACTION.isCalled) || action.equals(ACTION.beforeDeref) || action.equals(ACTION.tryRepair);
 	}
 
 	@Override
 	public <T> List<Decision<T>> getSearchSpace(Object value,
 			Class<T> clazz,
-			Location location) {
-		clazz = CallChecker.getCurrentMethodContext().getMethodType();
+			Location location,
+			MethodContext context) {
+		clazz = context.getMethodType();
 
 		List<Decision<T>> output = new ArrayList<>();
 		if (clazz == null) {
+			// constructor don't have expected return
+			if (returnType == ReturnType.VOID) {
+				output.add(new Decision(this, location, new PrimitiveInstance(null)));
+			}
 			return output;
 		}
 		switch (returnType) {

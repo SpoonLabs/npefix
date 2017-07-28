@@ -3,6 +3,8 @@ package fr.inria.spirals.npefix.main;
 import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.selector.ExplorerSelector;
 import fr.inria.spirals.npefix.resi.selector.Selector;
+import fr.inria.spirals.npefix.resi.strategies.ReturnType;
+import fr.inria.spirals.npefix.resi.strategies.Strat4;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -16,7 +18,7 @@ public class DecisionServer {
 	public static void main(String[] args) {
 		try {
 
-			Selector selector = new ExplorerSelector();
+			Selector selector = new ExplorerSelector(new Strat4(ReturnType.NULL), new Strat4(ReturnType.VAR), new Strat4(ReturnType.NEW), new Strat4(ReturnType.VOID));
 			System.out.println("Start selector " + selector);
 
 			startRMI(selector);

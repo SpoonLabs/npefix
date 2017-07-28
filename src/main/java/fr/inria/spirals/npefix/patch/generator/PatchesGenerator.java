@@ -8,6 +8,7 @@ import fr.inria.spirals.npefix.resi.context.Location;
 import org.apache.commons.io.FileUtils;
 import spoon.Launcher;
 import spoon.reflect.cu.SourcePosition;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtType;
 
 import java.io.File;
@@ -78,7 +79,11 @@ public class PatchesGenerator {
 		Map<Integer, List<DecisionElement>> elementsPerLine = new HashMap<>(decisions.size());
 		for (int i = 0; i < elements.size(); i++) {
 			DecisionElement decisionElement = elements.get(i);
-			SourcePosition position = decisionElement.getElement().getPosition();
+			CtElement element = decisionElement.getElement();
+			if (element == null) {
+				continue;
+			}
+			SourcePosition position = element.getPosition();
 			if (position != null) {
 				int line = position.getLine();
 				if (!elementsPerLine.containsKey(line)) {
