@@ -1,5 +1,6 @@
 package fr.inria.spirals.npefix.resi.strategies;
 
+import fr.inria.spirals.npefix.resi.context.ConstructorContext;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Location;
 import fr.inria.spirals.npefix.resi.context.MethodContext;
@@ -43,11 +44,14 @@ public class Strat4 extends AbstractStrategy {
 		clazz = context.getMethodType();
 
 		List<Decision<T>> output = new ArrayList<>();
-		if (clazz == null) {
+		if (context instanceof ConstructorContext) {
 			// constructor don't have expected return
 			if (returnType == ReturnType.VOID) {
 				output.add(new Decision(this, location, new PrimitiveInstance(null)));
 			}
+			return output;
+		}
+		if (clazz == null) {
 			return output;
 		}
 		switch (returnType) {

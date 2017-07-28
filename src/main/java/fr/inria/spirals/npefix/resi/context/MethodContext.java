@@ -12,25 +12,33 @@ public class MethodContext {
 	private final String methodName;
 	private final String className;
 	private final int id;
-	private final Location location;
+	private Location location;
 
 	public MethodContext(Class c) {
-		CallChecker.methodStart(this);
-		this.methodType = c;
-		this.variables = new HashMap<String, Object>();
+		this(c, -1, -1, -1);
 		Thread thread = Thread.currentThread();
 		StackTraceElement[] stackTraces = thread.getStackTrace();
 		StackTraceElement stackTrace = stackTraces[2];
-		methodName = stackTrace.getMethodName();
-		className = stackTrace.getClassName();
 		int line = stackTrace.getLineNumber();
 		this.location = new Location(stackTrace.getClassName(), line, -1, -1);
-		this.id = idCount++;
 	}
 
-	public <T> T methodSkip() {
-		// TODO Auto-generated method stub
-		return null;
+	public MethodContext(Class c, int line, int sourceStart, int sourceEnd) {
+		CallChecker.methodStart(this);
+		this.methodType = c;
+		this.variables = new HashMap<String, Object>();
+
+		int stackPosition = 2;
+		if (this.getLocation() != null) {
+			stackPosition --;
+		}
+		Thread thread = Thread.currentThread();
+		StackTraceElement[] stackTraces = thread.getStackTrace();
+		StackTraceElement stackTrace = stackTraces[stackPosition];
+		methodName = stackTrace.getMethodName();
+		className = stackTrace.getClassName();
+		this.location = new Location(stackTrace.getClassName(), line, sourceStart, sourceEnd);
+		this.id = idCount++;
 	}
 
 	public void methodEnd() {
@@ -55,7 +63,7 @@ public class MethodContext {
 
 	@Override
 	public String toString() {
-		return "#" + id + " " + className + "#" + methodName + " (" + variables.size() + " variables)";
+		return "#" + id + " " + className + "#" + methodName + " " + variables.size() + " variables at " + this.getLocation();
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Decision;
+import fr.inria.spirals.npefix.resi.context.MethodContext;
 import fr.inria.spirals.npefix.resi.exception.ForceReturn;
 import fr.inria.spirals.npefix.transformer.utils.IConstants;
 import spoon.processing.AbstractProcessor;
@@ -173,8 +174,7 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 	}
 	
 	protected CtLocalVariable getNewMethodcontext(CtMethod ctMethod) {
-		CtTypeReference<?> methodContextRef = getFactory().Type()
-				.createReference(IConstants.Class.METHODE_CONTEXT);
+		CtTypeReference<?> methodContextRef = getFactory().Type().createReference(MethodContext.class);
 
 		CtExpression methodType;
 		if(ctMethod != null && !(ctMethod.getType() instanceof CtTypeParameterReference)) {
@@ -187,7 +187,12 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 			methodType = getFactory().Code().createLiteral(null);
 		}
 		methodType.setType(getFactory().Type().createReference(Class.class));
-		CtConstructorCall ctx = getFactory().Code().createConstructorCall(methodContextRef, methodType);
+
+		CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(ctMethod.getPosition().getLine());
+		CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(ctMethod.getPosition().getSourceStart());
+		CtLiteral<Integer> sourceEnd = getFactory().Code().createLiteral(ctMethod.getPosition().getSourceEnd());
+
+		CtConstructorCall ctx = getFactory().Code().createConstructorCall(methodContextRef, methodType, lineNumber, sourceStart, sourceEnd);
 
 		List<CtLiteral> args = new ArrayList<>();
 
