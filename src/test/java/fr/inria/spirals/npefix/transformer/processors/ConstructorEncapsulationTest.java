@@ -22,7 +22,7 @@ public class ConstructorEncapsulationTest {
 		CtConstructor constructor = fooTernary.getConstructor();
 		assertEquals("public Foo() {\n"
 				+ "    super();\n"
-				+ "    fr.inria.spirals.npefix.resi.context.MethodContext _bcornu_methode_context1 = new fr.inria.spirals.npefix.resi.context.MethodContext(null);\n"
+				+ "    fr.inria.spirals.npefix.resi.context.ConstructorContext _bcornu_methode_context1 = new fr.inria.spirals.npefix.resi.context.ConstructorContext(Foo.class, 9, 167, 247);\n"
 				+ "    try {\n"
 				+ "        field = null;\n"
 				+ "        array = null;\n"
