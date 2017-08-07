@@ -12,6 +12,8 @@ import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.visitor.filter.LineFilter;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Date;
 
 /**
@@ -19,16 +21,31 @@ import java.util.Date;
  */
 public class NotNullTracer extends AbstractProcessor<CtBinaryOperator<Boolean>> {
 
+	private int counterInstrumentation;
+
+	private int counterCheckNull;
+
+	private int counterCheckNotNull;
+
 	private Date start;
 
 	@Override
 	public void init() {
 		this.start = new Date();
+		this.counterInstrumentation = 0;
+		this.counterCheckNull = 0;
+		this.counterCheckNotNull = 0;
 	}
 
 	@Override
 	public void processingDone() {
 		System.out.println("CheckNotNull  in " + (new Date().getTime() - start.getTime()) + "ms");
+		try (FileWriter writer = new FileWriter("instrumentation-counter.txt")) {
+			writer.write("counterInstrumentation\tcounterCheckNull\tcounterCheckNotNull" + System.getProperty("line.separator"));
+			writer.write(this.counterInstrumentation + "\t" + this.counterCheckNull + "\t" + this.counterCheckNotNull);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -46,6 +63,7 @@ public class NotNullTracer extends AbstractProcessor<CtBinaryOperator<Boolean>> 
 
 	@Override
 	public void process(CtBinaryOperator<Boolean> element) {
+
 		CtStatement statement = element.getParent(new LineFilter());
 		if (!(statement instanceof CtIf)) {
 			return;
@@ -54,7 +72,13 @@ public class NotNullTracer extends AbstractProcessor<CtBinaryOperator<Boolean>> 
 		if (((CtBlock)anIf.getThenStatement()).getStatements().size() > 1) {
 			return;
 		}
-		boolean checkNull = element.getKind().equals(BinaryOperatorKind.EQ);
+
+		this.counterInstrumentation++;
+		if (element.getKind().equals(BinaryOperatorKind.EQ)) {
+			this.counterCheckNull++;
+		} else {
+			this.counterCheckNotNull++;
+		}
 
 		CtLiteral<Integer> lineNumber = getFactory().Code().createLiteral(element.getPosition().getLine());
 		CtLiteral<Integer> sourceStart = getFactory().Code().createLiteral(element.getPosition().getSourceStart());
@@ -64,15 +88,21 @@ public class NotNullTracer extends AbstractProcessor<CtBinaryOperator<Boolean>> 
 				NotNullTracer.class,
 				"anIf",
 				element,
-				getFactory().createLiteral(checkNull),
+				getFactory().createLiteral(element.toString()),
 				lineNumber,
 				sourceStart,
 				sourceEnd);
 		anIf.insertBefore(ifTracer);
 	}
 
-	public static void anIf(boolean value, boolean checkNull, int line, int sourceStart, int sourceEnd) {
+	public static void anIf(boolean value, String expression, int line, int sourceStart, int sourceEnd) {
 		Location location = CallChecker.getLocation(line, sourceStart, sourceEnd);
-		System.out.println(location + " " + (checkNull?"check null":"check not null") + " " + value);
+		final String output = location + "\t" + value + "\t" + expression;
+		System.out.println(output);
+		try (FileWriter writer = new FileWriter("instrumentation-output.csv", true)) {
+			writer.write(output + System.getProperty("line.separator"));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
