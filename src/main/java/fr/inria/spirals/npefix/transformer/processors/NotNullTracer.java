@@ -39,7 +39,7 @@ public class NotNullTracer extends AbstractProcessor<CtBinaryOperator<Boolean>> 
 
 	@Override
 	public void processingDone() {
-		System.out.println("NotNullTracer  in " + (new Date().getTime() - start.getTime()) + "ms");
+		System.out.println("NotNullTracer in " + (new Date().getTime() - start.getTime()) + "ms");
 		try (FileWriter writer = new FileWriter("instrumentation-counter.txt")) {
 			writer.write("counterInstrumentation\tcounterCheckNull\tcounterCheckNotNull" + System.getProperty("line.separator"));
 			writer.write(this.counterInstrumentation + "\t" + this.counterCheckNull + "\t" + this.counterCheckNotNull);
