@@ -6,10 +6,13 @@ import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.BinaryOperatorKind;
 import spoon.reflect.code.CtBinaryOperator;
 import spoon.reflect.code.CtBlock;
+import spoon.reflect.code.CtCatch;
+import spoon.reflect.code.CtCatchVariable;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtTry;
 import spoon.reflect.visitor.filter.LineFilter;
 
 import java.io.FileWriter;
@@ -68,10 +71,6 @@ public class NotNullTracer extends AbstractProcessor<CtBinaryOperator<Boolean>> 
 		if (!(statement instanceof CtIf)) {
 			return;
 		}
-		CtIf anIf = (CtIf) statement;
-		if (((CtBlock)anIf.getThenStatement()).getStatements().size() > 1) {
-			return;
-		}
 
 		this.counterInstrumentation++;
 		if (element.getKind().equals(BinaryOperatorKind.EQ)) {
@@ -92,7 +91,13 @@ public class NotNullTracer extends AbstractProcessor<CtBinaryOperator<Boolean>> 
 				lineNumber,
 				sourceStart,
 				sourceEnd);
-		anIf.insertBefore(ifTracer);
+
+		final CtTry aTry = getFactory().createTry();
+		aTry.setBody(ifTracer);
+		final CtCatch instrumentation_exception =
+				getFactory().createCtCatch("__Instrumentation_Exception", NullPointerException.class, aTry.getBody());
+		aTry.addCatcher(instrumentation_exception);
+		statement.insertBefore(aTry);
 	}
 
 	public static void anIf(boolean value, String expression, int line, int sourceStart, int sourceEnd) {
