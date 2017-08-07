@@ -523,11 +523,16 @@ public class CallChecker {
 		return stack;
 	}
 
-	private static Location getLocation(int line, int sourceStart, int sourceEnd) {
+	public static Location getLocation(int line, int sourceStart, int sourceEnd) {
 		Thread thread = Thread.currentThread();
 		StackTraceElement[] stackTraces = thread.getStackTrace();
-		StackTraceElement stackTrace = stackTraces[4];
-		return new Location(stackTrace.getClassName(), line, sourceStart, sourceEnd);
+		for (int i = 1; i < stackTraces.length; i++) {
+			StackTraceElement stackTrace = stackTraces[i];
+			if (!stackTrace.getClassName().contains("npefix")) {
+				return new Location(stackTrace.getClassName(), line, sourceStart, sourceEnd);
+			}
+		}
+		return null;
 	}
 
 	public static Map<Location, Decision> getDecisions() {
