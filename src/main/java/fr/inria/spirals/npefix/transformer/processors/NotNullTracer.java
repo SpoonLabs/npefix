@@ -1,7 +1,6 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
-import fr.inria.spirals.npefix.resi.PatchActivationImpl;
 import fr.inria.spirals.npefix.resi.context.Location;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.BinaryOperatorKind;
@@ -107,9 +106,9 @@ public class NotNullTracer extends AbstractProcessor<CtBinaryOperator<Boolean>> 
 		statement.insertBefore(aTry);
 	}
 
-	static {
+	/*static {
 		PatchActivationImpl.startRMI();
-	}
+	}*/
 
 	public static void anIf(boolean value, String expression, int line, int sourceStart, int sourceEnd) {
 		Location location = CallChecker.getLocation(line, sourceStart, sourceEnd);
