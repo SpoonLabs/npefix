@@ -267,7 +267,7 @@ public class CallChecker {
 				searchSpace.add(decision);
 			}
 		} else {
-			for (MethodContext context : stack) {
+			for (MethodContext context : new ArrayList<>(stack)) {
 				List<Decision<T>> space = getSearchSpace(Strategy.ACTION.tryRepair, null, context.getMethodType(), context.getLocation(), context);
 				searchSpace.addAll(space);
 			}
@@ -284,6 +284,7 @@ public class CallChecker {
 
 
 		if (!decision.getLocation().equals(getCurrentMethodContext().getLocation())) {
+			disable();
 			throw throwable;
 		}
 

@@ -10,8 +10,8 @@ import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtTry;
 import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtExecutableReference;
-import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 
 import java.util.Date;
@@ -30,10 +30,8 @@ public class TryCatchRepair extends MethodEncapsulation {
 	}
 
 	@Override
-	protected CtTry createTry(CtLocalVariable methodVar, CtTypeReference tmpref) {
-		if ((tmpref instanceof CtTypeParameterReference)) {
-			return null;
-		}
+	protected CtTry createTry(CtMethod ctMethode,
+			CtLocalVariable methodVar, CtTypeReference tmpref) {
 
 		CtCatchVariable parameter = getFactory().Code().createCatchVariable(getFactory().Type().createReference(RuntimeException.class), "_bcornu_return_t");
 		parameter.setPosition(methodVar.getPosition());

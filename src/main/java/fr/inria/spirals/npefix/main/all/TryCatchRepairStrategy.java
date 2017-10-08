@@ -7,7 +7,6 @@ import fr.inria.spirals.npefix.transformer.processors.AddImplicitCastChecker;
 import fr.inria.spirals.npefix.transformer.processors.CheckNotNull;
 import fr.inria.spirals.npefix.transformer.processors.ConstructorTryCatchRepair;
 import fr.inria.spirals.npefix.transformer.processors.ForceNullInit;
-import fr.inria.spirals.npefix.transformer.processors.TernarySplitter;
 import fr.inria.spirals.npefix.transformer.processors.TryCatchRepair;
 import fr.inria.spirals.npefix.transformer.processors.VarRetrieveAssign;
 import fr.inria.spirals.npefix.transformer.processors.VarRetrieveInit;
@@ -27,7 +26,6 @@ public class TryCatchRepairStrategy extends DefaultRepairStrategy {
 
 	public TryCatchRepairStrategy() {
 		processors = new ArrayList<>();
-		processors.add(new TernarySplitter());//
 		processors.add(new CheckNotNull());//
 		processors.add(new ForceNullInit());//
 		processors.add(new AddImplicitCastChecker());//

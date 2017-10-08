@@ -9,9 +9,14 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtTry;
 import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.declaration.CtConstructor;
+import spoon.reflect.declaration.CtField;
+import spoon.reflect.declaration.CtType;
+import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtExecutableReference;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Benjamin DANGLOT
@@ -27,7 +32,9 @@ public class ConstructorTryCatchRepair extends ConstructorEncapsulation {
 	}
 
 	@Override
-	protected CtTry createTry(CtLocalVariable methodVar) {
+	protected CtTry createTry(
+			CtConstructor ctConstructor,
+			CtLocalVariable methodVar) {
 
 		CtCatchVariable parameter = getFactory().Code().createCatchVariable(getFactory().Type().createReference(RuntimeException.class), "_bcornu_return_t");
 		parameter.setPosition(methodVar.getPosition());
@@ -62,7 +69,15 @@ public class ConstructorTryCatchRepair extends ConstructorEncapsulation {
 		finalizer.addStatement(invoc);
 
 		CtTry e = getFactory().Core().createTry();
-		e.addCatcher(localCatch);
+		boolean hasFinal = false;
+
+		List<CtField> fields = ctConstructor.getParent(CtType.class).getFields();
+		for (CtField field : fields) {
+			hasFinal |= field.hasModifier(ModifierKind.FINAL) && field.getDefaultExpression() == null;
+		}
+		if (!hasFinal) {
+			e.addCatcher(localCatch);
+		}
 		e.setFinalizer(finalizer);
 		e.setPosition(methodVar.getPosition());
 

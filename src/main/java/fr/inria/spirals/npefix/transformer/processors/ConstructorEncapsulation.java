@@ -68,7 +68,7 @@ public class ConstructorEncapsulation extends AbstractProcessor<CtConstructor> {
 		CtLocalVariable methodVar = getNewMethodcontext(ctConstructor);
 		methodVar.setPosition(ctConstructor.getPosition());
 
-		CtTry coreTry = createTry(methodVar);
+		CtTry coreTry = createTry(ctConstructor, methodVar);
 		if(coreTry == null) {
 			return;
 		}
@@ -92,7 +92,9 @@ public class ConstructorEncapsulation extends AbstractProcessor<CtConstructor> {
 		methodVar.insertAfter(coreTry);
 	}
 	
-	protected CtTry createTry(CtLocalVariable methodVar){
+	protected CtTry createTry(
+			CtConstructor ctConstructor,
+			CtLocalVariable methodVar){
 		CtCatchVariable parameter = getFactory().Code().createCatchVariable(getFactory().Type().createReference(ForceReturn.class), "_bcornu_return_t");
 		parameter.setPosition(methodVar.getPosition());
 

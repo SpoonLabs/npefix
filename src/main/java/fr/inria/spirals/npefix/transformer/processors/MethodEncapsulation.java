@@ -71,9 +71,6 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		methodNumber++;
 		if(ctMethode.getBody() == null)
 			return false;
-		if(ctMethode.getType() instanceof CtTypeParameterReference) {
-			return false;
-		}
 		return true;
 	}
 
@@ -91,7 +88,7 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 			((CtArrayTypeReference)tmpref).getComponentType().getActualTypeArguments().clear();
 		}
 		
-		CtTry coreTry = createTry(methodVar, tmpref);
+		CtTry coreTry = createTry(ctMethode, methodVar, tmpref);
 		if(coreTry == null) {
 			return;
 		}
@@ -105,9 +102,11 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		ctMethode.getBody().setStatements(stats);
 	}
 
-	protected CtTry createTry(CtLocalVariable methodVar, CtTypeReference tmpref){
+	protected CtTry createTry(CtMethod ctMethode,
+			CtLocalVariable methodVar, CtTypeReference tmpref){
 		if((tmpref instanceof CtTypeParameterReference)) {
-			return null;
+			//tmpref = getFactory().createCtTypeReference(Object.class);
+			//return null;
 		}
 
 		CtCatchVariable parameter = getFactory().Code().createCatchVariable(getFactory().Type().createReference(ForceReturn.class), "_bcornu_return_t");
