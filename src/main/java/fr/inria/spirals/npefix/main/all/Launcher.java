@@ -122,7 +122,10 @@ public class Launcher {
             if(ctType.getSimpleName().endsWith("Test")) {
                 continue;
             }
-            if(ctType.getPosition().getFile().getAbsolutePath().contains("/test/")) {
+            String typePath = ctType.getPosition().getFile().getAbsolutePath();
+            if(typePath.contains("/test/") &&
+                    // testing purpose
+                    !typePath.contains("/resources/")) {
                 continue;
             }
             // junit 4
