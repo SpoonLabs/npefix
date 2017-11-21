@@ -7,9 +7,9 @@ jdk:
 cache:
   directories:
   - "$HOME/.m2"
-env:
-  global:
-    secure: bl2Y2HFBmI14Ql8PU9D2uBzoCwspm9OuFFGTCj597ikIkTvsJl6xBfGCtwHi+rOmsGQcmxof2y68BuW5BfT85g7ppg3g7bH3m8eBmZrDP39YUkFF/a1lF1xACfb8B02GXg3xqYT4yRa103DCmfhxjYYjmIpgIBbKkUjCvl+dD1QRMdlSqwVJRKOG4ZGxwfC6V3bGnhx5/WVIAM0ZtYWu7O7ZKxf2U4Z3c13mn5t2Tu8avO1kdERJAftXnlbckyE1WAVBgYzozXVcgMNIrMrCRpRB/OZbokFvSasrVmPclr6hxBiOoktY7aZZ2UCU11NsIjE8Oz+F/Ikj/Lhxs1dmuMZVDPRJC4nmKsOxLGZmq9bDW2+Psy6TbJbfdw8+o0B1lib5bzlj9K4Do/idS6pkosMwCRzYvVXfbgiXC7Lxcpnl9KbV9jKvh0DN53hNaAEDGWKx6ndqcYVyPNux9vbVyZDJdt5Dhx9/kUvYJfcF9QDkAshUZ26MJq4gbZIAj1GpDpMEDqtX3BwRoM8I6y9FZi0gQzQSp2aeQvro14D8fks9KYPTGSvZGFwOT3+7KN63mipw+8xiFrCgUD5hZWrT4W5+LiMARkutD/aYglgh0hoP0xqv82bV4fBXw0TMxMwi8C+xRzPFJ14eTkHZ0PqgUUZ563a44jhb8q8qmOitjJ8=
 after_success:
 - '[[ $TRAVIS_BRANCH == "master" ]] && [[ $TRAVIS_JDK_VERSION == "openjdk8" ]] &&
   { mvn deploy --settings .travis-settings.xml -DskipTests=true -B; };'
+env:
+  global:
+    secure: R/gJYV4I6O3Fl14cRzSg25C6eBQuVIb49nVnhou5Mxroz5Xta/Nkb+ylO8Yly13xxrL0IEhPjlZTUJsa/lbIpmMj1ztCJ4iJP0brhy6AU3xRrMXUykztECORoBYPOyFBEst/FGhgDYl3sUYzZ03hQfKaeNxnN95Yf2IDIW4/xZAa235jl4cSW/Lcs+k7affuGFc+/XOuxm+yBybbL67oiCMCOcovIMXFtg1FpclrkUag+A9+dZ2l35LOPOwUJH2zXZj2VYNNW4NclxLAPoJQKfR1xNkkRJmoeWqYohB+8/4dqWahxVoLK4taBF672Vn7mRZy+wmmY3dIsuu1aZvdfnUb9nd9MV6R7d1alFZvI2ckLO+/nXrLkhxs4R1l+1pH/3Iz9HVfjqHolD3hVnBJEDhx6ZE20PDBMURlUa52IOoExV4RWGWgMDm5MTao0dILRbE8NX79uIcUc9pGAwaLN/HbNaky4FkLYN97kTmxB53VoQLnbeLczCOQ0YLfE+yw/EDOEFhzg+DTutHM1JlH/mivv3s/EX99vbdIkAftNiYh3DOf6hZGgswYbBTwThGETVrTMm/9UfeNrinfDZE+CJMS1hxsET2jY62uWLk5jF7JhinjQA/N0qpVUrv8EgPQqENxyIlETSZ9qhrlscvweJDNVHTIIz23im99KSk4Xjc=
