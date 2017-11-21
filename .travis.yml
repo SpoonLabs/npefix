@@ -2,7 +2,7 @@ language: java
 sudo: false
 script: mvn test jacoco:report coveralls:report
 jdk:
-- openjdk7
+- openjdk8
 - oraclejdk8
 cache:
   directories:
@@ -11,5 +11,5 @@ env:
   global:
     secure: bl2Y2HFBmI14Ql8PU9D2uBzoCwspm9OuFFGTCj597ikIkTvsJl6xBfGCtwHi+rOmsGQcmxof2y68BuW5BfT85g7ppg3g7bH3m8eBmZrDP39YUkFF/a1lF1xACfb8B02GXg3xqYT4yRa103DCmfhxjYYjmIpgIBbKkUjCvl+dD1QRMdlSqwVJRKOG4ZGxwfC6V3bGnhx5/WVIAM0ZtYWu7O7ZKxf2U4Z3c13mn5t2Tu8avO1kdERJAftXnlbckyE1WAVBgYzozXVcgMNIrMrCRpRB/OZbokFvSasrVmPclr6hxBiOoktY7aZZ2UCU11NsIjE8Oz+F/Ikj/Lhxs1dmuMZVDPRJC4nmKsOxLGZmq9bDW2+Psy6TbJbfdw8+o0B1lib5bzlj9K4Do/idS6pkosMwCRzYvVXfbgiXC7Lxcpnl9KbV9jKvh0DN53hNaAEDGWKx6ndqcYVyPNux9vbVyZDJdt5Dhx9/kUvYJfcF9QDkAshUZ26MJq4gbZIAj1GpDpMEDqtX3BwRoM8I6y9FZi0gQzQSp2aeQvro14D8fks9KYPTGSvZGFwOT3+7KN63mipw+8xiFrCgUD5hZWrT4W5+LiMARkutD/aYglgh0hoP0xqv82bV4fBXw0TMxMwi8C+xRzPFJ14eTkHZ0PqgUUZ563a44jhb8q8qmOitjJ8=
 after_success:
-- '[[ $TRAVIS_BRANCH == "master" ]] && [[ $TRAVIS_JDK_VERSION == "openjdk7" ]] &&
+- '[[ $TRAVIS_BRANCH == "master" ]] && [[ $TRAVIS_JDK_VERSION == "openjdk8" ]] &&
   { mvn deploy --settings .travis-settings.xml -DskipTests=true -B; };'
