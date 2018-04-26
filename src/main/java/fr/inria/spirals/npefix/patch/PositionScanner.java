@@ -2,6 +2,7 @@ package fr.inria.spirals.npefix.patch;
 
 import fr.inria.spirals.npefix.resi.context.Location;
 import spoon.reflect.cu.SourcePosition;
+import spoon.reflect.cu.position.NoSourcePosition;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.visitor.CtScanner;
 
@@ -19,7 +20,7 @@ public class PositionScanner extends CtScanner {
 			return;
 		}
 		SourcePosition position = e.getPosition();
-		if (position.getSourceStart() == -1) {
+		if (position instanceof NoSourcePosition) {
 			if (e.isImplicit()) {
 				super.scan(e);
 			}
