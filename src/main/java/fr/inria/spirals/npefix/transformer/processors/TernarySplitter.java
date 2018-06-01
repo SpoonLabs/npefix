@@ -236,13 +236,9 @@ public class TernarySplitter extends AbstractProcessor<CtConditional>{
             CtAssignment assignment) {
         CtAssignment assignmentThen = assignment.clone();
         assignmentThen.setAssignment(ctConditional.getThenExpression());
-        assignmentThen.setParent(anIf);
-        anIf.setThenStatement(assignmentThen);
 
         CtAssignment assignmentElse = assignment.clone();
-        assignmentElse.setAssignment(ctConditional.getElseExpression());
-        assignmentElse.setParent(anIf);
-        anIf.setThenStatement(assignmentElse);
+        assignmentElse.setAssignment(ctConditional.getElseExpression().clone());
 
         List<CtTypeReference> typeCasts = ctConditional.getTypeCasts();
         for (int i = 0; i < typeCasts.size(); i++) {

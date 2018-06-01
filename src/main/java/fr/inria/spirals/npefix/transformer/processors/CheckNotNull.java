@@ -12,6 +12,7 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLoop;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.cu.position.NoSourcePosition;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.filter.AbstractFilter;
@@ -77,12 +78,12 @@ public class CheckNotNull extends AbstractProcessor<CtBinaryOperator<Boolean>> {
 					List<CtCFlowBreak> elements = thenStatement.getElements(new ReturnOrThrowFilter());
 					if (!elements.isEmpty()) {
 						final CtElement block = parent.getParent();
-						if (block != null && block.getPosition() != null) {
+						if (block != null && block.getPosition() != null && !(block instanceof NoSourcePosition)) {
 							List<CtStatement> postElements = block.getElements(
 								new AbstractFilter<CtStatement>() {
 									@Override
 									public boolean matches(CtStatement element) {
-										if (element.getPosition() == null) {
+										if (element.getPosition() == null || element.getPosition() instanceof NoSourcePosition) {
 											return false;
 										}
 										return element.getPosition().getSourceStart() > parent.getPosition().getSourceEnd();

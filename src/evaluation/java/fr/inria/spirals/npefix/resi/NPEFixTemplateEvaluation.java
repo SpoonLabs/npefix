@@ -40,6 +40,7 @@ import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.cu.position.NoSourcePosition;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
@@ -431,6 +432,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
             @Override
             protected void enter(CtElement e) {
                 if (e.getPosition() != null
+						&& !(e.getPosition() instanceof NoSourcePosition)
                         && e.getPosition().getSourceStart() == position.getStart()
                         && e.getPosition().getSourceEnd() == position.getEnd()) {
                     setResult(e);

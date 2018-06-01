@@ -92,8 +92,7 @@ public class MethodEncapsulation extends AbstractProcessor<CtMethod> {
 		if(coreTry == null) {
 			return;
 		}
-		coreTry.setBody(getFactory().Core().createBlock());
-		coreTry.getBody().setStatements(ctMethode.getBody().getStatements());
+		coreTry.setBody(ctMethode.getBody().clone());
 		
 		List<CtStatement> stats = new ArrayList<CtStatement>();
 		stats.add(methodVar);
