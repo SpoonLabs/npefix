@@ -1,7 +1,6 @@
 package fr.inria.spirals.npefix.transformer.processors;
 
 import fr.inria.spirals.npefix.resi.CallChecker;
-import fr.inria.spirals.npefix.resi.PatchActivationImpl;
 import fr.inria.spirals.npefix.resi.context.Location;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.CtBlock;
@@ -88,10 +87,6 @@ public class BlockCoverage extends AbstractProcessor<CtBlock> {
 			element.insertBegin(blockCoverage);
 		}
 
-	}
-
-	static {
-		PatchActivationImpl.startRMI();
 	}
 
 	public static void aBlock(boolean isExecutableBlock, int line, int sourceStart, int sourceEnd) {
