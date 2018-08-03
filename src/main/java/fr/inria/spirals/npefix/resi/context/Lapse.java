@@ -35,8 +35,9 @@ public class Lapse implements Comparable<Lapse>, Serializable {
 	private Date startDate;
 	private Date endDate;
 	private boolean isFinished = false;
+	private String[] inputSources;
 
-	public Lapse(Selector strategySelector) {
+	public Lapse(Selector strategySelector, String[] inputSources) {
 		this.uniqueId = currentUniqueId++;
 		this.locations = new HashSet<>();
 		nbApplication = new HashMap<>();
@@ -45,6 +46,7 @@ public class Lapse implements Comparable<Lapse>, Serializable {
 		startDate = new Date();
 		this.strategySelector = strategySelector;
 		metadata.put("seed", Config.CONFIG.getRandomSeed());
+		this.inputSources = inputSources;
 	}
 
 	public void increaseNbApplication(Decision decision) {
@@ -141,7 +143,7 @@ public class Lapse implements Comparable<Lapse>, Serializable {
 
 	public String toDiff(Launcher spoon) {
 		try {
-			PatchesGenerator patchesGenerator = new PatchesGenerator(decisions, spoon);
+			PatchesGenerator patchesGenerator = new PatchesGenerator(decisions, spoon, inputSources);
 			return patchesGenerator.getDiff();
 		} catch (Exception e) {
 			return null;

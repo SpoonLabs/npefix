@@ -58,7 +58,8 @@ public class TryCatchRepairModelTest {
 				rootPath.getFile() + "/../instrumented",
 				rootPath.getFile() + "",
 				rootPath.getFile(),
-				new TryCatchRepairStrategy());
+				new TryCatchRepairStrategy(new String[]{sourcePath.getFile(),
+						testPath.getFile()}));
 
 		launcher.instrument();
 

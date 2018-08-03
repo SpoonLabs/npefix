@@ -24,7 +24,8 @@ import java.util.List;
 public class TryCatchRepairStrategy extends DefaultRepairStrategy {
 	private static Selector selector;
 
-	public TryCatchRepairStrategy() {
+	public TryCatchRepairStrategy(String[] inputSources) {
+		super(inputSources);
 		processors = new ArrayList<>();
 		processors.add(new CheckNotNull());//
 		processors.add(new ForceNullInit());//

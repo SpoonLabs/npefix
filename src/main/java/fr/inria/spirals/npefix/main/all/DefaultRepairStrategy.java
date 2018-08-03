@@ -35,9 +35,10 @@ import java.util.List;
  */
 public class DefaultRepairStrategy implements RepairStrategy {
 
+	private String[] inputSources;
 	protected List<AbstractProcessor> processors;
 
-	public DefaultRepairStrategy() {
+	public DefaultRepairStrategy(String[] inputSources) {
 		processors = new ArrayList<>();
 		processors.add(new TernarySplitter());//
 		//processors.add(new IfSplitter());
@@ -53,6 +54,7 @@ public class DefaultRepairStrategy implements RepairStrategy {
 		processors.add(new ConstructorEncapsulation());
 		processors.add(new VariableFor());//
 		//p.addProcessor(new ArrayRead());
+		this.inputSources = inputSources;
 	}
 
 	@Override
@@ -62,7 +64,7 @@ public class DefaultRepairStrategy implements RepairStrategy {
 
 		NPEOutput output = new NPEOutput();
 
-		Lapse lapse = new Lapse(selector);
+		Lapse lapse = new Lapse(selector, inputSources);
 
 		final TestRunner testRunner = new TestRunner();
 		for (int i = 0; i < methodTests.size(); i++) {
@@ -101,7 +103,7 @@ public class DefaultRepairStrategy implements RepairStrategy {
 					throw new RuntimeException(e);
 				}
 			}
-			lapse = new Lapse(selector);
+			lapse = new Lapse(selector, inputSources);
 			CallChecker.enable();
 			CallChecker.cache.clear();
 			CallChecker.getDecisions().clear();

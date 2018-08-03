@@ -25,8 +25,9 @@ import java.util.Set;
 public class PatchesGenerator {
 	private List<Decision> decisions;
 	private Launcher spoon;
+	private String[] inputSources;
 
-	public PatchesGenerator(List<Decision> decisions, Launcher spoon) {
+	public PatchesGenerator(List<Decision> decisions, Launcher spoon, String[] inputSources) {
 		this.decisions = new ArrayList<>();
 		for (int i = 0; i < decisions.size(); i++) {
 			Decision decision = decisions.get(i);
@@ -35,6 +36,7 @@ public class PatchesGenerator {
 			}
 		}
 		this.spoon = spoon;
+		this.inputSources = inputSources;
 	}
 
 	public String getDiff() {
@@ -148,8 +150,8 @@ public class PatchesGenerator {
 		try {
 			String path = getClassPath(type);
 			diff = Diff.diff(r1, r2, false)
-					.toUnifiedDiff(path,
-							path,
+					.toUnifiedDiff("a" + path,
+							"b" + path,
 							new StringReader(originalClassContent),
 							new StringReader(classContent), 1);
 		} catch (IOException e) {
@@ -162,16 +164,28 @@ public class PatchesGenerator {
 	private String getClassPath(CtType type) {
 		String path = type.getPosition().getFile().getPath();
 		String intersection = null;
-		Set<File> inputSources = spoon.getModelBuilder().getInputSources();
-		for (File inputSource : inputSources) {
+		for (String inputSource : inputSources) {
+			if (inputSource.startsWith("./")) {
+				inputSource = inputSource.substring(2);
+			}
 			if (intersection == null) {
-				intersection = inputSource.getPath();
+				intersection = inputSource;
 			} else {
-				intersection = intersection(intersection, inputSource.getPath());
+				intersection = intersection(intersection, inputSource);
 			}
 		}
-		path = path.replace(intersection, "");
-		return path;
+		int indexOfIntersection = path.indexOf(intersection);
+
+		if (indexOfIntersection != -1) {
+			path = path.substring(indexOfIntersection);
+			if (!path.startsWith("/")) {
+				return "/" + path;
+			} else {
+				return path;
+			}
+		} else {
+			return null;
+		}
 	}
 
 	/**

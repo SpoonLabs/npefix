@@ -104,7 +104,7 @@ public class SortPatch {
 				decisions.add(decision);
 			}
 
-			PatchesGenerator patchesGenerator = new PatchesGenerator(decisions, spoon);
+			PatchesGenerator patchesGenerator = new PatchesGenerator(decisions, spoon, new String[] {projectSourcePath});
 			String diff = patchesGenerator.getDiff();
 			System.out.println(diff);
 			((JSONObject) execution).put("diff", diff);

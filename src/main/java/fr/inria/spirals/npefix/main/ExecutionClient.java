@@ -24,7 +24,7 @@ import java.util.concurrent.TimeoutException;
 public class ExecutionClient {
 
 	public static void main(String[] args) {
-		ExecutionClient executionClient = new ExecutionClient(args[0], args[1]);
+		ExecutionClient executionClient = new ExecutionClient(args[0], args[1], new String[0]);
 		Config.CONFIG.setRandomSeed(Integer.parseInt(args[2]));
 		executionClient.run();
 	}
@@ -33,10 +33,12 @@ public class ExecutionClient {
 	private String testName;
 	private int port = Config.CONFIG.getServerPort();
 	private String host = Config.CONFIG.getServerHost();
+	private String[] inputSources;
 
-	public ExecutionClient(String classTestName, String testName) {
+	public ExecutionClient(String classTestName, String testName, String[] inputSources) {
 		this.classTestName = classTestName;
 		this.testName = testName;
+		this.inputSources = inputSources;
 	}
 
 	/**
@@ -55,7 +57,7 @@ public class ExecutionClient {
 
 	private void run() {
 		Selector selector = getSelector();
-		Lapse lapse = new Lapse(selector);
+		Lapse lapse = new Lapse(selector, inputSources);
 		lapse.setTestClassName(classTestName);
 		lapse.setTestName(testName);
 
