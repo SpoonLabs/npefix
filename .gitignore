@@ -12,4 +12,5 @@ buildNumber.properties
 
 bin
 target
-
+*.iml
+.idea

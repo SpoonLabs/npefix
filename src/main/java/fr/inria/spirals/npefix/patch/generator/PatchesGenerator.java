@@ -148,8 +148,8 @@ public class PatchesGenerator {
 		try {
 			String path = getClassPath(type);
 			diff = Diff.diff(r1, r2, false)
-					.toUnifiedDiff(path,
-							path,
+					.toUnifiedDiff("a" + path,
+							"b" + path,
 							new StringReader(originalClassContent),
 							new StringReader(classContent), 1);
 		} catch (IOException e) {
@@ -164,14 +164,23 @@ public class PatchesGenerator {
 		String intersection = null;
 		Set<File> inputSources = spoon.getModelBuilder().getInputSources();
 		for (File inputSource : inputSources) {
+			String filePath = inputSource.getPath();
+			if (filePath.startsWith("./")) {
+				filePath = filePath.substring(2);
+			}
 			if (intersection == null) {
-				intersection = inputSource.getPath();
+				intersection = filePath;
 			} else {
-				intersection = intersection(intersection, inputSource.getPath());
+				intersection = intersection(intersection, filePath);
 			}
 		}
-		path = path.replace(intersection, "");
-		return path;
+		int indexOfIntersection = path.indexOf(intersection);
+
+		if (indexOfIntersection != -1) {
+			return path.substring(indexOfIntersection);
+		} else {
+			return null;
+		}
 	}
 
 	/**
