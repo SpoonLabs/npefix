@@ -25,8 +25,9 @@ import java.util.Set;
 public class PatchesGenerator {
 	private List<Decision> decisions;
 	private Launcher spoon;
+	private String[] inputSources;
 
-	public PatchesGenerator(List<Decision> decisions, Launcher spoon) {
+	public PatchesGenerator(List<Decision> decisions, Launcher spoon, String[] inputSources) {
 		this.decisions = new ArrayList<>();
 		for (int i = 0; i < decisions.size(); i++) {
 			Decision decision = decisions.get(i);
@@ -35,6 +36,7 @@ public class PatchesGenerator {
 			}
 		}
 		this.spoon = spoon;
+		this.inputSources = inputSources;
 	}
 
 	public String getDiff() {
@@ -162,22 +164,25 @@ public class PatchesGenerator {
 	private String getClassPath(CtType type) {
 		String path = type.getPosition().getFile().getPath();
 		String intersection = null;
-		Set<File> inputSources = spoon.getModelBuilder().getInputSources();
-		for (File inputSource : inputSources) {
-			String filePath = inputSource.getPath();
-			if (filePath.startsWith("./")) {
-				filePath = filePath.substring(2);
+		for (String inputSource : inputSources) {
+			if (inputSource.startsWith("./")) {
+				inputSource = inputSource.substring(2);
 			}
 			if (intersection == null) {
-				intersection = filePath;
+				intersection = inputSource;
 			} else {
-				intersection = intersection(intersection, filePath);
+				intersection = intersection(intersection, inputSource);
 			}
 		}
 		int indexOfIntersection = path.indexOf(intersection);
 
 		if (indexOfIntersection != -1) {
-			return path.substring(indexOfIntersection);
+			path = path.substring(indexOfIntersection);
+			if (!path.startsWith("/")) {
+				return "/" + path;
+			} else {
+				return path;
+			}
 		} else {
 			return null;
 		}

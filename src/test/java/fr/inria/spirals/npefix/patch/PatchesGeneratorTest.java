@@ -23,6 +23,8 @@ import java.util.Collections;
 
 
 public class PatchesGeneratorTest {
+	private static String[] inputResources = new String[] { "/foo/src/main/java", "/foo/src/test/java" };
+
 	@Test
 	public void testGeneratePatchStrat4New() throws Exception {
 		spoon.Launcher launcher = getSpoonLauncher();
@@ -33,14 +35,14 @@ public class PatchesGeneratorTest {
 		foo.setValue(new NewInstance(Object.class.getCanonicalName(), new String[0], Collections.emptyList()));
 		foo.setUsed(true);
 
-		Lapse lapse = new Lapse(new DomSelector());
+		Lapse lapse = new Lapse(new DomSelector(), inputResources);
 		lapse.addDecision(foo);
 
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- main/java/Foo.java\n"
-				+ "+++ main/java/Foo.java\n"
+				+ "--- a/foo/src/main/java/Foo.java\n"
+				+ "+++ b/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
@@ -63,15 +65,15 @@ public class PatchesGeneratorTest {
 		field.setValue(new VariableInstance("element"));
 		field.setUsed(true);
 
-		Lapse lapse = new Lapse(new DomSelector());
+		Lapse lapse = new Lapse(new DomSelector(), inputResources);
 		lapse.addDecision(foo);
 		lapse.addDecision(field);
 
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- main/java/Foo.java\n"
-				+ "+++ main/java/Foo.java\n"
+				+ "--- a/foo/src/main/java/Foo.java\n"
+				+ "+++ b/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
@@ -97,14 +99,14 @@ public class PatchesGeneratorTest {
 		foo.setValue(new VariableInstance("result"));
 		foo.setUsed(true);
 
-		Lapse lapse = new Lapse(new DomSelector());
+		Lapse lapse = new Lapse(new DomSelector(), inputResources);
 		lapse.addDecision(foo);
 
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- main/java/Foo.java\n"
-				+ "+++ main/java/Foo.java\n"
+				+ "--- a/foo/src/main/java/Foo.java\n"
+				+ "+++ b/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,6 +20,8 @@\n"
 				+ "         String result = \"\";\n"
 				+ "-        for (String element : array) {\n"
@@ -130,14 +132,14 @@ public class PatchesGeneratorTest {
 		foo.setValue(new NewArrayInstance(String[].class, Collections.EMPTY_LIST));
 		foo.setUsed(true);
 
-		Lapse lapse = new Lapse(new DomSelector());
+		Lapse lapse = new Lapse(new DomSelector(), inputResources);
 		lapse.addDecision(foo);
 
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- main/java/Foo.java\n"
-				+ "+++ main/java/Foo.java\n"
+				+ "--- a/foo/src/main/java/Foo.java\n"
+				+ "+++ b/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
@@ -157,14 +159,14 @@ public class PatchesGeneratorTest {
 		foo.setValue(new VariableInstance("result"));
 		foo.setUsed(true);
 
-		Lapse lapse = new Lapse(new DomSelector());
+		Lapse lapse = new Lapse(new DomSelector(), inputResources);
 		lapse.addDecision(foo);
 
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- main/java/Foo.java\n"
-				+ "+++ main/java/Foo.java\n"
+				+ "--- a/foo/src/main/java/Foo.java\n"
+				+ "+++ b/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,7 +20,16 @@\n"
 				+ "         String result = \"\";\n"
 				+ "-        for (String element : array) {\n"
@@ -198,14 +200,14 @@ public class PatchesGeneratorTest {
 		foo.setValue(new NewArrayInstance(String[].class, Collections.EMPTY_LIST));
 		foo.setUsed(true);
 
-		Lapse lapse = new Lapse(new DomSelector());
+		Lapse lapse = new Lapse(new DomSelector(), inputResources);
 		lapse.addDecision(foo);
 
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- main/java/Foo.java\n"
-				+ "+++ main/java/Foo.java\n"
+				+ "--- a/foo/src/main/java/Foo.java\n"
+				+ "+++ b/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,7 +20,16 @@\n"
 				+ "         String result = \"\";\n"
 				+ "-        for (String element : array) {\n"
@@ -243,15 +245,15 @@ public class PatchesGeneratorTest {
 		field.setValue(new NewInstance(String.class.getCanonicalName(), new String[0], Collections.EMPTY_LIST));
 		field.setUsed(true);
 
-		Lapse lapse = new Lapse(new DomSelector());
+		Lapse lapse = new Lapse(new DomSelector(), inputResources);
 		lapse.addDecision(foo);
 		lapse.addDecision(field);
 
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- main/java/Foo.java\n"
-				+ "+++ main/java/Foo.java\n"
+				+ "--- a/foo/src/main/java/Foo.java\n"
+				+ "+++ b/foo/src/main/java/Foo.java\n"
 				+ "@@ -105,3 +105,7 @@\n"
 				+ "     public void  multiDecisionLine() {\n"
 				+ "-        Arrays.asList(field.toString(), field.toString());\n"
@@ -272,14 +274,14 @@ public class PatchesGeneratorTest {
 		foo.setValue(new NewInstance(String.class.getCanonicalName(), new String[0], Collections.EMPTY_LIST));
 		foo.setUsed(true);
 
-		Lapse lapse = new Lapse(new DomSelector());
+		Lapse lapse = new Lapse(new DomSelector(), inputResources);
 		lapse.addDecision(foo);
 
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- main/java/Foo.java\n"
-				+ "+++ main/java/Foo.java\n"
+				+ "--- a/foo/src/main/java/Foo.java\n"
+				+ "+++ b/foo/src/main/java/Foo.java\n"
 				+ "@@ -111,4 +111,12 @@\n"
 				+ " \n"
 				+ "-        } else if (array[0].isEmpty()) {\n"

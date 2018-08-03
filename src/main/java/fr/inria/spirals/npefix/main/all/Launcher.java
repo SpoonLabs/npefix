@@ -63,7 +63,7 @@ public class Launcher {
     private final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     public Launcher(String[] sourcePath, String sourceOutput, String binOutput, String classpath) {
-        this(sourcePath, sourceOutput, binOutput, classpath, 7, new DefaultRepairStrategy());
+        this(sourcePath, sourceOutput, binOutput, classpath, 7, new DefaultRepairStrategy(sourcePath));
     }
 
     public Launcher(String[] sourcePath, String sourceOutput, String binOutput, String classpath, RepairStrategy repairStrategy) {

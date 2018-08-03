@@ -116,10 +116,11 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
         if (positions.containsKey(name)) {
 			CtElement element = getElementFromPosition(spoon.getFactory().Type().get(positions.get(name).getClassname()), positions.get(name));
 			if (element != null) {
-				output.addAll(strategy1(spoon, (CtExpression) element));
-				output.addAll(strategy2(spoon, (CtExpression) element));
-				output.addAll(strategy3(spoon, (CtExpression) element));
-				output.addAll(strategy4(spoon, (CtExpression) element));
+				output.addAll(strategy1(spoon, (CtExpression) element, new String[] {source}));
+				output.addAll(strategy2(spoon, (CtExpression) element, new String[] {source}));
+				output.addAll(strategy3(spoon, (CtExpression) element, new String[] {source}));
+				output.addAll(strategy4(spoon, (CtExpression) element, new String[] {source}));
+				output.addAll(strategy4(spoon, (CtExpression) element, new String[] {source}));
 			} else {
 				Assert.fail("element not found");
 			}
@@ -188,7 +189,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 	/**
 	 * Replace null element by existing element
 	 */
-	private NPEOutput strategy1(Launcher launcher, CtExpression element) {
+	private NPEOutput strategy1(Launcher launcher, CtExpression element, final String[] inputSources) {
 		NPEOutput output = new NPEOutput();
 
 		Location location = getLocation(element);
@@ -201,7 +202,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 			Decision decision = new Decision<>(new Strat1A(),
 					location,
 					InstanceFactory.fromCtExpression(ctVariableAccess));
-			output.addAll(applyAndRunPatch(launcher, new ReplaceLocal(ctVariableAccess), element, decision));
+			output.addAll(applyAndRunPatch(launcher, new ReplaceLocal(ctVariableAccess), element, decision, inputSources));
 		}
 		// in global mode the new element as to be the same type
 		variables = getVariableAccesses(element, element.getType());
@@ -211,7 +212,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 					location,
 					InstanceFactory.fromCtExpression(ctVariableAccess));
 			output.addAll(applyAndRunPatch(launcher, new ReplaceGlobal(ctVariableAccess), element,
-					decision));
+					decision, inputSources));
 		}
 		return output;
 	}
@@ -219,7 +220,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 	/**
 	 * Replace null element by new instance
 	 */
-	private NPEOutput strategy2(Launcher launcher, CtExpression element) {
+	private NPEOutput strategy2(Launcher launcher, CtExpression element, final String[] inputSources) {
 		NPEOutput output = new NPEOutput();
 
 		Location location = getLocation(element);
@@ -233,7 +234,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 			Decision decision = new Decision<>(new Strat2A(), location,
 					InstanceFactory.fromCtExpression(newInstance));
 			output.addAll(applyAndRunPatch(launcher, new ReplaceLocal(newInstance), element,
-					decision));
+					decision, inputSources));
 		}
 
 		// in global mode the new element as to be the same type
@@ -245,7 +246,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 					location,
 					InstanceFactory.fromCtExpression(newInstance));
 			output.addAll(applyAndRunPatch(launcher, new ReplaceGlobal(newInstance), element,
-					decision));
+					decision, inputSources));
 		}
 		return output;
 	}
@@ -253,7 +254,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 	/**
 	 * Add check not null around null element
 	 */
-	private NPEOutput strategy3(Launcher launcher, CtExpression element) {
+	private NPEOutput strategy3(Launcher launcher, CtExpression element, final String[] inputSources) {
 		NPEOutput output = new NPEOutput();
 
 		Location location = getLocation(element);
@@ -261,7 +262,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 		Decision decision = new Decision<>(new Strat3(), location, new PrimitiveInstance(false));
 
 		output.addAll(applyAndRunPatch(launcher, new SkipLine(), element,
-				decision));
+				decision, inputSources));
 		return output;
 	}
 
@@ -275,7 +276,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 	/**
 	 * Skip method
 	 */
-	private NPEOutput strategy4(Launcher launcher, CtExpression element) {
+	private NPEOutput strategy4(Launcher launcher, CtExpression element, final String[] inputSources) {
 		NPEOutput output = new NPEOutput();
 		CtMethod method = element.getParent(CtMethod.class);
 
@@ -307,7 +308,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 				}
 
 				Decision decision = new Decision<>(new Strat4(type), location, instance);
-				output.addAll(applyAndRunPatch(launcher, new SkipMethodReturn(ctVariable), element, decision));
+				output.addAll(applyAndRunPatch(launcher, new SkipMethodReturn(ctVariable), element, decision, inputSources));
 			}
 		}
 		return output;
@@ -315,7 +316,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 
 	private List<Lapse> applyAndRunPatch(Launcher launcher,
 			PatchTemplate patchTemplate,
-			CtExpression expression, Decision decision) {
+			CtExpression expression, Decision decision, final String[] inputSources) {
 		// clone the parent of the expression
 		CtType originalType = expression.getParent(CtType.class);
 		CtType cloneType = originalType.clone();
@@ -330,7 +331,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 			// change the model with the new class
 			originalType.replace(cloneType);
 
-			List<Lapse> lapses = executeTest(launcher, decision);
+			List<Lapse> lapses = executeTest(launcher, decision, inputSources);
 
 			// restore the original class
 			cloneType.replace(originalType);
@@ -343,7 +344,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 		return Collections.emptyList();
 	}
 
-	private List<Lapse> executeTest(final Launcher launcher, final Decision decision) {
+	private List<Lapse> executeTest(final Launcher launcher, final Decision decision, final String[] inputSources) {
 		Path tempBinFolder = null;
 		try {
 			tempBinFolder = Files.createTempDirectory("npefix_");
@@ -393,7 +394,7 @@ public class NPEFixTemplateEvaluation extends AbstractNPEDataset {
 						continue;
 					}
 
-					Lapse lapse = new Lapse(null);
+					Lapse lapse = new Lapse(null, inputSources);
 					lapse.setTestClassName(testClassName);
 					lapse.setTestName(method);
 					lapse.addDecision(decision);
