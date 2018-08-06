@@ -1,5 +1,6 @@
 package fr.inria.spirals.npefix.patch;
 
+import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.context.Decision;
 import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.Location;
@@ -14,6 +15,7 @@ import fr.inria.spirals.npefix.resi.strategies.Strat2B;
 import fr.inria.spirals.npefix.resi.strategies.Strat3;
 import fr.inria.spirals.npefix.resi.strategies.Strat4;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import spoon.SpoonModelBuilder;
 
@@ -23,7 +25,12 @@ import java.util.Collections;
 
 
 public class PatchesGeneratorTest {
-	private static String[] inputResources = new String[] { "/foo/src/main/java", "/foo/src/test/java" };
+	private static String[] inputResources = new String[] { "target/test-classes/foo/src/main/java", "target/test-classes/foo/src/test/java" };
+
+	@Before
+	public void setup() {
+		Config.reset();
+	}
 
 	@Test
 	public void testGeneratePatchStrat4New() throws Exception {
@@ -41,8 +48,34 @@ public class PatchesGeneratorTest {
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- a/foo/src/main/java/Foo.java\n"
-				+ "+++ b/foo/src/main/java/Foo.java\n"
+				+ "--- a/target/test-classes/foo/src/main/java/Foo.java\n"
+				+ "+++ b/target/test-classes/foo/src/main/java/Foo.java\n"
+				+ "@@ -20,2 +20,5 @@\n"
+				+ "         String result = \"\";\n"
+				+ "+        if (array == null) {\n"
+				+ "+            return new Object();\n"
+				+ "+        }\n"
+				+ "         for (String element : array) {\n", s);
+	}
+
+	@Test
+	public void testGeneratePatchStrat4NewWithRootProject() throws Exception {
+		spoon.Launcher launcher = getSpoonLauncher();
+		Config.CONFIG.setRootProject(new File("target/test-classes/foo").toPath());
+		Decision foo = new Decision(new Strat4(ReturnType.NEW),
+				new Location("Foo", 21, 392, 396));
+		foo.setValueType(Object.class);
+		foo.setValue(new NewInstance(Object.class.getCanonicalName(), new String[0], Collections.emptyList()));
+		foo.setUsed(true);
+
+		Lapse lapse = new Lapse(new DomSelector(), inputResources);
+		lapse.addDecision(foo);
+
+		String s = lapse.toDiff(launcher);
+		System.out.println(s);
+		Assert.assertEquals(""
+				+ "--- a/src/main/java/Foo.java\n"
+				+ "+++ b/src/main/java/Foo.java\n"
 				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
@@ -72,8 +105,8 @@ public class PatchesGeneratorTest {
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- a/foo/src/main/java/Foo.java\n"
-				+ "+++ b/foo/src/main/java/Foo.java\n"
+				+ "--- a/target/test-classes/foo/src/main/java/Foo.java\n"
+				+ "+++ b/target/test-classes/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
@@ -105,8 +138,8 @@ public class PatchesGeneratorTest {
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- a/foo/src/main/java/Foo.java\n"
-				+ "+++ b/foo/src/main/java/Foo.java\n"
+				+ "--- a/target/test-classes/foo/src/main/java/Foo.java\n"
+				+ "+++ b/target/test-classes/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,6 +20,8 @@\n"
 				+ "         String result = \"\";\n"
 				+ "-        for (String element : array) {\n"
@@ -138,8 +171,8 @@ public class PatchesGeneratorTest {
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- a/foo/src/main/java/Foo.java\n"
-				+ "+++ b/foo/src/main/java/Foo.java\n"
+				+ "--- a/target/test-classes/foo/src/main/java/Foo.java\n"
+				+ "+++ b/target/test-classes/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,2 +20,5 @@\n"
 				+ "         String result = \"\";\n"
 				+ "+        if (array == null) {\n"
@@ -165,8 +198,8 @@ public class PatchesGeneratorTest {
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- a/foo/src/main/java/Foo.java\n"
-				+ "+++ b/foo/src/main/java/Foo.java\n"
+				+ "--- a/target/test-classes/foo/src/main/java/Foo.java\n"
+				+ "+++ b/target/test-classes/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,7 +20,16 @@\n"
 				+ "         String result = \"\";\n"
 				+ "-        for (String element : array) {\n"
@@ -206,8 +239,8 @@ public class PatchesGeneratorTest {
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- a/foo/src/main/java/Foo.java\n"
-				+ "+++ b/foo/src/main/java/Foo.java\n"
+				+ "--- a/target/test-classes/foo/src/main/java/Foo.java\n"
+				+ "+++ b/target/test-classes/foo/src/main/java/Foo.java\n"
 				+ "@@ -20,7 +20,16 @@\n"
 				+ "         String result = \"\";\n"
 				+ "-        for (String element : array) {\n"
@@ -252,8 +285,8 @@ public class PatchesGeneratorTest {
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- a/foo/src/main/java/Foo.java\n"
-				+ "+++ b/foo/src/main/java/Foo.java\n"
+				+ "--- a/target/test-classes/foo/src/main/java/Foo.java\n"
+				+ "+++ b/target/test-classes/foo/src/main/java/Foo.java\n"
 				+ "@@ -105,3 +105,7 @@\n"
 				+ "     public void  multiDecisionLine() {\n"
 				+ "-        Arrays.asList(field.toString(), field.toString());\n"
@@ -280,8 +313,8 @@ public class PatchesGeneratorTest {
 		String s = lapse.toDiff(launcher);
 		System.out.println(s);
 		Assert.assertEquals(""
-				+ "--- a/foo/src/main/java/Foo.java\n"
-				+ "+++ b/foo/src/main/java/Foo.java\n"
+				+ "--- a/target/test-classes/foo/src/main/java/Foo.java\n"
+				+ "+++ b/target/test-classes/foo/src/main/java/Foo.java\n"
 				+ "@@ -111,4 +111,12 @@\n"
 				+ " \n"
 				+ "-        } else if (array[0].isEmpty()) {\n"

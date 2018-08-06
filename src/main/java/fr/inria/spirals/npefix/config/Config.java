@@ -4,6 +4,7 @@ import fr.inria.spirals.npefix.resi.RandomGenerator;
 
 import java.io.File;
 import java.io.FileReader;
+import java.nio.file.Path;
 import java.util.Properties;
 
 public class Config  {
@@ -33,6 +34,12 @@ public class Config  {
 	private String workingDirectory;
 	private String m2Repository;
 	private boolean multiPoints = true;
+
+	private Path rootProject;
+
+	public static void reset() {
+		CONFIG = new Config();
+	}
 
 	private Config() {
 		try {
@@ -181,5 +188,13 @@ public class Config  {
 
 	public void setMultiPoints(boolean multiPoints) {
 		this.multiPoints = multiPoints;
+	}
+
+	public Path getRootProject() {
+		return rootProject;
+	}
+
+	public void setRootProject(Path rootProject) {
+		this.rootProject = rootProject;
 	}
 }
