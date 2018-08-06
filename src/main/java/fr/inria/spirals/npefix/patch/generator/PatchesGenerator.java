@@ -1,6 +1,7 @@
 package fr.inria.spirals.npefix.patch.generator;
 
 import com.cloudbees.diff.Diff;
+import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.patch.DecisionElement;
 import fr.inria.spirals.npefix.patch.PositionScanner;
 import fr.inria.spirals.npefix.resi.context.Decision;
@@ -148,7 +149,7 @@ public class PatchesGenerator {
 		StringReader r2 = new StringReader(classContent);
 		String diff = null;
 		try {
-			String path = getClassPath(type);
+			String path = computePathForType(type);
 			diff = Diff.diff(r1, r2, false)
 					.toUnifiedDiff("a" + path,
 							"b" + path,
@@ -161,56 +162,47 @@ public class PatchesGenerator {
 		return diff.replaceAll("\n\\\\ No newline at end of file", "");
 	}
 
-	private String getClassPath(CtType type) {
-		String path = type.getPosition().getFile().getPath();
-		String intersection = null;
-		for (String inputSource : inputSources) {
-			if (inputSource.startsWith("./")) {
-				inputSource = inputSource.substring(2);
-			}
-			if (intersection == null) {
-				intersection = inputSource;
-			} else {
-				intersection = intersection(intersection, inputSource);
-			}
-		}
-		int indexOfIntersection = path.indexOf(intersection);
-
-		if (indexOfIntersection != -1) {
-			path = path.substring(indexOfIntersection);
-			if (!path.startsWith("/")) {
-				return "/" + path;
-			} else {
-				return path;
-			}
+	private String putFirstSlash(String path) {
+		if (path.startsWith("/")) {
+			return path;
 		} else {
-			return null;
+			return "/" + path;
 		}
 	}
 
-	/**
-	 * Get the intersection of two paths
- 	 * @param s1
-	 * @param s2
-	 * @return
-	 */
-	private String intersection(String s1, String s2) {
-		String[] split1 = s1.split("/");
-		String[] split2 = s2.split("/");
+	private String computePathForType(CtType type) {
+		String path = type.getPosition().getFile().getAbsolutePath();
+		String relativePath = null;
 
-		StringBuilder output = new StringBuilder();
+		if (Config.CONFIG.getRootProject() != null) {
+			String absolutePath = Config.CONFIG.getRootProject().toAbsolutePath().toString();
+			if (path.startsWith(absolutePath)) {
+				relativePath = path.substring(absolutePath.length());
+			}
+		} else {
+			for (String inputSourcePath : inputSources) {
+				File inputSource = new File(inputSourcePath);
+				String absolutePath = inputSource.getAbsolutePath();
+				String prefixPath = inputSource.getPath();
 
-		for (int i = 0; i < split1.length && i < split2.length; i++) {
-			String path1 = split1[i];
-			String path2 = split2[i];
-			if (path1.equals(path2)) {
-				output.append(path1);
-				output.append("/");
-			} else {
-				break;
+				if (prefixPath.startsWith("./")) {
+					prefixPath = prefixPath.substring(1);
+				}
+				if (!prefixPath.endsWith("/")) {
+					prefixPath += "/";
+				}
+				if (path.startsWith(absolutePath)) {
+					relativePath = prefixPath + path.substring(absolutePath.length() + 1);
+					break;
+				}
 			}
 		}
-		return output.toString();
+
+		if (relativePath != null) {
+			return this.putFirstSlash(relativePath);
+		} else {
+			return this.putFirstSlash(path);
+		}
 	}
 
 	/**
