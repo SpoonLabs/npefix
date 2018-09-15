@@ -46,6 +46,7 @@ import spoon.reflect.reference.CtCatchVariableReference;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
+import spoon.reflect.reference.CtWildcardReference;
 import spoon.reflect.visitor.EarlyTerminatingScanner;
 import spoon.reflect.visitor.filter.AbstractFilter;
 
@@ -395,9 +396,8 @@ public class BeforeDerefAdder extends AbstractProcessor<CtTargetedExpression>{
 			for (int i = 0; i < actualTypeArguments.size(); i++) {
 				CtTypeReference<?> ctTypeReference = actualTypeArguments.get(i);
 				if (ctTypeReference.toString().contains("?") && !ctTypeReference.toString().startsWith("?") && !containsCtParamaterReference(type)) {
-					CtTypeParameterReference typeParameterReference = type.getFactory().Core().createTypeParameterReference();
+					CtWildcardReference typeParameterReference = type.getFactory().Core().createWildcardReference();
 					typeParameterReference.setBoundingType(ctTypeReference);
-					typeParameterReference.setSimpleName("?");
 					actualTypeArguments.set(i, typeParameterReference);
 				}
 			}
