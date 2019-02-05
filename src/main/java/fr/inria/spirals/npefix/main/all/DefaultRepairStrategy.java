@@ -1,5 +1,6 @@
 package fr.inria.spirals.npefix.main.all;
 
+import fr.inria.spirals.npefix.main.DecisionServer;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.context.Lapse;
 import fr.inria.spirals.npefix.resi.context.NPEOutput;

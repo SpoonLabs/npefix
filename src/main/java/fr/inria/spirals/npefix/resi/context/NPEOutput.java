@@ -108,7 +108,16 @@ public class NPEOutput extends ArrayList<Lapse>{
 		output.put("start", start.getTime());
 		for (int i = 0; i < this.size(); i++) {
 			Lapse lapse = this.get(i);
-			output.append("executions", lapse.toJSON(spoon));
+			if (!lapse.getDecisions().isEmpty()) {
+				boolean isAllUsed = true;
+				for (int j = 0; j < lapse.getDecisions().size() && isAllUsed; j++) {
+					Decision decision = lapse.getDecisions().get(j);
+					isAllUsed = isAllUsed && decision.isUsed();
+				}
+				if (isAllUsed) {
+					output.append("executions", lapse.toJSON(spoon));
+				}
+			}
 		}
 		if (end == null) {
 			end = new Date();

@@ -105,8 +105,12 @@ public class Launcher {
         p.process(allWithoutTest);
 
         spoon.prettyprint();
-
-        compiler.compile();
+        try {
+            compiler.compile();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw e;
+        }
         logger.debug("End code instrumentation");
     }
 
@@ -366,8 +370,26 @@ public class Launcher {
         return getTests(spoon, urlClassLoader);
     }
 
+    /**
+     * Returns all test methods of the spooned project
+     * @return a list of test methods
+     */
+    public List<String> getTests(String[] classnames) {
+        String[] sourceClasspath = spoon.getModelBuilder().getSourceClasspath();
+
+        URLClassLoader urlClassLoader = getUrlClassLoader(sourceClasspath);
+
+        CallChecker.currentClassLoader = urlClassLoader;
+
+        return getTestMethods(spoon, urlClassLoader, classnames);
+    }
+
     public static List<String> getTests(spoon.Launcher spoon, URLClassLoader urlClassLoader) {
         String[] testsString = new TestClassesFinder().findIn(urlClassLoader, false);
+        return getTestMethods(spoon, urlClassLoader, testsString);
+    }
+
+    private static List<String> getTestMethods(spoon.Launcher spoon, URLClassLoader urlClassLoader, String[] testsString) {
         Class[] tests = filterTest(spoon, urlClassLoader, testsString);
 
         List<String> methodTests = new ArrayList<>();
@@ -453,7 +475,7 @@ public class Launcher {
     }
 
     private static boolean isValidTest(spoon.Launcher spoon, String testName) {
-        return spoon.getFactory().Class().get(testName) != null;
+        return true;
     }
 
     public spoon.Launcher getSpoon() {

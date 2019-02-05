@@ -172,7 +172,7 @@
                     <archive>
                         <manifest>
                             <mainClass>
-                                fr.inria.spirals.npefix.main.MainEvaluation
+                                fr.inria.spirals.npefix.main.run.Main
                             </mainClass>
                         </manifest>
                     </archive>
