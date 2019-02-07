@@ -34,7 +34,7 @@ public class Main {
 	private String workingDirectory = ".";
 	private String classpath = "";
 	private int complianceLevel = 7;
-	private RepairStrategy repairStrategy = new DefaultRepairStrategy();
+	private RepairStrategy repairStrategy;
 	private String[] tests;
 	private int nbIteration;
 
@@ -56,6 +56,7 @@ public class Main {
 	}
 	
 	private NPEOutput run() {
+		repairStrategy = new DefaultRepairStrategy(sources.toArray(new String[]{}));
 		Launcher npefix = new Launcher(sources.toArray(new String[]{}), workingDirectory + "/npefix-src", workingDirectory + "/npefix-bin", classpath, complianceLevel, repairStrategy);
 		if (!new File(workingDirectory + "/npefix-bin").exists()) {
 			npefix.instrument();
