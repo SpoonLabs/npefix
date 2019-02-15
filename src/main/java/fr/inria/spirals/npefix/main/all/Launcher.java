@@ -448,11 +448,11 @@ public class Launcher {
         Set<Class> tests = new HashSet<>();
         for (int i = 0; i < testsString.length; i++) {
             String s = testsString[i];
-            if(!isValidTest(spoon, s)) {
-                continue;
-            }
             try {
                 Class<?> aClass = urlClassLoader.loadClass(s);
+                if(!isValidTest(spoon, aClass, s)) {
+                    continue;
+                }
                 tests.add(aClass);
             } catch (ClassNotFoundException e) {
                 continue;
@@ -474,8 +474,8 @@ public class Launcher {
         return new URLClassLoader(uRLClassPath.toArray(new URL[]{}), Thread.currentThread().getContextClassLoader());
     }
 
-    private static boolean isValidTest(spoon.Launcher spoon, String testName) {
-        return true;
+    private static boolean isValidTest(spoon.Launcher spoon, Class<?> aClass, String testName) {
+        return spoon.getFactory().Class().get(testName) != null;
     }
 
     public spoon.Launcher getSpoon() {
