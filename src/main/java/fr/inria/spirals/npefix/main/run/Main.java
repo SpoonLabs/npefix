@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -37,8 +38,9 @@ public class Main {
 	private RepairStrategy repairStrategy;
 	private String[] tests;
 	private int nbIteration;
+	private String repairStrategyClassname = "fr.inria.spirals.npefix.main.all.DefaultRepairStrategy";
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		Main main = new Main();
 		try {
 			main.initJSAP();
@@ -46,17 +48,23 @@ public class Main {
 				return;
 			}
 			main.run();
-		} catch (JSAPException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
 			main.showUsage();
+			throw e;
 		} finally {
 
 		}
 		System.exit(0);
 	}
-	
-	private NPEOutput run() {
-		repairStrategy = new DefaultRepairStrategy(sources.toArray(new String[]{}));
+
+	private RepairStrategy getRepairStrategy() throws Exception {
+		Class<RepairStrategy> aClass = (Class<RepairStrategy>) this.getClass().getClassLoader().loadClass(this.repairStrategyClassname);
+		Constructor<RepairStrategy> constructor = aClass.getConstructor(String[].class);
+		return constructor.newInstance(new Object[]{sources.toArray(new String[]{})});
+	}
+
+	private NPEOutput run() throws Exception {
+		repairStrategy = getRepairStrategy();
 		Launcher npefix = new Launcher(sources.toArray(new String[]{}), workingDirectory + "/npefix-src", workingDirectory + "/npefix-bin", classpath, complianceLevel, repairStrategy);
 		if (!new File(workingDirectory + "/npefix-bin").exists()) {
 			npefix.instrument();
@@ -184,6 +192,7 @@ public class Main {
 		this.tests = jsapConfig.getStringArray("test");
 		this.nbIteration = jsapConfig.getInt("iteration");
 		this.complianceLevel = jsapConfig.getInt("complianceLevel");
+		this.repairStrategyClassname = jsapConfig.getString("repairStrategy");
 
 		return true;
 	}
@@ -246,5 +255,14 @@ public class Main {
 		outputFolder.setDefault(".");
 		outputFolder.setHelp("Define the location where npefix will put its files.");
 		jsap.registerParameter(outputFolder);
+
+		FlaggedOption repairStrategy = new FlaggedOption("repairStrategy");
+		repairStrategy.setRequired(false);
+		repairStrategy.setAllowMultipleDeclarations(false);
+		repairStrategy.setLongFlag("repairStrategy");
+		repairStrategy.setStringParser(JSAP.STRING_PARSER);
+		repairStrategy.setDefault(DefaultRepairStrategy.class.getCanonicalName());
+		repairStrategy.setHelp("Define the repair strategy used by NPEFix.");
+		jsap.registerParameter(repairStrategy);
 	}
 }
