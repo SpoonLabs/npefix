@@ -1,11 +1,11 @@
 # NPEFix [![Build Status](https://travis-ci.org/Spirals-Team/npefix.svg?branch=master)](https://travis-ci.org/Spirals-Team/npefix) [![Coverage Status](https://coveralls.io/repos/github/Spirals-Team/npefix/badge.svg?branch=master)](https://coveralls.io/github/Spirals-Team/npefix?branch=master)
 
-This is the repository of NPEFix, a system that systematically generate patches for NullPointerException, aka automatic bug fixing.
+NPEFix is a system that automatically generates patches for NullPointerException, aka automatic bug fixing for NPE.
 This code is research code, released under the GPL licence, developed at Inria Lille.
 
 If you use this code, please cite:
 
-Thomas Durieux, Benoit Cornu, Lionel Seinturier and Martin Monperrus, "Dynamic Patch Generation for Null Pointer Exceptions Using Metaprogramming", In IEEE International Conference on Software Analysis, Evolution and Reengineering, 2017.
+Thomas Durieux, Benoit Cornu, Lionel Seinturier and Martin Monperrus, "[Dynamic Patch Generation for Null Pointer Exceptions Using Metaprogramming](https://hal.archives-ouvertes.fr/hal-01419861/document)", In IEEE International Conference on Software Analysis, Evolution and Reengineering, 2017.
 Bibtex Entry:
 
     @inproceedings{durieuxNpeFix,
@@ -17,12 +17,33 @@ Bibtex Entry:
     }
 
 
-## Getting Started
+## Command line
 
-How to automatically repair your NullPointerException?
+Install:
 ```
-git clone https://github.com/Spirals-Team/npefix-maven
-cd npefix-maven
+git clone https://github.com/Spirals-Team/npefix/
+cd npefix
+mvn install
+```
+
+Run:
+```
+java -jar target/npefix.jar \\
+    --test failing_test
+    --iteration 100
+    --complianceLevel 8
+    --workingdirectory . 
+    --source path_source:path_test
+    --classpath a.jar:b.jar;
+```
+
+## Using maven-repair
+
+Maven-repair is a maven-plugin for bug-fixing:
+
+```
+git clone https://github.com/Spirals-Team/npefix/
+cd npefix
 mvn install
 cd /somewhere/my-project-with-an-NPE
 
@@ -30,22 +51,15 @@ cd /somewhere/my-project-with-an-NPE
 mvn test 
 
 # look for patches
-mvn fr.inria.spirals:npefix-maven:1.0-SNAPSHOT:npefix
+mvn fr.inria.gforge.spirals:repair-maven-plugin:npefix
 
 # the patches are in target
 cat target/npefix/patches.json
 ```
 
-## Run the tests
+## Reproduce the Scientific Evaluation
 
-```Bash
-git clone https://github.com/Spirals-Team/npefix
-cd npefix
-mvn test
-```
-
-### Run the evaluation
-
+To reproduce the evaluation from the [paper]():
 1. Gets the NPE Dataset: https://github.com/Spirals-Team/npe-dataset
 2. Installs each bug on your system, in order to download the dependencies
 3. Configures the location of the dataset in src/main/resources/config.ini
