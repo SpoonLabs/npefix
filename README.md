@@ -35,6 +35,7 @@ java -jar target/npefix.jar \\
     --workingdirectory . 
     --source path_source:path_test
     --classpath a.jar:b.jar;
+    --repairStrategy <fully qualified name of a repair strategy>
 ```
 
 ## Using maven-repair
