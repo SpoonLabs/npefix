@@ -6,6 +6,7 @@ import fr.inria.spirals.npefix.config.Config;
 import fr.inria.spirals.npefix.resi.CallChecker;
 import fr.inria.spirals.npefix.resi.RandomGenerator;
 
+// safe mode for NpeFix, see https://github.com/Spirals-Team/npefix/issues/10
 public class SafeMonoEvaluation extends AbstractSelectorEvaluation {
     
     @Before
