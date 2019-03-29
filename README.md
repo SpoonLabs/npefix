@@ -16,6 +16,9 @@ Bibtex Entry:
         year = {2017},
     }
 
+## Using maven-repair 
+
+Maven-repair is a Maven plugin for bug-fixing, see <https://github.com/Spirals-Team/repairnator/tree/master/maven-repair>
 
 ## Command line
 
@@ -36,26 +39,6 @@ java -jar target/npefix.jar \\
     --source path_source:path_test
     --classpath a.jar:b.jar;
     --repairStrategy <fully qualified name of a repair strategy>
-```
-
-## Using maven-repair
-
-Maven-repair is a maven-plugin for bug-fixing:
-
-```
-git clone https://github.com/Spirals-Team/npefix/
-cd npefix
-mvn install
-cd /somewhere/my-project-with-an-NPE
-
-# check there is a NullPointerException
-mvn test 
-
-# look for patches
-mvn fr.inria.gforge.spirals:repair-maven-plugin:npefix
-
-# the patches are in target
-cat target/npefix/patches.json
 ```
 
 ## Reproduce the Scientific Evaluation
