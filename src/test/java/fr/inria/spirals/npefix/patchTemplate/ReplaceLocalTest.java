@@ -30,7 +30,7 @@ public class ReplaceLocalTest {
 
 		new ReplaceLocal(foo.getFactory().Class().get(ArrayList.class)).apply(afor.getExpression());
 
-		Assert.assertEquals("if ((array) == null)\n"
+		Assert.assertEquals("if (array == null)\n"
 				+ "    for (String element : new ArrayList()) {\n"
 				+ "        result += element.toString();\n"
 				+ "        if (element == null) {\n"
@@ -62,7 +62,7 @@ public class ReplaceLocalTest {
 
 		new ReplaceLocal(foo.getField("field")).apply(afor.getExpression());
 
-		Assert.assertEquals("if ((array) == null)\n"
+		Assert.assertEquals("if (array == null)\n"
 				+ "    for (String element : this.field) {\n"
 				+ "        result += element.toString();\n"
 				+ "        if (element == null) {\n"

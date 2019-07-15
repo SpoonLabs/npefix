@@ -32,7 +32,7 @@ public class SkipMethodReturnTest {
 
 		Assert.assertEquals("public Foo2() {\n"
 				+ "    super();\n"
-				+ "    if ((field) != null) {\n"
+				+ "    if (field != null) {\n"
 				+ "        field.toString();\n"
 				+ "        field = null;\n"
 				+ "        array = null;\n"
@@ -57,7 +57,7 @@ public class SkipMethodReturnTest {
 
 		new SkipMethodReturn().apply(afor.getExpression());
 
-		Assert.assertEquals("if ((array) == null)\n"
+		Assert.assertEquals("if (array == null)\n"
 				+ "    return null;\n", foo.getMethod("foo2").getBody().getStatement(1).toString());
 	}
 

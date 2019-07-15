@@ -30,7 +30,7 @@ public class ReplaceGlobalTest {
 
 		new ReplaceGlobal(foo.getFactory().Class().get(ArrayList.class)).apply(afor.getExpression());
 
-		Assert.assertEquals("if ((array) == null)\n"
+		Assert.assertEquals("if (array == null)\n"
 				+ "    this.array = new ArrayList();\n",
 				foo.getMethod("foo2").getBody().getStatement(1).toString());
 	}
@@ -51,7 +51,7 @@ public class ReplaceGlobalTest {
 
 		new ReplaceGlobal(foo.getField("field")).apply(afor.getExpression());
 
-		Assert.assertEquals("if ((array) == null)\n"
+		Assert.assertEquals("if (array == null)\n"
 				+ "    this.array = this.field;\n",
 				foo.getMethod("foo2").getBody().getStatement(1).toString());
 	}

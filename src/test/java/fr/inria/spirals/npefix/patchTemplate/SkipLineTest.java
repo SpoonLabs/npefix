@@ -29,7 +29,7 @@ public class SkipLineTest {
 
 		new SkipLine().apply(afor.getExpression());
 
-		Assert.assertEquals("if ((array) != null)\n"
+		Assert.assertEquals("if (array != null)\n"
 				+ "    for (java.lang.String element : array) {\n"
 				+ "        result += element.toString();\n"
 				+ "        if (element == null) {\n"
