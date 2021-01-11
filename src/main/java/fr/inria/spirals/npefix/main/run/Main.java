@@ -98,9 +98,9 @@ public class Main {
 	}
 
 	private NPEOutput multipleRuns(Launcher  npefix, List<String> npeTests, Selector selector) {
-		List<String> testMethods = npefix.getTests(npeTests.toArray(new String[0]));
 		DecisionServer decisionServer = new DecisionServer(selector);
 		decisionServer.startServer();
+		List<String> testMethods = npefix.getTests(npeTests.toArray(new String[0]));
 
 		NPEOutput output = new NPEOutput();
 
