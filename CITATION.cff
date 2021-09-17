@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+preferred-citation:
+  title: "Dynamic Patch Generation for Null Pointer Exceptions Using Metaprogramming"
+  doi: "10.1109/SANER.2017.7884635"
+  year: "2017"
+  type: conference-paper
+  conference: "IEEE International Conference on Software Analysis, Evolution and Reengineering"
+  authors:
+    - family-names: Durieux
+      given-names: Thomas
+    - family-names: Cornu
+      given-names: Benoit
+    - family-names: Seinturier
+      given-names: Lionel
+    - family-names: Monperrus
+      given-names: Martin
