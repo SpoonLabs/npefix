@@ -27,7 +27,6 @@
         <java.src.version>1.8</java.src.version>
         <java.test.version>1.8</java.test.version>
 
-        <maven-jacoco-plugin.version>0.7.5.201505241946</maven-jacoco-plugin.version>
         <maven-coveralls-plugin.version>4.0.0</maven-coveralls-plugin.version>
         <github.global.server>github</github.global.server>
     </properties>
@@ -203,7 +202,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${maven-jacoco-plugin.version}</version>
+                <version>0.8.4</version>
                 <executions>
                     <execution>
                         <goals>
