@@ -20,8 +20,7 @@ public class StringTokenIterator implements Iterator<Token> {
 	public StringTokenIterator(String f, int n) {
 		fText = f;
 		long complianceLevelValue = CompilerOptions.versionToJdkLevel("1.8");
-		scanner = new PublicScanner(false, false, false, 3145728L, complianceLevelValue, (char[][])null, (char[][])null, true);
-		scanner.sourceLevel = complianceLevelValue;
+		scanner = new PublicScanner(false, false, false, 3145728L, complianceLevelValue, (char[][])null, (char[][])null, true, false, false);
 		scanner.setSource(fText.toCharArray());
 		ngrams = n;
 		getNextLowLevelToken();

@@ -27,7 +27,7 @@ public class SachaDocumentationGenerator extends AbstractManualProcessor {
     }
   }
 
-  public static void main(String[] _) throws Exception {
+  public static void main(String[] arg) throws Exception {
     String[] args = {
         "-p", "sacha.utils.SachaDocumentationGenerator", "-i", "src"
     };
