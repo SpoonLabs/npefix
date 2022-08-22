@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.inria.gforge.spirals</groupId>
     <artifactId>npefix</artifactId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
     <name>npefix</name>
     <description>Automatic repair of NPE</description>
     <url>https://github.com/SpoonLabs/npefix</url>
