@@ -50,7 +50,7 @@
         <dependency>
             <groupId>fr.inria.gforge.spoon</groupId>
             <artifactId>spoon-core</artifactId>
-            <version>10.2.0-SNAPSHOT</version>
+            <version>10.4.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -94,10 +94,18 @@
     </dependencies>
 
     <repositories>
+        <!-- we now use maven central https://oss.sonatype.org/content/repositories/snapshots/fr/inria/gforge/spoon/
         <repository>
             <id>gforge.inria.fr-snapshot</id>
             <name>Maven Repository for Spoon Snapshot</name>
             <url>https://repository.ow2.org/nexus/content/repositories/snapshots/</url>
+            <snapshots/>
+        </repository>
+        -->
+        <repository>
+            <id>central -snapshot</id>
+            <name>Cenntral Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
             <snapshots/>
         </repository>
     </repositories>
