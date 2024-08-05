@@ -5,6 +5,7 @@ import spoon.reflect.code.CtForEach;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtStatementList;
 import spoon.reflect.code.CtTryWithResource;
+import spoon.reflect.code.CtResource;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtField;
@@ -104,7 +105,10 @@ public class VariableFinder {
 
 			@Override
 			public void visitCtTryWithResource(CtTryWithResource e) {
-				variables.addAll(e.getResources());
+				final List<CtVariable> tmp= new ArrayList<>();
+				// breakage https://github.com/INRIA/spoon/pull/4371
+				for (CtResource v: e.getResources()) { if (v instanceof CtVariable) {tmp.add((CtVariable)v);} }
+				variables.addAll(tmp);
 				super.visitCtTryWithResource(e);
 			}
 
