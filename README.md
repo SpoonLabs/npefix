@@ -17,11 +17,18 @@ Thomas Durieux, Benoit Cornu, Lionel Seinturier and Martin Monperrus, "[Dynamic 
         year = {2017},
     }
 
-## Using maven-repair 
-
-Maven-repair is a Maven plugin for bug-fixing, see <https://github.com/Spirals-Team/repairnator/tree/master/maven-repair>
 
 ## Command line
+
+As of [August 2024](https://github.com/SpoonLabs/npefix/commit/9512a41942926b255f1d441de7867c50b159c035), NpeFix expects Java 17:
+
+```
+$ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64/
+$± java --version
+openjdk 11.0.24 2024-07-16
+OpenJDK Runtime Environment (build 11.0.24+8-post-Ubuntu-1ubuntu324.04.1)
+OpenJDK 64-Bit Server VM (build 11.0.24+8-post-Ubuntu-1ubuntu324.04.1, mixed mode, sharing)
+```
 
 Install:
 ```
@@ -159,3 +166,7 @@ java -jar target/npefix-0.2-jar-with-dependencies.jar
   "date": "Wed Jan 27 19:19:37 CET 2016"
 }
 ```
+
+## Other usages 
+
+Maven-repair is a Maven plugin for bug-fixing, see <https://github.com/Spirals-Team/repairnator/tree/master/maven-repair>
