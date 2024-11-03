@@ -1,4 +1,4 @@
-# NPEFix [![Build Status](https://travis-ci.org/Spirals-Team/npefix.svg?branch=master)](https://travis-ci.org/Spirals-Team/npefix) [![Coverage Status](https://coveralls.io/repos/github/Spirals-Team/npefix/badge.svg?branch=master)](https://coveralls.io/github/Spirals-Team/npefix?branch=master)
+# NPEFix
 
 NPEFix is a system that automatically generates patches for NullPointerException, aka automatic bug fixing for NPE.
 This code is research code, released under the GPL licence, developed at Inria Lille.
@@ -7,16 +7,16 @@ If you use this code, please cite:
 
 Thomas Durieux, Benoit Cornu, Lionel Seinturier and Martin Monperrus, "[Dynamic Patch Generation for Null Pointer Exceptions Using Metaprogramming](https://hal.archives-ouvertes.fr/hal-01419861/document)", In IEEE International Conference on Software Analysis, Evolution and Reengineering, 2017, [doi:10.1109/SANER.2017.7884635](https://doi.org/10.1109/SANER.2017.7884635).
 
-
-    @inproceedings{durieuxNpeFix,
-        title = {{Dynamic Patch Generation for Null Pointer Exceptions Using Metaprogramming}},
-        author = {Durieux, Thomas and Cornu, Benoit and Seinturier, Lionel and Monperrus, Martin},
-        url = {https://hal.archives-ouvertes.fr/hal-01419861/document},
-        booktitle = {{IEEE International Conference on Software Analysis, Evolution and Reengineering}},
-        doi = {10.1109/SANER.2017.7884635},
-        year = {2017},
-    }
-
+```bibtex
+@inproceedings{durieuxNpeFix,
+    title = {{Dynamic Patch Generation for Null Pointer Exceptions Using Metaprogramming}},
+    author = {Durieux, Thomas and Cornu, Benoit and Seinturier, Lionel and Monperrus, Martin},
+    url = {https://hal.archives-ouvertes.fr/hal-01419861/document},
+    booktitle = {{IEEE International Conference on Software Analysis, Evolution and Reengineering}},
+    doi = {10.1109/SANER.2017.7884635},
+    year = {2017},
+}
+```
 
 ## Command line
 
