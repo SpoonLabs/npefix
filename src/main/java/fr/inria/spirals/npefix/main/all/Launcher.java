@@ -109,7 +109,7 @@ public class Launcher {
             compiler.compile();
         } catch (Throwable e) {
             e.printStackTrace();
-            throw e;
+            //throw e;
         }
         logger.debug("End code instrumentation");
     }

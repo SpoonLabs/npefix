@@ -54,7 +54,7 @@ public class Main {
 		} finally {
 
 		}
-		System.exit(0);
+		//System.exit(0);// don't do that, it does not run in a test
 	}
 
 	private RepairStrategy getRepairStrategy() throws Exception {
@@ -101,6 +101,9 @@ public class Main {
 		DecisionServer decisionServer = new DecisionServer(selector);
 		decisionServer.startServer();
 		List<String> testMethods = npefix.getTests(npeTests.toArray(new String[0]));
+		if (testMethods.isEmpty()) {
+			throw new RuntimeException("No test found");
+		}
 
 		NPEOutput output = new NPEOutput();
 
@@ -224,7 +227,7 @@ public class Main {
 		testOpt.setShortFlag('t');
 		testOpt.setList(true);
 		testOpt.setStringParser(JSAP.STRING_PARSER);
-		testOpt.setHelp("Define the tests of the project (both failing and passing), fully-qualified, separated with ':' (even if the classpath contains other tests, only those are considered.");
+		testOpt.setHelp("Define the test classes of the project to take into account (both failing and passing), fully-qualified class names, separated with ':' (even if the classpath contains other tests, only those are considered.");
 		jsap.registerParameter(testOpt);
 
 		FlaggedOption complianceLevelOpt = new FlaggedOption("complianceLevel");
