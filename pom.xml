@@ -110,18 +110,6 @@
         </repository>
     </repositories>
 
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>internal-snapshot-repo</id>
-            <name>Temporary Staging Snapshot Repository</name>
-            <url>file://${project.build.directory}/mvn-repo/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <plugins>
             <plugin>
@@ -223,6 +211,22 @@
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.1</version>
             </plugin>
+			<plugin>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.10.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.doxia</groupId>
+						<artifactId>doxia-module-markdown</artifactId>
+						<version>1.11.1</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.maven.doxia</groupId>
+						<artifactId>doxia-site-renderer</artifactId>
+						<version>1.11.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
             <plugin>
                 <groupId>com.github.github</groupId>
                 <artifactId>site-maven-plugin</artifactId>
@@ -240,12 +244,14 @@
                     </includes>
                     <repositoryName>maven-repository</repositoryName>
                     <repositoryOwner>tdurieux</repositoryOwner>
+                    <serverId>tdurieux.github.io</serverId>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>site</goal>
-                        </goals>
+                        </goals>                        
+                        <phase>deploy</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -336,4 +342,17 @@
     <developers>
         <developer/>
     </developers>
+
+    <distributionManagement>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>internal-snapshot-repo</id>
+            <name>Temporary Staging Snapshot Repository</name>
+            <url>file://${project.build.directory}/mvn-repo/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 </project>
